@@ -10,7 +10,7 @@ gra=[20 18 17 16 15 13 12 11 10 9 8 7 6 4 2 40 39 36 35 34 33 29 28 23 21 60 43 
 
 shape=[];
 
-incellsin=gra;
+%incellsin=gra;
 
 preCrisis=[];
 postCrisis=[];

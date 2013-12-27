@@ -50,7 +50,7 @@ if isfloat(d) %For the case the input image is double, casting to uint16 keeps e
 end
 
 if (nargin < 2)
-    threshold = (max([min(max(d,[],1))  min(max(d,[],2))])) 
+    threshold = (max([min(max(d,[],1))  min(max(d,[],2))])) ;
 end
 
 if (nargin < 3)
@@ -70,10 +70,9 @@ end
 %%
 if any(d(:))  ; %for the case of non zero raw image
 
-    d = medfilt2(d,[3,3]);
+    %d = medfilt2(d,[3,3]);
     
     % apply threshold
-    %size(d>threshold),size(d)
     d=d.*uint16(d>threshold);
     
     if any(d(:))   ; %for the case of the image is still non zero
@@ -82,12 +81,13 @@ if any(d(:))  ; %for the case of non zero raw image
         d=conv2(single(d),filt,'same') ;
         
         % Apply again threshold (and change if needed according to SNR)
+        
         d=d.*(d>0.9*threshold);
         
         
         % peak find - using the local maxima approach - 1 pixle resolution
         % d will be noisy on the edges, since no hits are expected there anyway we'll skip 'edge' pixels.
-        edg=5;
+        edg=2;
         [x y]=find(d(edg:size(d,1)-edg,edg:size(d,2)-edg));
         
         % initialize peak find outputs

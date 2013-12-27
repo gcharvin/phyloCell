@@ -117,11 +117,11 @@ for i=1:maxpos
         [pathstr, name, ext] = fileparts(sourcefile);
         
         if strcmp(ext,'.jpg')
-       destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,'.jpg');
-       str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,'.jpg');
+       destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
+       str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
         else
-        destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,'.jpg');
-       str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,'.jpg');    
+        destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
+       str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);    
         end
         copyfile(sourcefile,destination);
       
@@ -143,27 +143,6 @@ for i=1:maxpos
 end
 end
 
-if timeLapse.analysis.makeImageRetreat
-   retreatMovieImages(timeLapse.analysis.setPhaseChannel);
-end
 
-phy_saveProject(timeLapse.path,'BK-project.mat');
-phy_saveProject(timeLapse.path,[timeLapse.filename '-project.mat']);
-
-if timeLapse.analysis.segmentTimeLapseImages
-     segmentTimeLapseImages(timeLapse.analysis.setPhaseChannel);   
-end
-
-phy_saveProject(timeLapse.path,'BK-project.mat');
-phy_saveProject(timeLapse.path,[timeLapse.filename '-project.mat']);
-
-overlay=[];
-overlayList=[];
-phy_openProject([timeLapse.path timeLapse.filename '-project.mat']);
-
-
-if tempProject.makemovie
-   makeTimeLapseOverlayMovies(); 
-end
 
 

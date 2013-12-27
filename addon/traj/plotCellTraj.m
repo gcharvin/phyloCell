@@ -133,6 +133,7 @@ cc=1;
 
 list=[];
 
+
 if numel(segindex)~=0
     %     for j=1:numel(segList)
     %         a=numel(find(segindex==j));
@@ -267,7 +268,8 @@ switch mode
         fluo(2)=1/0.05;
         
     case 0
-        col=[0.3 0.3 0.3; 0.3 0.3 0.9; 1 0 0.5];
+        %col=[0.3 0.3 0.3; 0.3 0.3 0.9; 1 0 0.5];
+        col=[0.3 0.3 0.3; 0.3 0.3 0.3; 0.3 0.3 0.3];
         % col=[0.3 0.3 0.3; 0.3 0.3 0.9; 0.9 0.2 0.2];
        % col=[0.3 0.3 0.3; 0.1 0.9 0.1; 0.9 0.1 0.1];
         %col=[0.9 0.8 1; 0.9 0.8 1; 0.9 0.1 0.4];
@@ -277,16 +279,16 @@ switch mode
     case 1
         col=[0 0.3 0; 0 0.8 0.2];
     case 2
-        %col=colormap(jet(256));
+        col=colormap(jet(256));
         
         
-        col2=0:1:255;
-col2=col2';
-col2=col2/255;
-
-col=zeros(256,3);
-
-col(:,1)=col2;
+%         col2=0:1:255;
+% col2=col2';
+% col2=col2/255;
+% 
+% col=zeros(256,3);
+% 
+% col(:,1)=col2;
 
         
         col(257,:)=[0.3 0.3 0.3];
@@ -502,9 +504,10 @@ for j=1:numel(listfull(:,1))
                 
                 
                 if fluo(3)>=1
-                    if numel(tcells.Obj(l).fluoNuclMean)>=fluo(3)
+                    if numel(tcells.Obj(l).fluoMean)>=fluo(3)
                         warning off all;
-                        t=uint8(round(255*(tcells.Obj(l).fluoNuclMean(fluo(3))-fluo(1))/(fluo(2)-fluo(1))));
+                        t=uint8(round(255*(tcells.Obj(l).Nrpoints-fluo(1))/(fluo(2)-fluo(1))));
+                       % t=uint8(round(255*(tcells.Obj(l).fluoMean(fluo(3))-fluo(1))/(fluo(2)-fluo(1))));
                         warning on all;
                         cindex(ccc)=max(1,t);
                     else
@@ -715,7 +718,7 @@ va=tcells.Obj(l).area;
             colorbar('YTickLabel',arr);
             
         case 0
-            Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(listfull(j,1)) '-' num2str(listfull(j,2))],h,'width',cellwidth,'startX',startX,'startY',startY,'sepColor',[0.1 0.1 0.1],'sepwidth',2);
+            Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(listfull(j,1)) '-' num2str(listfull(j,2))],h,'width',cellwidth,'startX',startX,'startY',startY,'sepColor',[0.1 1 0.1],'sepwidth',2);
         case 1
            % rec,recb
             Traj(rec,'Color',col(1,:),'tag',['Cell :' num2str(listfull(j,1))],h,'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',0);
@@ -729,13 +732,14 @@ va=tcells.Obj(l).area;
             % 'edgeWidth',edgewidth,'edgecolor',edgecolor,'edgecolorindex',eindex
             
             arr=fluo(1):round((fluo(2)-fluo(1)))/10:fluo(2);
+            arr2=(arr-min(arr))/(max(arr)-min(arr));
             arr=num2cell(arr);
             %colorbar('YTickLabel',arr);
             
             
             hc=colorbar;
             colormap(hc,col);
-            set(hc,'YTick',[0 0.5 1],'YTickLabel',arr,'FontSize',24);
+            set(hc,'YTick',arr2,'YTickLabel',arr,'FontSize',24);
 %set(gcf,'Position',[0 1000 1500 800]);
             
         case 3
@@ -769,7 +773,7 @@ end
 
 %xlim([0 max(a)]);
 
-a
+%a
 ytick=[];
 set(gca,'YTick',ytick,'XTick',a,'XTickLabel',xticklabel,'FontSize',20);
 

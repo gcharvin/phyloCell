@@ -1,4 +1,4 @@
-function fluo=phy_analyzeMito(index,display,linez)
+function [fluo xrls rls xmito rlsmito]=phy_analyzeMito(index,display,linez)
 global segList segmentation
 
 %TO DO : 
@@ -271,6 +271,13 @@ for i=index
        
     [t1 t2 level1 level2 curve]=fitPetite(arr3b);
     
+    m3=mean(arr3(1:10*t1));
+    std3=std(arr3(1:10*t1));
+    
+    indP=find(curve<m3-std3,1,'first');
+    %t1
+    %t1=indP;
+    
     % plotFit(1:1:length(arr3b),arr3b,t1,t2);
     
     %petite=0;
@@ -280,9 +287,11 @@ for i=index
     %else
     %   petite(i).status=0; 
     %end
-    
-petite(i).t1=10*t1;
-petite(i).t2=10*t2;
+    %figure, plot(arr3b)
+   % t1,t2
+   
+petite(i).t1=10*t1; % correct decimation
+petite(i).t2=10*t2; % correct decimation
 petite(i).level1=level1;
 petite(i).level2=level2;
 petite(i).crisis=cris-arrx(1);
@@ -297,9 +306,6 @@ petite(i).death=tcells(segList(i).line).lastFrame-tcells(segList(i).line).detect
     if display
         
     figure; 
-    
-    
-    
     
     arrxt=(arrx-arrx(1))/6;
     cris=(cris-arrx(1))/6;
@@ -440,10 +446,8 @@ petite(i).death=tcells(segList(i).line).lastFrame-tcells(segList(i).line).detect
     
     prefluo2=mean(arr2(1:10));
     
-    
     postfluo2=mean(arr2(end-50:end))/prefluo2;
     
-
     
     imin=max(1:jind-5);
     imax=min(length(arr2),jind+5);
@@ -867,13 +871,16 @@ set(gcf,'Position',[0 800 1200 800]);
 agepetite=[];
 age=[];
 tpetite=[];
+ageSEP=[];
 
 durpetite=[];
 dur=[];
 t=[];
 
-cripetite=[];
+cripetite=[]; % duration from SEP to death
+cripetite2=[]; % duration from birth to SEP
 cri=[];
+cri2=[];
 
 id=[];
 
@@ -903,17 +910,23 @@ for i=index
         agepetite=[agepetite length(dau)];
         durpetite=[durpetite length(tcells(linez).Obj)];
         cripetite=[cripetite tcells(linez).lastFrame-tbud(mid)];
+        cripetite2=[cripetite2 tbud(mid)-tcells(linez).detectionFrame];
         
-        a=find(tbud-petite(i).t2>=0,1,'first');
+        
+       % tbud,petite(i).t2,tcells(linez).detectionFrame
+        
+        a=find(tbud-tcells(linez).detectionFrame-petite(i).t2>=0,1,'first')-1;
         
         if numel(a)==0
            % 'ok'
             a=0;
+        else
+           a=a-2; 
         end
         
-       if a>1
-           a=a-2;
-       end
+       %if a>1
+       %    a=a-2;
+       %end
         
       % a
 
@@ -921,19 +934,24 @@ for i=index
         tpetite=[tpetite a];
         %tpetite=[tpetite petite(i).t2-tcells(linez).detectionFrame];
         
-        a=find(tbud-petite(i).t1>=0,1,'first');
+        ageSEP=[ageSEP mid];
+        
+       % tbud,petite(i).t1
+        a=find(tbud-tcells(linez).detectionFrame-petite(i).t1>=0,1,'first');
         
         if numel(a)==0
             a=0;
+        else
+            a=a-2;
         end
         
-       if a>1
-           a=a-2;
-       end
-       
-       if a<2
-       a=randi(3)-1;
-       end
+%        if a>1
+%            a=a-2;
+%        end
+%        
+%        if a<2
+%        a=randi(3)-1;
+%        end
        
         t=[t a];
         %t=[t petite(i).t1-tcells(linez).detectionFrame];
@@ -944,7 +962,8 @@ for i=index
     if numel(find(gra==i))
         age=[age length(dau)];
         dur=[dur length(tcells(linez).Obj)];
-         cri=[cri tcells(linez).lastFrame-tbud(mid)];
+        cri=[cri tcells(linez).lastFrame-tbud(mid)];
+        cri2=[cri2 tbud(mid)-tcells(linez).detectionFrame];
         
     end
 end
@@ -956,36 +975,53 @@ durpetite=durpetite*10/60; % hours
 dur=dur*10/60; % hours
 
 cripetite=cripetite/6 ; %hours
-cri=cri/6; %hours
+cripetite2=cripetite2/6 ; %hours
 
+cri=cri/6; %hours
+cri2=cri2/6; %hours
 
 figure; %subplot(3,1,1); 
 
 %[c x flo fup]=ecdf(agepetite); plot(x,1-c,'Color','b','LineWidth',3); hold on; plot(x,1-flo,'Color','b','LineWidth',3,'LineStyle','--'); plot(x,1-fup,'Color','b','LineWidth',3,'LineStyle','--');
 %[c x flo fup]=ecdf(age); plot(x,1-c,'Color','r','LineWidth',3); hold on; plot(x,1-flo,'Color','r','LineWidth',3,'LineStyle','--'); plot(x,1-fup,'Color','r','LineWidth',3,'LineStyle','--');
 %[c x]=ecdf(age); plot(x,1-c,'Color','r','LineWidth',3); hold on;
-title([num2str(mean(agepetite)) '-' num2str(mean(age))]);
+
+%title([num2str(mean(agepetite)) '-' num2str(mean(age))]);
 
 
-[x s lo up]=survivalCurve(agepetite);
-H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+disp('replicative age');
 
-[x s lo up]=survivalCurve(age);
-H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
-
+[x s lo up med err]=survivalCurve(agepetite);
+%H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+stairs(x,s,'Color','b','LineWidth',3); hold on;
+med
+[x s lo up med err]=survivalCurve(age);
+%H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
+stairs(x,s,'Color','r','LineWidth',3);
+med
 xlim([0 40]); ylim([0 1]);
 
 %plot(x,s,'Color','g','LineWidth',3); hold on; plot(x,lo,'Color','g','LineWidth',3,'LineStyle','--'); plot(x,up,'Color','g','LineWidth',3,'LineStyle','--');
 
- 
 
 petiteerr=std(agepetite)/sqrt(length(agepetite))
 err=std(age)/sqrt(length(age))
 
 
+
 xlabel('Generations','FontSize',24); ylabel('Survival Probability','FontSize',24);
-set(gca,'FontSize',24,'LineWidth',3);
+set(gca,'FontSize',24,'LineWidth',2);
 set(gcf,'Color','w');
+
+figure,logrank(age',agepetite');
+
+
+
+disp('survival duration');
+
+figure; 
+[xrls rls lo up med err]=survivalCurve([age agepetite]);
+
 
 %subplot(3,1,2); 
 figure; 
@@ -993,12 +1029,14 @@ figure;
 %[c x]=ecdf(durpetite); plot(x,1-c,'Color','b','LineWidth',3); hold on;
 %[c x]=ecdf(dur); plot(x,1-c,'Color','r','LineWidth',3); hold on;
 
-[x s lo up]=survivalCurve(durpetite);
-H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
-
-[x s lo up]=survivalCurve(dur);
-H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
-
+[x s lo up med err]=survivalCurve(durpetite);
+%H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+stairs(x,s,'Color','b','LineWidth',3);hold on;
+med
+[x s lo up med err]=survivalCurve(dur);
+%H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
+stairs(x,s,'Color','r','LineWidth',3);
+med
 xlim([0 100]); ylim([0 1]);
 
 
@@ -1008,10 +1046,15 @@ durpetiteerr=std(durpetite)/sqrt(length(durpetite))
 durerr=std(dur)/sqrt(length(dur))
 
 
-xlabel('Time (hours)','FontSize',24); ylabel('Survival Probability','FontSize',24);
-set(gca,'FontSize',24,'LineWidth',3);
+%xlabel('Time (hours)','FontSize',24); %ylabel('Survival Probability','FontSize',24);
+set(gca,'FontSize',24,'LineWidth',2);
 set(gcf,'Color','w');
 
+figure; logrank(durpetite',dur');
+
+
+
+disp('survival after crisis duration');
 
 figure; 
 
@@ -1019,24 +1062,58 @@ figure;
 %[c x]=ecdf(cri); plot(x,1-c,'Color','r','LineWidth',3); hold on;
 %title([num2str(mean(cripetite)) '-' num2str(mean(cri))]);
 
-[x s lo up]=survivalCurve(cripetite);
-H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
-
-[x s lo up]=survivalCurve(cri);
-H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
-
+[x s lo up med err]=survivalCurve(cripetite);
+%H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+stairs(x,s,'Color','b','LineWidth',3);hold on;
+med
+[x s lo up med err]=survivalCurve(cri);
+%H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
+stairs(x,s,'Color','r','LineWidth',3);
+med
 xlim([0 80]); ylim([0 1]);
 
 
 cripetiteerr=std(cripetite)/sqrt(length(cripetite))
 crierr=std(cri)/sqrt(length(cri))
 
-xlabel('Time (hours)','FontSize',24); ylabel('Survival after crisis','FontSize',24);
-set(gca,'FontSize',24,'LineWidth',3);
+
+%xlabel('Time (hours)','FontSize',24); ylabel('Survival after crisis','FontSize',24);
+set(gca,'FontSize',24,'LineWidth',2);
 set(gcf,'Color','w');
 
+figure; logrank(cripetite',cri');
+
+
+disp('survival before crisisduration');
+
+figure; 
+
+%[c x]=ecdf(cripetite); plot(x,1-c,'Color','b','LineWidth',3); hold on;
+%[c x]=ecdf(cri); plot(x,1-c,'Color','r','LineWidth',3); hold on;
+%title([num2str(mean(cripetite)) '-' num2str(mean(cri))]);
+
+[x s lo up med err]=survivalCurve(cripetite2);
+%H=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+stairs(x,s,'Color','b','LineWidth',3);hold on;
+med
+[x s lo up med err]=survivalCurve(cri2);
+%H2=shadedErrorBar(x,s,up-s,{'r','LineWidth',3},1); hold on;
+stairs(x,s,'Color','r','LineWidth',3);
+med
+xlim([0 80]); ylim([0 1]);
+
+
+cripetiteerr2=std(cripetite2)/sqrt(length(cripetite2))
+crierr2=std(cri2)/sqrt(length(cri2))
+
+
+%xlabel('Time (hours)','FontSize',24); ylabel('Duration before crisis','FontSize',24);
+set(gca,'FontSize',24,'LineWidth',2);
+set(gcf,'Color','w');
 
 % subplot(3,1,3); 
+
+figure, logrank(cripetite2',cri2');
 
 figure;
 
@@ -1045,34 +1122,68 @@ fra=(ntot-length(pet))/ntot;
 
 %[c x]=ecdf(tpetite); plot(x,(1-fra)*(1-c)+fra,'Color','r'); hold on;
 
+[x c lo up]=survivalCurve(t);
+
+stairs(x,c,'Color','k'); hold on;
+%H=shadedErrorBar(x,(1-fra)*c+fra,up-c,{'g','LineWidth',3},1); hold on;
+
+xmito=x;
+rlsmito=(1-fra)*c+fra;
+
 t=[agepetite age];
 %[c x]=ecdf(t); plot(x,1-c,'Color','b'); hold on;
 
 
 [x c lo up]=survivalCurve(tpetite);
+stairs(x,c,'Color','r'); hold on;
+%H=shadedErrorBar(x,(1-fra)*c+fra,up-c,{'r','LineWidth',3},1); hold on;
 
-H=shadedErrorBar(x,(1-fra)*c+fra,up-c,{'r','LineWidth',3},1); hold on;
 
-[x s lo up]=survivalCurve(t);
-H2=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+
+[x c lo up]=survivalCurve(ageSEP);
+stairs(x,c,'Color','g'); hold on;
+
+%H2=shadedErrorBar(x,s,up-s,{'b','LineWidth',3},1); hold on;
+
 
 
 %title([num2str(mean(tpetite)) '-' num2str(mean(t))]);
 xlim([0 40]); ylim([0 1]);
 
 xlabel('Generations','FontSize',24); ylabel('Cumulative Probability','FontSize',24);
-set(gca,'FontSize',24,'LineWidth',3);
+set(gca,'FontSize',24,'LineWidth',2);
 set(gcf,'Color','w');
+
+figure; 
+
+stairs(xmito,rlsmito,'Color','r'); hold on
+
+t=[0 14 3 6 3 2 2 1 3 1 2 1 4 3 5 16 2 7 3 10 6];
+
+[x c lo up]=survivalCurve(t);
+
+xmito=x;
+rlsmito=(1-fra)*c+fra;
+
+stairs(xmito,rlsmito,'Color','b'); hold on;
+
+
+figure; 
+
+stairs(x,c,'Color','b'); hold on;
+
+[x c lo up]=survivalCurve(ageSEP);
+stairs(x,c,'Color','g'); hold on;
 
 % stats of duration between events
 
 %indpet=[petite.status]
 %indpet=find(indpet)
 
-t1=[petite.t1]/6;
+t1=[petite.t1]/6
 %t1=t1(indpet);
 
-t2=[petite.t2]/6;
+t2=[petite.t2]/6
 %t2=t2(indpet);
 
 crisis=[petite.crisis]/6;
@@ -1103,6 +1214,7 @@ d=mean(death-crisis), std(death-crisis)/sqrt(length(t1))
 % plot death as well ?
 
 
+
 % plot asymmetry upon budding 
 
 % precox4
@@ -1118,34 +1230,46 @@ f = fittype({'x','1'},'coefficients',{'a','b'});
 
 [c2,gof2] = fit(mo',bu',f)
 
-plot(c2);
+plot(c2,'b--');%,'Color','k','LineStyle','--');
 
 mo=[petite(61).mother];
 bu=[petite(61).bud];
 
- plot(mo,bu,'Color','r','Marker','.','MarkerSize',10,'LineWidth',2);
+ %plot(mo,bu,'Color','r','Marker','.','MarkerSize',10,'LineWidth',2); hold on;
 
+ 
+xlabel('Mother preCox4-mCherry level (A.U.)','FontSize',16);
+ylabel('Bud preCox4-mCherry level (A.U.)','FontSize',16);
+set(gca,'FontSize',16,'YTick',[0 100 200 300],'XTick',[0 100 200 300]);
 
-xlabel('Mother preCox4-mCherry level (A.U.)');
-ylabel('Daughter preCox4-mCherry level (A.U.)');
+axis square
 
+ xlim([-30 320]);
+ ylim([-30 320]);
+ 
+ plotArrow(mo,bu,1,'r',5);
 
 % tom70
 
 mo=[petite.mother2];
 bu=[petite.bud2];
 
-figure, plot(mo,bu,'LineStyle','none','Marker','.','MarkerSize',5,'Color','k'); hold on;
+
 
 mo2=[grande.mother];
 bu2=[grande.bud];
 
- plot(mo2,bu2,'LineStyle','none','Marker','.','MarkerSize',5,'Color',[0.7 0.7 0.7]); hold on;
+ figure, plot(mo2,bu2,'LineStyle','none','Marker','.','MarkerSize',5,'Color','r'); hold on;
+ 
+ plot(mo,bu,'LineStyle','none','Marker','.','MarkerSize',5,'Color','k'); hold on;
+ 
+ 
+ plot([0:10:800],[0:10:800],'Color','k','lineStyle','--');
 
 mo=[mo mo2];
 bu=[bu bu2];
 
-length(mo)
+
 %f = fittype('a*x+b','options',s);
 
 %f = fittype({'x','1'},'coefficients',{'a','b'});
@@ -1157,16 +1281,39 @@ length(mo)
 mo=[petite(61).mother2];
 bu=[petite(61).bud2];
 
-plot(mo,bu,'Color','g','Marker','.','MarkerSize',10,'LineWidth',2);
+%plot(mo,bu,'Color','g','Marker','.','MarkerSize',10,'LineWidth',2);
+plotArrow(mo,bu,1,'g',10);
 
-xlabel('Mother Tom70-GFP level (A.U.)','FontSize',24);
-ylabel('Daughter Tom70-GFP level (A.U.)','FontSize',24);
-set(gca,'FontSize',24);
+xlabel('Mother Tom70-GFP level (A.U.)','FontSize',16);
+ylabel('Bud Tom70-GFP level (A.U.)','FontSize',16);
+set(gca,'FontSize',16,'YTick',[0 400 800],'XTick',[0 400 800 1200 1600]);
 
+axis equal
+ xlim([-30 1650]);
+ ylim([-30 825]);
+ 
 
 % end of function
 
-function [x s lo up]=survivalCurve(agepetite)
+    function mt=computeMedian(t1,T1)
+        
+        if isempty(T1(T1==0.5)) %if there is not a point where T=0.5...
+            I=find(T1>0.5,1,'last'); %find the first point where T>0.5
+            J=find(T1<0.5,1,'first'); %find the first point where T<0.5
+            if isempty(J) %if all points are >0.5...
+                mt=0; %...there is no median time
+            else
+                %compute the median time by linear interpolation.
+                p=polyfit([t1(I) t1(J)],[T1(I) T1(J)],1);
+                mt=(0.5-p(2))/p(1);
+                %  str2=['Median time ' num2str(mt)]; %string for LEGEND function
+            end
+        else
+            mt=t1(T1==0.5);
+            % str2=['Median time ' num2str(mt)]; %string for LEGEND function
+        end
+
+function [x s lo up med err]=survivalCurve(agepetite)
 
 err=[];
 s=[];
@@ -1181,6 +1328,7 @@ for i=0:max(agepetite)+1
  fun=@(x) sum(x>=i)/length(x);
  
  temp=bootstrp(100,fun,agepetite);
+ 
  err(cc)=std(temp);
  cc=cc+1;
 end
@@ -1194,6 +1342,11 @@ up(1)=s(1);
 
 lo(lo<0)=0;
 
+mt=computeMedian(x,s);
+mt2=computeMedian(x,lo);
+mt3=computeMedian(x,up);
+err=max(mt3-mt,mt-mt2);
+med=mt;
 
 function [t1 t2 level1 level2 curve]=fitPetite(fdiv)
 

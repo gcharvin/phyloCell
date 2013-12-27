@@ -10,14 +10,22 @@ framestr=num2str(frame);
        framestr=['00' framestr];
     end
     
+    if ~strcmp(timeLapse.realPath(end),'/')
+        timeLapse.realPath=[timeLapse.realPath '/'];
+    end
+    
+   % pos,ch
+    
  if nargin==3
 fullpath=strcat(timeLapse.realPath,timeLapse.filename,'-retreat/',timeLapse.pathList.channels(pos,ch),timeLapse.pathList.names(pos,ch),'-',framestr,'.jpg');
  else
-fullpath=strcat(timeLapse.realPath,timeLapse.pathList.channels(pos,ch),timeLapse.pathList.names(pos,ch),'-',framestr,'.jpg');    
+fullpath=strcat(timeLapse.realPath,timeLapse.pathList.channels(pos,ch),timeLapse.pathList.names(pos,ch),'-',framestr,'.jpg'); 
  end
 
  
 %image=uint16(imread(cell2mat(fullpath)));
+
+%b=cell2mat(fullpath)
 
 try
 image=imread(cell2mat(fullpath));

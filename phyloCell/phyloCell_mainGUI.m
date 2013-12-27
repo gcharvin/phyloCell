@@ -67,9 +67,9 @@ cla(handles.axes1);
 
 if ~exist('javitools.AVITools', 'class')
     if isunix
-        pathout=phy_findFunctionPath('philoCellv2.1/addon/ag');
+        pathout=phy_findFunctionPath('phyloCellv2.2/addon/ag');
     else
-        pathout=phy_findFunctionPath('philoCellv2.1\addon\ag');
+        pathout=phy_findFunctionPath('phyloCellv2.2\addon\ag');
     end
     javaaddpath([pathout '/javitools.jar']);
 end
@@ -354,7 +354,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             
             im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
             
-            budnecktemp=phy_segmentFoci4(im,parametres{2,2},parametres{3,2},parametres{1,2},parametres{5,2},parametres{4,2},parametres{6,2},segmentation.frame1);
+            budnecktemp=phy_segmentFoci3(im,parametres{2,2},parametres{3,2},parametres{1,2},parametres{5,2},parametres{4,2},parametres{6,2},segmentation.frame1);
             
             
             
@@ -453,7 +453,10 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             %    [max1 bw1 C]=alignCavity(im,imbw1,'coarse',0,C);
             %    [max2 bw2 C]=alignCavity(im,bw1,'fine',0,C);
             %    C=C(ax(3)+1:ax(4), ax(1)+1:ax(2));
-            tmp=phy_segmentWatershedGC(im,parametres{2,2},parametres{3,2},parametres{4,2},parametres{5,2},parametres{6,2},parametres{7,2});
+            %tmp=phy_segmentWatershedGC(im,parametres{2,2},parametres{3,2},parametres{4,2},parametres{5,2},parametres{6,2},parametres{7,2});
+            
+            tmp=phy_segmentWatershedGC2(im,parametres{2,2},parametres{3,2},parametres{7,2});
+            
             % else
             %    tmp=phy_segmentWatershedGC(im,parametres{4,2},parametres{5,2},0,parametres{2,2},parametres{3,2},parametres{7,2});%,~C);
             % end
@@ -541,7 +544,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
     
     
     
-    %Change_Disp1('refresh',handles);
+    
     
     %
     if strcmp(featname,'cells1')
@@ -614,8 +617,9 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
     cur=find([segList.selected]==1);
     segList(cur).s=segmentation;
     %
-    
+   Change_Disp1('refresh',handles); 
 end
+
 status('Idle',handles);
 guidata(hObject, handles);
 %
@@ -956,7 +960,6 @@ global segmentation
 set(segmentation.selectedObj.htext,'visible','off');
 set(segmentation.selectedObj.hcontour,'visible','off');
 [x,y] = getline(handles.axes1,'closed');
-[x,y]=phy_changePointNumber(x,y,50);
 segmentation.selectedObj.x=x;
 segmentation.selectedObj.y=y;
 segmentation.selectedObj.ox=mean(x);
@@ -1057,7 +1060,6 @@ if ~Cancelled
     [bw x y]=roipolyold;
     x
     y
-    [x,y]=phy_changePointNumber(x,y,50);
     %vertices=wait(hellipse);
     %x=vertices(:,1);
     %y=vertices(:,2);
@@ -1477,6 +1479,212 @@ OpenProject_ClickedCallback(hObject, eventdata, handles);
 function Create_Project_From_Images_Callback(hObject, eventdata, handles)
 phy_createTimeLapseProjectGui();
 
+% --------------------------------------------------------------------
+function File_loadImageList_Callback(hObject, eventdata, handles)
+% hObject    handle to File_loadImageList (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global timeLapse segmentation segList
+
+% load images into a new segmentation project
+
+timeLapse=[];
+segmentation=[];
+segmentation.shorcutKeys=cell(1,2);
+
+%dir=handles.exportDir;
+dire=pwd;
+projectName='myProject';
+[name,dire] = uiputfile({'*.mat'},'Select project output directory and name',projectName);
+if name==0
+    return;
+else
+    [pathstr, name, ext] = fileparts(name);
+  projectName=name;  
+end
+
+handles.exportDir=dire;
+
+select=1; channelcount=1;
+
+tempProject=[];
+tempProject.imageList=[];
+tempProject.pathList=[];
+tempProject.position=1;
+tempProject.position=1;
+tempProject.phaseChannel=1;
+tempProject.retreat=0;
+tempProject.segment=0;
+tempProject.path=dire;
+tempProject.makemovie=0;
+tempProject.budsegment=0;
+tempProject.budChannel=0;
+tempProject.filename=projectName;
+
+
+while select
+[FileName,PathName,FilterIndex] = uigetfile({'*.jpg;*.tif;*.png;*.gif;*.tiff;*.bmp','All Image Files';'*.*','All Files'},['Select all images for channel ' num2str(channelcount)],[],'MultiSelect','on');
+
+
+if numel(FileName)==0
+    select=0;
+    if channelcount==1
+    return;  
+    end
+    break;
+end
+
+if isa(FileName,'double')
+    select=0;
+    if channelcount==1
+    return;  
+    end
+    break;
+end
+
+    tempName{channelcount}=FileName;
+    tempPath{channelcount}=PathName;
+    disp([num2str(numel(FileName)) ' files selected for channel ' num2str(channelcount)]);
+    FileName=[];
+    channelcount=channelcount+1;
+end
+
+tempProject.channel=channelcount-1;
+
+
+for i=1:channelcount-1
+
+FileName=tempName{i};
+PathName=tempPath{i};
+
+tempProject.imageList(i).data=FileName;
+tempProject.pathList(i).data=PathName;
+end
+
+status('generating temp project....',handles);
+pause(0.1);
+
+phy_createTimeLapseProject(tempProject);
+timeLapse.realPath=timeLapse.path;
+
+segmentation.position=1;
+
+timeLapsepath=timeLapse.realPath;
+timeLapsefile=[timeLapse.filename '-project.mat'];
+
+status('loading timeLapse project',handles);
+
+phy_openSegmentationProject(1,[]);
+
+% add the project in the segList variable
+
+l=numel(segList);
+segList(l+1).s=segmentation;
+segList(l+1).position=segmentation.position;
+segList(l+1).filename=timeLapse.filename;
+segList(l+1).t=timeLapse;
+segList(l+1).line=1:1:length(segmentation.tcells1);
+
+for k=1:numel(segList)
+    segList(k).selected=0;
+end
+
+segList(l+1).selected=1;
+
+phy_updatePhylocellDisplay(handles);
+
+%guidata(hObject, handles);
+status('Idle',handles);
+%end
+
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+
+function OpenProject_ClickedCallback(hObject, eventdata, handles)
+global timeLapse segmentation segList
+
+
+[timeLapsefile, timeLapsepath] = uigetfile({'*.mat';'*.*'},'Get timelapse file');
+if timeLapsefile==0 %if the user not press cancel
+    return
+end
+
+status('loading timeLapse project',handles);
+
+load(strcat(timeLapsepath,timeLapsefile));
+timeLapse.realPath=timeLapsepath;
+
+phy_openSegmentationProject([],[]);
+
+% add the project in the segList variable
+
+l=numel(segList);
+segList(l+1).s=segmentation;
+segList(l+1).position=segmentation.position;
+segList(l+1).filename=timeLapse.filename;
+segList(l+1).t=timeLapse;
+segList(l+1).line=1:1:length(segmentation.tcells1);
+
+for k=1:numel(segList)
+    segList(k).selected=0;
+end
+
+segList(l+1).selected=1;
+
+phy_updatePhylocellDisplay(handles);
+
+%guidata(hObject, handles);
+status('Idle',handles);
+%end
+
+
+
+% --------------------------------------------------------------------
+function open_position_from_project_Callback(hObject, eventdata, handles)
+global timeLapse
+global segmentation
+global segList
+
+if numel( segmentation)==0
+    h = errordlg('No project open yet !');
+    return;
+end
+
+
+timeLapsepath=timeLapse.realPath;
+timeLapsefile=[timeLapse.filename '-project.mat'];
+
+%strPath=strcat(timeLapse.realPath,timeLapse.filename,'-project.mat');
+
+status('loading timeLapse project',handles);
+
+a=segmentation.colorData;
+
+phy_openSegmentationProject([],[]);
+
+segmentation.colorData=a;
+% add the project in the segList variable
+
+l=numel(segList);
+segList(l+1).s=segmentation;
+segList(l+1).position=segmentation.position;
+segList(l+1).filename=timeLapse.filename;
+segList(l+1).t=timeLapse;
+segList(l+1).line=1:1:length(segmentation.tcells1);
+
+for k=1:numel(segList)
+    segList(k).selected=0;
+end
+
+segList(l+1).selected=1;
+
+phy_updatePhylocellDisplay(handles);
+
+%guidata(hObject, handles);
+status('Idle',handles);
+%end
 
 %============= SEGMENTATION ==============================================
 
@@ -1676,7 +1884,7 @@ phy_progressbar(1);
 toc;
 
 status('Check Cells',handles);
-phy_check_cells;%Check_Cells_Callback([], [], handles);
+Check_Cells_Callback([], [], handles);
 
 
 
@@ -1784,7 +1992,7 @@ segList(cur).s=segmentation;
 a=[segList.selected];
 pix=find(a);
 
-phy_plotPedigree('index',pix,'mode',0,'vertical');
+phy_plotPedigree('index',pix,'mode',0,'vertical','Object',segmentation.pedigree.objects);
 
 
 % --------------------------------------------------------------------
@@ -2217,8 +2425,22 @@ function Check_Callback(hObject, eventdata, handles)
 function Check_Cells_Callback(hObject, eventdata, handles)
 global segmentation
 
-phy_checkAndDisp_cells(hObject,eventdata,handles);
-   
+
+feat=segmentation.processing.selectedFeature;
+proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
+
+featname=segmentation.processing.features{feat};
+
+parametres=segmentation.processing.parameters(feat,proc);
+parametres=parametres{1,1};
+
+cSeg1=find(segmentation.cells1Segmented);
+
+[segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
+
+delcell=[];
+
+
 
 
 % --------------------------------------------------------------------
@@ -2827,101 +3049,8 @@ guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%%%%%%%%% TOOLBAR CLICKED CALLBACK FUNCTIONS %%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% --------------------------------------------------------------------
-
-function OpenProject_ClickedCallback(hObject, eventdata, handles)
-global timeLapse segmentation segList
-
-% %check if some projects already oppened
-% if exist('phy_openedProjects.mat','file')
-%     load('phy_openedProjects.mat')
-%     handles.openedProjects=openedProjects;
-% end
-
-%if isempty(handles.openedProjects)
-[timeLapsefile, timeLapsepath] = uigetfile({'*.mat';'*.*'},'Get timelapse file');
-if timeLapsefile==0 %if the user not press cancel
-    return
-end
-
-status('loading timeLapse project',handles);
 
 
-[segmentation timeLapse]=phy_openSegmentationProject(timeLapsepath,timeLapsefile,[],[]);
-
-% add the project in the segList variable
-
-l=numel(segList);
-segList(l+1).s=segmentation;
-segList(l+1).position=segmentation.position;
-segList(l+1).filename=timeLapse.filename;
-segList(l+1).t=timeLapse;
-segList(l+1).line=1:1:length(segmentation.tcells1);
-
-for k=1:numel(segList)
-    segList(k).selected=0;
-end
-
-segList(l+1).selected=1;
-
-phy_updatePhylocellDisplay(handles);
-
-%guidata(hObject, handles);
-status('Idle',handles);
-%end
-
-
-
-% --------------------------------------------------------------------
-function open_position_from_project_Callback(hObject, eventdata, handles)
-global timeLapse
-global segmentation
-global segList
-
-if numel( segmentation)==0
-    h = errordlg('No project open yet !');
-    return;
-end
-
-
-timeLapsepath=timeLapse.realPath;
-timeLapsefile=[timeLapse.filename '-project.mat'];
-
-%strPath=strcat(timeLapse.realPath,timeLapse.filename,'-project.mat');
-
-status('loading timeLapse project',handles);
-
-a=segmentation.colorData;
-
-[segmentation timeLapse]=phy_openSegmentationProject(timeLapsepath,timeLapsefile,[],[]);
-
-segmentation.colorData=a;
-% add the project in the segList variable
-
-l=numel(segList);
-segList(l+1).s=segmentation;
-segList(l+1).position=segmentation.position;
-segList(l+1).filename=timeLapse.filename;
-segList(l+1).t=timeLapse;
-segList(l+1).line=1:1:length(segmentation.tcells1);
-
-for k=1:numel(segList)
-    segList(k).selected=0;
-end
-
-segList(l+1).selected=1;
-
-phy_updatePhylocellDisplay(handles);
-
-%guidata(hObject, handles);
-status('Idle',handles);
-%end
-
-
-% --------------------------------------------------------------------
-function NewProject_ClickedCallback(hObject, eventdata, handles)
-%
-phy_createTimeLapseProjectGui();
 
 
 
@@ -3148,9 +3277,21 @@ end
 if isfield(eventdata,'VerticalScrollCount')
     return
 end
+if strcmp(eventdata.Key,'leftarrow')
+    %disp('left');
+    pushbutton_Previous1_Callback(handles.pushbutton_Previous1, [], handles);
+end
 
-if strcmp(eventdata.Key,'a')
-    phy_cut_bud_mother(hObject, eventdata, handles);
+if strcmp(eventdata.Key,'e')
+    pushbutton_Edit_Contour_Callback(handles.pushbutton_Edit_Contour, [], handles);
+end
+
+if strcmp(eventdata.Key,'q')
+    pushbutton_Create_Object_Callback(hObject, eventdata, handles);
+end
+
+if strcmp(eventdata.Key,'n')
+    pushbutton_Set_Number_Callback(handles.pushbutton_Set_Number, [], handles);
 end
 
 if strcmp(eventdata.Key,'b')
@@ -3167,10 +3308,6 @@ if strcmp(eventdata.Key,'b')
     %handles)
 end
 
-if strcmp(eventdata.Key,'c')
-    Context_Objects_Copy_Callback(handles.Context_Objects_Copy, [], handles);
-end
-
 if strcmp(eventdata.Key,'d')
     %disp('left');
     
@@ -3185,55 +3322,24 @@ if strcmp(eventdata.Key,'d')
     %handles)
 end
 
-if strcmp(eventdata.Key,'e')
-    pushbutton_Edit_Contour_Callback(handles.pushbutton_Edit_Contour, [], handles);
-end
-
-% h & j are used
-
-% k & l are used
-
 if strcmp(eventdata.Key,'m')
     Context_Objects_Merge_Callback(handles.Context_Objects_Merge, [], handles);
-end
-
-if strcmp(eventdata.Key,'n')
-    pushbutton_Set_Number_Callback(handles.pushbutton_Set_Number, [], handles);
-end
-
-% o & p are used
-
-if strcmp(eventdata.Key,'q')
-    pushbutton_Create_Object_Callback(hObject, eventdata, handles);
-end
-
-if strcmp(eventdata.Key,'r')
-    resetAxes_Callback(hObject, eventdata, handles);
 end
 
 if strcmp(eventdata.Key,'s')
     Context_Objects_Swap_Callback(handles.Context_Objects_Swap, [], handles);
 end
 
-% t is used
-
-if strcmp(eventdata.Key,'v')
-    Context_Image_Paste_Callback(handles.Context_Image_Paste, [], handles);
-end
-
 if strcmp(eventdata.Key,'w')
     Context_Objects_Copy_Next_Frame_Callback(handles.Context_Objects_Copy_Next_Frame, [], handles);
 end
 
-if strcmp(eventdata.Key,'y')
-    phy_checkAndDisp_cells(hObject,eventdata,handles);
+if strcmp(eventdata.Key,'c')
+    Context_Objects_Copy_Callback(handles.Context_Objects_Copy, [], handles);
 end
 
-% z is used
-
-if strcmp(eventdata.Key,'leftarrow')
-    %disp('left');
-    pushbutton_Previous1_Callback(handles.pushbutton_Previous1, [], handles);
+if strcmp(eventdata.Key,'v')
+    Context_Image_Paste_Callback(handles.Context_Image_Paste, [], handles);
 end
 
 if strcmp(eventdata.Key,'rightarrow')
@@ -3622,7 +3728,7 @@ if strcmp(eventdata.Key,'z')
                 segmentation.selectedTObj.birthFrame=segmentation.selectedTObj.detectionFrame;
                 tobj=segmentation.(['t',segmentation.selectedType]);
                 divisionStart=segmentation.selectedTObj.detectionFrame;
-                divisionEnd=0; %segmentation.selectedTObj.detectionFrame;
+                divisionEnd=segmentation.selectedTObj.detectionFrame;
                 tobj(m).addDaughter(segmentation.selectedTObj.N,divisionStart,divisionEnd);
                 segmentation.(['t',segmentation.selectedType])=tobj;
                 %segmentation.frameChanged(segmentation.selectedTObj.detectionFrame:segmentation.selectedTObj.lastFrame)=1;
@@ -5059,116 +5165,6 @@ end
 
 phy_trackCellCenterGUI(mov,5);
 
-
-% --------------------------------------------------------------------
-function loadImageList_Callback(hObject, eventdata, handles)
-% hObject    handle to loadImageList (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-global timeLapse segmentation segList
-
-
-timeLapse=[];
-segmentation=[];
-segmentation.shorcutKeys=cell(1,2);
-
-[FileName,PathName,FilterIndex] = uigetfile({'*.jpg;*.tif;*.png;*.gif;*.tiff;*.bmp','All Image Files';'*.*','All Files'},'Select all wanted images at once',[],'MultiSelect','on');
-if numel(FileName)==0
-    return;
-end
-
-if isa(FileName,'double')
-    return;
-end
-
-if ischar(FileName)
-    FileName=mat2cell(FileName,1);
-end
-
-cd(PathName);
-fo=pwd;
-mkdir(fo,'phyloCellTempFolder');
-
-cont=0;
-z=1;
-
-
-while z
-    if exist([fo '/phyloCellTempFolder/tempProject' num2str(cont) '-project.mat'])
-        cont=cont+1;
-    else
-        
-        z=0;
-    end
-end
-
-projectName=['tempProject' num2str(cont)];
-projectPath=[fo '/phyloCellTempFolder/'];
-
-tempProject=[];
-tempProject.imageList=[];
-tempProject.pathList=[];
-tempProject.position=1;
-
-tempProject.position=1;
-tempProject.channel=1;
-
-tempProject.phaseChannel=1;
-tempProject.retreat=0;
-tempProject.segment=0;
-tempProject.path=projectPath;
-tempProject.makemovie=0;
-tempProject.budsegment=0;
-tempProject.budChannel=0;
-tempProject.filename=projectName;
-
-
-tempProject.imageList.data=FileName;
-tempProject.pathList.data=PathName;
-
-status('generating temp project....',handles);
-pause(0.1);
-
-phy_createTimeLapseProject(tempProject);
-timeLapse.realPath=timeLapse.path;
-%  create the segmentation structure
-
-segmentation.position=1;
-
-img=phy_loadTimeLapseImage(segmentation.position,1,1,'non retreat');
-
-strPath=[fo '/phyloCellTempFolder/tempProject' num2str(cont) '-project.mat'];
-
-timeLapsepath=timeLapse.realPath;
-timeLapsefile=[timeLapse.filename '-project.mat'];
-
-%strPath=strcat(timeLapse.realPath,timeLapse.filename,'-project.mat');
-
-status('loading timeLapse project',handles);
-
-[segmentation timeLapse]=phy_openSegmentationProject(timeLapsepath,timeLapsefile,1,[1 0]);
-
-% add the project in the segList variable
-
-l=numel(segList);
-segList(l+1).s=segmentation;
-segList(l+1).position=segmentation.position;
-segList(l+1).filename=timeLapse.filename;
-segList(l+1).t=timeLapse;
-segList(l+1).line=1:1:length(segmentation.tcells1);
-
-for k=1:numel(segList)
-    segList(k).selected=0;
-end
-
-segList(l+1).selected=1;
-
-phy_updatePhylocellDisplay(handles);
-
-%guidata(hObject, handles);
-status('Idle',handles);
-%end
 
 
 

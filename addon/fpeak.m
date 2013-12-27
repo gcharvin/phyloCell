@@ -33,6 +33,7 @@ for i=1:rx
         numP=numP+1;
     end
 end
+
 if nargin == 4
     peak=peak(find(peak(:,1)>=Range(1) & peak(:,1)<=Range(2)),:);
     peak=peak(find(peak(:,2)>=Range(3) & peak(:,2)<=Range(4)),:);
@@ -42,12 +43,15 @@ end
 function p=getPeak(Data,i,s)
 %English:Select points by sensitivity
 %Chinese:根据灵敏度选定要进行判断的点
+
 if i-s<1
     top=1;
 else
     top=i-s;
 end
+
 y=Data(:,2);
+
 if i+s>length(y)
     bottom=length(y);
 else
@@ -62,6 +66,7 @@ end
 %tP判断是否为上极值点，tP=1为上极值点
 %If bP=1, it's bottom peak
 %bP判断是否为下极值点，bP=1为下极值点
+
 tP=(sum(y(top:bottom)>=y(i))==1);
 bP=(sum(y(top:bottom)<=y(i))==1);
 if tP==1 | bP==1

@@ -1,3 +1,4 @@
+
 function newcell=phy_mapCellsHungarian(cell0,cell1,lastObjectNumber,cellsize,cellshrink,coefdist,coefsize,filterpos)
 
 
@@ -56,7 +57,6 @@ ind1=find([cell1.ox]~=0);
 display=0;
 
 areamean=mean([cell0.area]);
-
 meancellsize=sqrt(areamean/pi);
 
 

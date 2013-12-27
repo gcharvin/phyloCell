@@ -197,6 +197,7 @@ pause(0.1);
         
         score(candidates)=1./dist';
         
+        
             
         candidates=scoreDiv(tcells,candidates,fr,channel,minDivisionTime);
         
@@ -214,6 +215,8 @@ pause(0.1);
         %end
         
         score(candidates)=score(candidates)+1;
+        
+        %return;
         
         
         %candidatesN=scoreSize2(cells1,candidates); % rule 2b : bigger cell has an advantage over smaller ones
@@ -703,7 +706,6 @@ function out=scoreDiv(tcells1,candidates,fr,channel,minDivisionTime)
 
 out=[];
 
-
 for i=1:length(candidates)
    fluo=[tcells1(candidates(i)).Obj.fluoMean];
    fluo=reshape(fluo,length(tcells1(candidates(i)).Obj(1).fluoMean),[]);
@@ -718,7 +720,7 @@ for i=1:length(candidates)
    fluo=smooth(fluo,6);
   % figure, plot(fluo)
    
-   fluo=diff(fluo);
+   fluo=-diff(fluo);
    
    %length(fluo)
    minDiv=min(minDivisionTime,length(fluo)-1);
@@ -728,11 +730,14 @@ for i=1:length(candidates)
        continue;
    end
 
-   warning off all
-   [pksmax locmax]=findpeaks(-fluo,'minpeakdistance',minDiv,'minpeakheight',5000); % to be set properly after normalization
-   warning on all;
+   %warning off all
+   %[pksmax locmax]=findpeaks(-fluo,'minpeakdistance',minDiv,'minpeakheight',5000); % to be set properly after normalization
+   %warning on all;
    
-  % figure,plot(fluo); hold on; plot(locmax,-pksmax,'Color','r');
+    peak=fpeak(1:1:length(fluo),fluo,20,[0 length(fluo) 50 Inf]); % better function than matlab's fpeak
+    locmax=peak(:,1)';
+   
+   %figure,plot(fluo); hold on; plot(locmax,peak(:,2),'r');
   % title(num2str(candidates(i)));
   
   % fr
@@ -741,7 +746,7 @@ for i=1:length(candidates)
    d=min(abs(locmax+tcells1(candidates(i)).detectionFrame-1-fr));
    
    if d<=2
-      out=[out candidates(i)]; 
+      out=[out candidates(i)];
    end
 end
 

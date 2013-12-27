@@ -1,29 +1,27 @@
-function [segmentation timeLapse]=phy_openSegmentationProject(timeLapsepath,timeLapsefile,position,channel,handles)
+function phy_openSegmentationProject(position,varname,handles)
+global timeLapse segmentation
+
+%%batch=1;
+%if batch==1
+%   filen='segmentation-batch.mat'; 
+%else
+%   filen='segmentation.mat'; 
+%end
 
 
-batch=1;
-if batch==1
-   filen='segmentation-batch.mat'; 
+if numel(varname)~=0
+filen=varname;
 else
-   filen='segmentation.mat'; 
+filen='segmentation-batch.mat';    
 end
 
 % get and load project file
     
-    if nargin==5
-    status('loading timeLapse project',handles);
-    end
+    %if nargin==5
+    %status('loading timeLapse project',handles);
+    %end
     
-    strPath=strcat(timeLapsepath,timeLapsefile);
-    
-    load(strPath);
-    
-    if ~isfield(timeLapse,'path') %if the user loaded a valid timelapse project
-        return
-    end
-    
-    timeLapse.path=timeLapsepath;
-    timeLapse.realPath=timeLapsepath;
+   
     %timeLapsepath
     
     if numel(position)==0
@@ -56,13 +54,19 @@ end
 
 % check if data are already segmented
 
-if exist(fullfile(timeLapse.path,timeLapse.pathList.position{position},filen),'file')
+%str=fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen)
+%exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
+
+if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
    % 'project already exist'
-    if nargin==5
+   
+    if nargin==3
+        'project already exist'
     status('loading saved file segmentation',handles);
+    pause(0.2);
     end
     
-    load(fullfile(timeLapse.path,timeLapse.pathList.position{position},filen))
+    load(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen))
 
     
     if ~isfield(segmentation,'processing')
@@ -79,14 +83,14 @@ if exist(fullfile(timeLapse.path,timeLapse.pathList.position{position},filen),'f
     
     
     
-    if nargin==5
+    if nargin==3
     status('refresh tbudnecks',handles);
     end
 
 %    [segmentation.tbudnecks fchange]=phy_makeTObject(segmentation.budnecks,segmentation.tbudnecks);
 %    segmentation.frameChanged(fchange)=1;
 
-    if nargin==5
+    if nargin==3
     status('refresh tcells1',handles);
     end
  
@@ -97,14 +101,14 @@ if exist(fullfile(timeLapse.path,timeLapse.pathList.position{position},filen),'f
         segmentation.discardImage=zeros(1,timeLapse.numberOfFrames);
     end
     
-    if nargin==5
+    if nargin==3
     status('Idle',handles);
     end
     
 else
     %' creat new segmentation structure'
     
-    if nargin==5
+    if nargin==3
     status('creating the segmentation file',handles);
     end
     
@@ -114,16 +118,16 @@ else
 
     segmentation=phy_createSegmentation(timeLapse,position);
     
-    save(fullfile(timeLapse.path,timeLapse.pathList.position{segmentation.position},filen),'segmentation');
+    save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},filen),'segmentation');
     
-    if nargin==5
+    if nargin==3
     status('idle',handles);
     end
 end
 
 segmentation.position=position;
 
-if nargin==5
+if nargin==3
    phy_updatePhylocellDisplay(handles); 
 end
 

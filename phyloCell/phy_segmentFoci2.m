@@ -1,6 +1,10 @@
 function objects=phy_segmentFoci2(img,minSize,maxSize,channel,thrfiltre,siz,incells,frame)
 global segmentation
 
+% foci segmentation based on multiple thresholding. Requires cell contour
+% information
+
+
 %incells=47; %51
 %frame=205;
 

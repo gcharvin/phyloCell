@@ -125,7 +125,7 @@ end
 
 %['export_fig ' filename ' -m2']
 warning off all;
-[pathstr, name, ext, versn] = fileparts(filename) ;
+[pathstr, name, ext] = fileparts(filename) ;
 curdir=pwd;
 
 if numel(pathstr)~=0

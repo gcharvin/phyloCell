@@ -61,7 +61,7 @@ M1temp=M1;
 for i=1:size(M0,1)
     %a=M0(i,4)
    
-    score= ((M1temp(:,1)-M0(i,1)).*(M1temp(:,1)-M0(i,1))+(M1temp(:,2)-M0(i,2)).*(M1temp(:,2)-M0(i,2))).*(max(200,abs(M1temp(:,3)-M0(i,3)))); %score function based on distance and cell size
+    score= ((M1temp(:,1)-M0(i,1)).*(M1temp(:,1)-M0(i,1))+(M1temp(:,2)-M0(i,2)).*(M1temp(:,2)-M0(i,2)));%.*(max(200,abs(M1temp(:,3)-M0(i,3)))); %score function based on distance and cell size
     %score(find(score==0))=1e30;
     
     [sc ind]=min(score);

@@ -5,6 +5,9 @@ npoints=50; % number of vertices in contours
 
 %imsave=im;
 im = mat2gray(im);
+
+
+
 imstore=im;
 %tic;
 
@@ -42,7 +45,7 @@ if cavity==1
     %
  %   'ok'
    % figure, imshow(grad2,[]);
-   contourthr=0.05;
+   contourthr=0.03;
     C = phy_computeMask(im, round(0.1*cellcelldistance),contourthr); %
    % find cell cluster not used anymore
 else
@@ -67,9 +70,10 @@ im = mat2gray(im);
 
 maxe=max(max(im));
 meane=mean2(im);
+thr=double(meane+threshold*(maxe-meane));
 imbw=im2bw(im,double(meane+threshold*(maxe-meane)));
 
-imbwim=im2bw(im,0.1);
+imbw2=im2bw(im,0.5*thr);
 
 %figure, imshow(imbwim);
 
@@ -123,7 +127,7 @@ if display
     pause(0.1);
 end
 
-labels = double(watershed(borders - distances)).* ~borders; % .* mask; % watershed
+labels = double(watershed(imbw2 - distances)).* ~borders; % .* mask; % watershed
 warning off all
 tmp = imopen(labels > 0, strel('disk', 4));
 warning on all
@@ -207,11 +211,13 @@ for i = 1:n
             
     ratio=(cellperim(4)/(2*pi))/sqrt(area/(pi)); % perimeter/surface ratio
     
+    
     if area> minSize && area < maxSize  && min(xnew)>1 ... % size constraint
             && min(ynew)>1 && max(xnew)<size(im,2) && max(ynew)<size(im,1) ... % contour must not touch image edges % 
-            && ine(i)>0 ... % imdist larger than thr  % && ineM(i)<2000 ... % cell intensity lower than threshold %%%% set the smallest size of cells !!!
-            && ratio<1.5
+           % && ine(i)>0 ... % imdist larger than thr  % && ineM(i)<2000 ... % cell intensity lower than threshold %%%% set the smallest size of cells !!!
+           % && ratio<1.5
         %  && maj(i)<20/0.078 && ecc(i)<10 % constraints on eccentricity and length of ellipse major length axis
+        
         phy_Objects(cc) = phy_Object(cc, xnew, ynew,0,0,mean(xnew),mean(ynew),0);
         %phy_Objects(cc).ox = mean(xnew);
         %phy_Objects(cc).oy = mean(ynew);
@@ -220,6 +226,7 @@ for i = 1:n
     end
     
 end
+
 
 if display
     subplot(3,3,9);

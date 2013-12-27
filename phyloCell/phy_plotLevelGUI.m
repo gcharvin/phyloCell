@@ -403,7 +403,7 @@ end
 set(gca,'FontSize',16);
 legend('off');
 if get(handles.legend,'Value')
-%legend(leg);
+legend(leg);
 end
 
 

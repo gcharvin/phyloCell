@@ -28,6 +28,10 @@ fdiv=[];
         %test(end+1)=0.001;
         
         [t1 t2 level1 level2 curve]=fitSenescenceModel(test,0,0);
+        
+       % [sp v] = spaps(1:length(fdiv),fdiv,0.002);
+        
+        
         %
         
        % t1,t2,level1,level2
@@ -36,7 +40,9 @@ fdiv=[];
             % senesence case
             %mid=(t1+t2)/2
             
-            mid=find(curve<level1-0.02,1,'first'); % 0.03
+            mid=find(curve<level1-0.0,1,'first'); % 0.03
+            mid=t1;
+            
             
             if numel(mid)==0
                 mid=round((t1+t2)/2);
@@ -77,7 +83,7 @@ fdiv=[];
        
       %  return;
         if nargin==3
-      plotFit(x,fdiv,t1,t2);
+     h= plotFit(x,fdiv*6,t1,t2); %plot(x,v,'Color','g');
         end
 
 
@@ -147,10 +153,10 @@ curve(i+1:j-1)=arry(2:end-1);
 
 
 
-function plotFit(x,fdiv,i,j)
+function h=plotFit(x,fdiv,i,j)
 
 
-figure;
+h=figure;
 
 level1=mean(fdiv(1:i));
 level2=mean(fdiv(j:end));
@@ -169,7 +175,7 @@ plot(line1x+x(1)-1,line1y,'Color','r','LineStyle','--'); hold on;
 plot(line2x+x(1)-1,line2y,'Color','r','LineStyle','--');  hold on;
 
 if j>=i+1
-    plot(arrx+x(1)-1,arry,'Color','r','LineStyle','--');
+    plot(arrx+x(1)-1,arry,'Color','r','LineStyle','--'); hold on;
 end
 
 

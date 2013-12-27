@@ -224,6 +224,10 @@ for k=1:numel(res(:,1));
                 if fluo(3)>=1
                     if numel(tcells.Obj(l).fluoMean)>=fluo(3)
                         warning off all;
+                        
+                        %a=tcells.Obj(l).fluoMean(fluo(3))
+                        %fluo(3)
+                        
                         t=uint8(round(255*(tcells.Obj(l).fluoMean(fluo(3))-fluo(1))/(fluo(2)-fluo(1))));
                         warning on all;
                         cindex(ccc)=max(1,t);

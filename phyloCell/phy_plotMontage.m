@@ -26,10 +26,8 @@ end
 
 
 %
-bin=channels(:,2);
-ind=find(bin==1,1,'first');
 
-img=phy_loadTimeLapseImage(segmentation.position,frames(1),channels(ind,1),'non retreat');
+img=phy_loadTimeLapseImage(segmentation.position,frames(1),channels(1,1),'non retreat');
 
 
 img=img(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
@@ -70,8 +68,9 @@ for j=1:size(channels,1)
             %ROI(4)=ROI(4)-ROI(2)+1;
             delta=1-ROI(2);
             ROI(2)=1;
+            
+            
         end
-        
         
         %ROI,size(img)
         
@@ -140,15 +139,17 @@ if option==1
         l=get(h(1,i),'Parent');
         axes(l);
         
-        rectangle('Position',[5 5 50 5],'FaceColor','w');
+        rectangle('Position',[5 5 50 15],'FaceColor','r');
         %
         
         
         
-        tim=frames(i)-1;
+        tim=frames(i);
         
         if nargin==6
             tim=tim-segmentation.tcells1(incells).detectionFrame;
+        else
+            tim=tim-1; 
         end
         
         hou= floor((double(tim))*double(interval)/3600);
@@ -156,13 +157,24 @@ if option==1
         str=[num2str(hou) ' h ' num2str(mine) ' min'];
         
         
-        text(ROI(3)-140,10,str,'Color','w','FontSize',20);
+        text(ROI(3)-350,40,str,'Color','r','FontSize',16);
+        
+        if nargin==6
+        dau=find(frames(i)-segmentation.tcells1(incells).divisionTimes>0,1,'last');
+        
+        if numel(dau)==0
+            dau=0;
+        end
+        
+        text(ROI(3)-150,50,num2str(dau),'Color','g','FontSize',14);
+        end
         
         
         % display cell contour on fluo plots
         if nargin ==6
             
-            ince=[incells segmentation.tcells1(incells).daughterList];
+            %ince=[incells segmentation.tcells1(incells).daughterList];
+            ince=incells;
             
             for xx=1:length(ince)
                 
@@ -176,7 +188,7 @@ if option==1
               %      continue
               %  end
                 
-                for k=2:length(channels(:,1))
+                for k=1:length(channels(:,1))
                     delta=0;
                     m=get(h(k,i),'Parent');
                     axes(m);
@@ -204,7 +216,7 @@ if option==1
                     x=x-ROI(1);
                     y=y-ROI(2);
                     
-                    line(x,y-delta,'Color','w','LineWidth',2);
+                    line(x,y-delta,'Color','g','LineWidth',2);
                     
                     
                     % plot budneck markers
@@ -252,7 +264,7 @@ if option==1
                                 for yy=1:length(contours)
                                     contour = contours{yy};
                                     
-                                    line(contour(:,2),contour(:,1),'Color',textcolor,'LineWidth',2);
+                                   % line(contour(:,2),contour(:,1),'Color',textcolor,'LineWidth',2);
                                 end
                                 
                             end

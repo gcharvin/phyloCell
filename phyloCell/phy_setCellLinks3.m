@@ -163,9 +163,6 @@ if numel(candarrstore)==0
             cells1=segmentation.cells1(fr,:);
         end
         
-        liste=[cells1.n];
-        pix=find(liste~=0);
-        cells1=cells1(pix);
         
         
         targetCell=tcells(cindex).Obj(1);
@@ -173,9 +170,8 @@ if numel(candarrstore)==0
         
         score=zeros(1,max(narr(:,1)));
         
-       % targetCell.n
+        %targetCell.n
         
-       % fr
         candidates=findNeighbors(targetCell,cells1);
         %candidates
         %if targetCell.n==2142
@@ -542,14 +538,10 @@ for i=1:n
     
     %row(i)
     % line(cellsin(row(i)).x,cellsin(row(i)).y,'Color','r','Marker','o');
-   % size(x1),'ok',size(x2)
+    
     x1p=repmat(x1',[1 size(x2,2)]);
     x2p=repmat(x2',[1 size(x1,2)]);
-   % size(x1p),'ok',size(x2p)
-    %if size(x2p,2)==0
-    %row(i)    
-   % pause
-   % end
+  %  size(x1p),size(x2p)
     x=x1p-x2p';
     
     y1p=repmat(y1',[1 size(y2,2)]);

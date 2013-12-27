@@ -31,9 +31,7 @@
 % contours.object='nucleus'
 % contours.color=[1 0 0];
 % contours.lineWidth=2;
-% contours.link=1 % link between mother and daughter
 % contours.incells=[ 2 5 65 847] % cells to display. Leave blank if
-% contours.cycle=1 % plot cell cycle
 % contours.channelGroup=[1 2]; % specify to which channelGroup contours
 % should apply
 % list of contour objects is permitted
@@ -43,33 +41,21 @@
 % structure.
 % Example : 'tracking', 698
 
-%% Optional argument : cell cycle phase 'cycle', cycle
-%% Example : 'cycle',cycle
-
-% exemple of function call: 
-% exportMontage('', 'HTB2_GFP WT', 1:5, {'1 0 2 0'}, [], 0, [], 'contours',contours)
 
 
-function exportMontage(base, project, positions, channelGroups, frameIndices, manualStart, segmentation, varargin)
 
+function exportMontage(base, project, positions, channelGroups, frameIndices, varargin)
+global timeLapse segmentation
 
-if manualStart
-    javaaddpath('javitools.jar');
-end
 %javaaddpath('javitools.jar');
 
-noseg=0;
 if numel(segmentation)==0
     timeLapse = load(fullfile(base, [project '-project.mat']));
     timeLapse = timeLapse.timeLapse;
-    noseg=1;
 else
-    global timeLapse
     project=timeLapse.filename;
     base=timeLapse.realPath;
 end
-
-
 
 secondsPerFrame = timeLapse.interval;
 tmpDirectory = 'tmp_single_frames_for_movie';
@@ -83,9 +69,7 @@ pixelSize = initializePixel;
 output = initializeOutput;
 contours=initializeContours;
 tracking=initializeTracking;
-%cycle = initializeCycle;
 
-col=colormap(jet(500));
 positionIndex = 0;
 
 if isempty(positions)
@@ -93,10 +77,6 @@ if isempty(positions)
 end
 
 for position = positions
-    
-    if noseg
-    [segmentation timeLapse]=phy_openSegmentationProject(position);
-    end
     
     channels = collectChannels;
     imageNames = collectImageNames;
@@ -113,8 +93,6 @@ for position = positions
         ROI=scale*ROI;
         h=ROI(4);
         w=ROI(3);
-    else
-        ROI=[1 1 scale*maxSize(1) scale*maxSize(2)]; 
     end
     
     montageFrame = zeros(h, w * groupCount, 3);
@@ -150,17 +128,9 @@ for position = positions
              %   tracking
             tcell=segmentation.(['t'  contours(1).object])(tracking);
             ima=[tcell.Obj.image];
-            imax=smooth([tcell.Obj.ox],10); % smooth trajectory of object
-            imay=smooth([tcell.Obj.oy],10);
             end
     end
     
-    if numel(frameIndices)==0
-        frameIndices=1:1:timeLapse.currentFrame;
-    end
-    
-    
-  %frameIndices 
     for i = frameIndices 
         
         % for object tracking
@@ -169,23 +139,17 @@ for position = positions
                     % first contour is used for tracking
                     %ima
                     pix=find(ima==i);
-                    
-                    if numel(pix)==0
-                        continue
-                    end
                    % tcell
                     % frames(i),im
                     %length(pix)
-                    
                     if numel(pix)
-                        
                     xcc=scale*tcell.Obj(pix).x;
                     ycc=scale*tcell.Obj(pix).y;
                     end
                    
                     
-                ROI(2)=round(scale*imay(pix)-ROI(4)/2);
-                ROI(1)=round(scale*imax(pix)-ROI(3)/2);
+                ROI(2)=round(mean(ycc)-ROI(4)/2);
+                ROI(1)=round(mean(xcc)-ROI(3)/2);
                 
                 if ROI(2)<1
                     %delta=1-ROI(2);
@@ -210,8 +174,7 @@ for position = positions
         updateMontageFrame;
         
         jim = im2JavaBufferedImage(montageFrame);
-        %t = double((i -frameIndices(1) ) * secondsPerFrame);
-        t = double((i) * secondsPerFrame);
+        t = double((i - 1) * secondsPerFrame);
         hours = floor(t / 3600);
         minutes = mod(floor(t / 60), 60);
         timestamp = sprintf('%d h %02d min', hours, minutes);
@@ -222,19 +185,13 @@ for position = positions
         
         drawText(jim, timestamp, [0.05*w ymin] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
-     
         
         
-       
         % plot object contours
         if numel(contours)
             for ik=1:length(contours)
                 for lk=1:length(contours(ik).channelGroup)
 
-                    if numel(segmentation.(contours(ik).object)(:,1))<i
-                        continue;
-                    end
-                        
                     nc=[segmentation.(contours(ik).object)(i,:).n];
                     
                     if numel(contours(ik).incells)
@@ -248,8 +205,8 @@ for position = positions
                         
                     cells=segmentation.(contours(ik).object)(i,indc(kk));
                     
-                    xc=cells.x;
-                    yc=cells.y;
+                    xc=scale*cells.x;
+                    yc=scale*cells.y;
                     
                     xc2=xc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
                     yc2=yc-ROI(2);
@@ -258,65 +215,18 @@ for position = positions
                     pix=find(xc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & xc2< (contours(ik).channelGroup(lk))*ROI(3));
                     xc3=xc2(pix);
                     yc3=yc2(pix);
- 
+                    
+                    
+                    %xc3
                     width=contours(ik).lineWidth;
                     
-                   %xc3,yc3,contours(ik)
-                   
-                   if numel(contours(ik).cycle)==0 % don't draw if cell cycle is on
+                    if nc(indc(kk))==tracking
+                        width=2*width;
+                    end
+                    
                     drawContours(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
-                   end
-                    
-                    if isfield(contours(ik),'link') % plot mother bud link
-                        if contours(ik).link==1
-                            mother=cells.mother;
-                            
-                            if mother~=0
-                            nn=[segmentation.(contours(ik).object)(i,:).n];
-                            pix=find(nn==mother);
-                            if numel(pix)
-                            mother=segmentation.(contours(ik).object)(i,pix);
-                            
-                            oxc=scale*cells.ox;
-                            oyc=scale*cells.oy;
-                    
-                            oxc2=oxc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
-                            oyc2=oyc-ROI(2);
-                            
-                            pix=find(oxc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & oxc2< (contours(ik).channelGroup(lk))*ROI(3));
-                            oxc3=oxc2(pix);
-                            oyc3=oyc2(pix);
-                            
-                            mxc=scale*mother.ox;
-                            myc=scale*mother.oy;
-                    
-                            mxc2=mxc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
-                            myc2=myc-ROI(2);
-                            
-                            pix=find(mxc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & mxc2< (contours(ik).channelGroup(lk))*ROI(3));
-                            mxc3=mxc2(pix);
-                            myc3=myc2(pix);
-                            
-                            %[oxc3 mxc3], [oyc3 myc3]
-                            drawContours(jim, [oxc3 mxc3], [oyc3 myc3], java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
-                            end
-                            end
-                        end
-                            
-                    end
-                    
-                    %cycle
-                    if numel(contours(ik).cycle)
-                       %valcycle=max(1,round(cells.Min));
-                       %col1=col(valcycle,1);col2=col(valcycle,2);col3=col(valcycle,3);
-                       
-                       col=getCellColor(contours(ik).cycle,cells.n,segmentation.position,i);
-                       %width
-                       if numel(col)
-                       drawCycle(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.Color(col(1),col(2),col(3)), java.awt.BasicStroke(width))
-                       end
-                    end
- 
+                    % TO DO : fix contours plot ! multiple contours to plot
+                   % end
                     end
                 end   
                end
@@ -332,7 +242,7 @@ for position = positions
             javax.imageio.ImageIO.write(jim, 'jpg', java.io.File(imageFileName));
         end
         
-       updateProgressMonitor('Progress', progress,  size(frameIndices, 2));
+        updateProgressMonitor('Progress', progress,  size(frameIndices, 2));
         
         progress = progress + 1.0;
     end
@@ -352,59 +262,7 @@ for position = positions
     [~, ~, ~] = rmdir(tmpDirectory, 's');
 end
 
-% %% 
-     function col=getCellColor(cycle,n,position,i)
-        
-        col=[]; 
-        ind=find(cycle(:,2)==position & cycle(:,3)==n);
-        
-        if numel(ind)==0
-            return;
-        end
-        
-        cycle=cycle(ind,:);
-        
-        ind=find(cycle(:,7)+cycle(:,9)>i,1,'first');
-        
-        
-        if numel(ind)==0
-            cycle=cycle(end,:);
-            
-            if cycle(ind,7)+cycle(ind,9)+cycle(ind,10) > i
-                %col=[];
-                return;
-            end
-            
-                
-        else
-            if ind==1
-                %col=[]
-                return;
-            else
-            cycle=cycle(ind-1,:);
-            
-            end
-        
-        end
-        
-        sc=cycle(1,7)+cycle(1,9)+[0 cycle(1,11) cycle(1,11)+cycle(1,12) cycle(1,11)+cycle(1,12)+cycle(1,13) cycle(1,11)+cycle(1,12)+cycle(1,13)+cycle(1,14)];
-        
-        ind=find(sc<=i,1,'last');
-        
-        switch ind
-            case 1
-                col=[1 0 0];
-            case 2
-                col=[0 1 0.5];
-            case 3
-                col=[1 1 0];
-            case 4
-                col=[0 0 1];
-        end
-        
-        
-
-     end
+%%
 
     function result = initializeFrameIndices
         result = frameIndices;
@@ -440,7 +298,7 @@ end
         quality = getMapValue(varargin, 'quality');
         
         if isempty(quality)
-            quality = 0.9;
+            quality = 0.75;
         end
     end
 
@@ -473,18 +331,6 @@ end
         
         if isempty(ROI)
             ROI = [];
-        end
-    end
-
-%%
-
-
-    function cycle = initializeCycle
-        
-        cycle = getMapValue(varargin, 'cycle');
-        
-        if isempty(cycle)
-            cycle = [];
         end
     end
 
@@ -595,24 +441,6 @@ end
 
 %%
 
-
-    function drawCycle(jBufferedImage, x, y, awtBorderColor, awtFillColor, awtBasicStokeWidth)
-        g = jBufferedImage.getGraphics();
-        
-        %g.setColor(awtBorderColor);
-        
-        
-        %g.drawPolygon(x,y,length(x));
-        
-        g.setColor(awtFillColor);
-        g.setStroke(awtBasicStokeWidth);
-        %g.setColor(awtFillColor);
-        g.drawPolygon(x,y,length(x));
-        %g.fillPolygon(x, y, length(x));
-    end
-
-%%
-
     function updateMontageFrame
         montageFrame(:) = 0;
         groupIndex = 1;
@@ -638,7 +466,7 @@ end
                     warning off all
                     image=imresize(image, maxSize);
                     
-                 %   ROI
+                    
                     if numel(ROI)
                         image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
                     end
