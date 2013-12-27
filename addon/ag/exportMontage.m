@@ -7,9 +7,7 @@
 % Optional arguments: 'quality', quality
 %   Examples: 0.85, 1.0
 % Optional arguments: 'encoder', encoder
-%   Examples: 'javitools', 'gstreamer', 'mencoder'
-% Optional arguments: 'fps', fps
-%   Examples: 25
+
 
 % Gilles addons below:
 
