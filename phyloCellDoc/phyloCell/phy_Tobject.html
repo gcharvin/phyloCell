@@ -1,0 +1,297 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_Tobject</title>
+  <meta name="keywords" content="phy_Tobject">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_Tobject
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_Object.html" class="code" title="">phy_Object</a>	</li><li><a href="phy_Tobject.html" class="code" title="">phy_Tobject</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_Tobject.html" class="code" title="">phy_Tobject</a>	</li><li><a href="phy_makeTObject.html" class="code" title="function [tObjectOut fChanged]=phy_makeTObject(objects,tObjectIn)">phy_makeTObject</a>	refresh the link(the pointers) between the image cells and the Tobjects</li><li><a href="phyloCell_mainGUI.html" class="code" title="function varargout = phyloCell_mainGUI(varargin)">phyloCell_mainGUI</a>	Main graphical user interface;</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function tobj = phy_Tobject(n,c)</a></li><li><a href="#_sub2" class="code">function setNumber(tobj,val)</a></li><li><a href="#_sub3" class="code">function [flag]=setMother(tobj,val,frameStart)</a></li><li><a href="#_sub4" class="code">function addObject(tobj,object)</a></li><li><a href="#_sub5" class="code">function addDaughter(tobj,daughtercell,divisionStart,divisionEnd)</a></li><li><a href="#_sub6" class="code">function removeDaughter(tobj,daughtercell)</a></li><li><a href="#_sub7" class="code">function deleteObject(tobj,object,option)</a></li><li><a href="#_sub8" class="code">function select(tobj)</a></li><li><a href="#_sub9" class="code">function deselect(tobj)</a></li><li><a href="#_sub10" class="code">function deleteAll(tobj)</a></li><li><a href="#_sub11" class="code">function lostF=get.lostFrames(tobj)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 classdef <a href="phy_Tobject.html" class="code" title="">phy_Tobject</a> &lt; handle <span class="comment">%inherit handle because otherwhise the values of private can not be changed by ordinary methods</span>
+0002     properties
+0003         Obj=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0004         N=0;
+0005         detectionFrame=0;
+0006         birthFrame=0;
+0007         lastFrame=0;
+0008         mothers=[];
+0009         lostFrames=[];
+0010         
+0011     <span class="keyword">end</span>
+0012     
+0013     properties (SetAccess = private)
+0014         mother=0;
+0015         daughterList=[];
+0016         divisionTimes=[];
+0017         budTimes=[];
+0018         selected=false;
+0019     <span class="keyword">end</span>
+0020     
+0021     
+0022     methods
+0023         <span class="comment">%constructor</span>
+0024         <span class="keyword">function</span> tobj = <a href="phy_Tobject.html" class="code" title="">phy_Tobject</a>(n,c)
+0025             <span class="keyword">if</span> nargin &gt; 0
+0026                 tobj.N = n;
+0027                 tobj.Obj=c;
+0028             <span class="keyword">end</span>
+0029         <span class="keyword">end</span> <span class="comment">% Tcell</span>
+0030         
+0031         <span class="keyword">function</span> <a href="#_sub2" class="code" title="subfunction setNumber(tobj,val)">setNumber</a>(tobj,val)
+0032                 tobj.N=val;
+0033                 <span class="keyword">for</span> i=1:length(tobj.Obj)
+0034                     tobj.Obj(i).n=val;
+0035                 <span class="keyword">end</span>
+0036         
+0037         <span class="keyword">end</span>
+0038         
+0039         <span class="keyword">function</span> [flag]=<a href="#_sub3" class="code" title="subfunction [flag]=setMother(tobj,val,frameStart)">setMother</a>(tobj,val,frameStart)
+0040             <span class="keyword">if</span> nargin==2 <span class="comment">%if the position of frame start not given</span>
+0041                 <span class="keyword">if</span> val==0
+0042                     tobj.mother=val;
+0043                     flag=true;
+0044                     tobj.daughterList=[];
+0045                     tobj.divisionTimes=[];
+0046                     tobj.budTimes=[];
+0047                     <span class="keyword">for</span> i=1:length(tobj.Obj)
+0048                         tobj.Obj(i).mother=val;
+0049                     <span class="keyword">end</span>
+0050                 <span class="keyword">else</span>
+0051                     <span class="keyword">if</span> tobj.mother==0
+0052                         tobj.mother=val;
+0053                         flag=true;
+0054                         <span class="keyword">for</span> i=1:length(tobj.Obj)
+0055                             tobj.Obj(i).mother=val;
+0056                         <span class="keyword">end</span>
+0057                     <span class="keyword">else</span>
+0058                         flag=false;
+0059                     <span class="keyword">end</span>
+0060                 <span class="keyword">end</span>
+0061             <span class="keyword">else</span>
+0062                 <span class="keyword">if</span> val==0
+0063                     tobj.mother=val;
+0064                     flag=true;
+0065                     <span class="keyword">for</span> i=1:length(tobj.Obj)
+0066                         <span class="keyword">if</span> tobj.Obj(i).image&gt;=frameStart
+0067                             tobj.Obj(i).mother=val;
+0068                         <span class="keyword">end</span>
+0069                     <span class="keyword">end</span>
+0070                 <span class="keyword">else</span>
+0071                     <span class="keyword">if</span> tobj.mother==0
+0072                         tobj.mother=val;
+0073                         flag=true;
+0074                         <span class="keyword">for</span> i=1:length(tobj.Obj)
+0075                             <span class="keyword">if</span> tobj.Obj(i).image&gt;=frameStart
+0076                                 tobj.Obj(i).mother=val;
+0077                             <span class="keyword">end</span>
+0078                         <span class="keyword">end</span>
+0079                     <span class="keyword">else</span>
+0080                         flag=false;
+0081                     <span class="keyword">end</span>
+0082                 <span class="keyword">end</span>
+0083             <span class="keyword">end</span>
+0084             
+0085         <span class="keyword">end</span>
+0086         
+0087         <span class="keyword">function</span> <a href="#_sub4" class="code" title="subfunction addObject(tobj,object)">addObject</a>(tobj,object)
+0088             object.mother=tobj.mother;
+0089             <span class="keyword">if</span> (length(tobj.Obj)==1) &amp;&amp; (tobj.Obj.ox==0)
+0090                 tobj.Obj(1)=object;
+0091                 tobj.N=object.n;
+0092                 object.mother=tobj.mother;
+0093                 tobj.detectionFrame=object.image;
+0094                 tobj.lastFrame=object.image;
+0095             <span class="keyword">else</span>
+0096                 tobj.Obj=[tobj.Obj object];
+0097                 tobj.detectionFrame=min(tobj.detectionFrame,object.image);
+0098                 tobj.lastFrame=max(tobj.lastFrame,object.image);
+0099             <span class="keyword">end</span>
+0100             
+0101         <span class="keyword">end</span>
+0102         
+0103         <span class="keyword">function</span> <a href="#_sub5" class="code" title="subfunction addDaughter(tobj,daughtercell,divisionStart,divisionEnd)">addDaughter</a>(tobj,daughtercell,divisionStart,divisionEnd)
+0104             
+0105             tobj.daughterList=[tobj.daughterList daughtercell];
+0106             <span class="keyword">if</span> nargin&gt;=3
+0107                 tobj.budTimes=[tobj.budTimes divisionStart];
+0108             <span class="keyword">end</span>
+0109             <span class="keyword">if</span> nargin&gt;=4
+0110                 tobj.divisionTimes=[tobj.divisionTimes divisionEnd];
+0111             <span class="keyword">end</span>
+0112         <span class="keyword">end</span>
+0113         
+0114         <span class="keyword">function</span> <a href="#_sub6" class="code" title="subfunction removeDaughter(tobj,daughtercell)">removeDaughter</a>(tobj,daughtercell)
+0115             <span class="keyword">if</span> strcmpi(daughtercell,<span class="string">'ALL'</span>)
+0116                 tobj.daughterList=[];
+0117                 tobj.budTimes=[];
+0118                 tobj.divisionTimes=[];
+0119             <span class="keyword">else</span>
+0120                 ind=find(tobj.daughterList==daughtercell);
+0121                 tobj.daughterList(ind)=[];
+0122                 tobj.budTimes(ind)=[];
+0123                 tobj.divisionTimes(ind)=[];
+0124             <span class="keyword">end</span>;
+0125         <span class="keyword">end</span>
+0126         
+0127         <span class="keyword">function</span> <a href="#_sub7" class="code" title="subfunction deleteObject(tobj,object,option)">deleteObject</a>(tobj,object,option)<span class="comment">% the option is to delete only the instace from the tcell obj not the entire object</span>
+0128             <span class="keyword">if</span> strcmpi(object,<span class="string">'ALL'</span>)
+0129                 objects=tobj.Obj;
+0130                 tobj.Obj=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0131                 tobj.N=0;
+0132                 tobj.detectionFrame=0;
+0133                 tobj.birthFrame=0;
+0134                 tobj.lastFrame=0;
+0135                 tobj.mothers=[];
+0136                 tobj.mother=0;
+0137                 tobj.daughterList=[];
+0138                 tobj.divisionTimes=[];
+0139                 tobj.budTimes=[];
+0140                 tobj.selected=false;
+0141             <span class="keyword">end</span>
+0142             <span class="keyword">if</span> isa(object,<span class="string">'phy_Object'</span>)<span class="comment">% if object is an phy_Object class then delete</span>
+0143                 objects=object;
+0144                 ind=find(tobj.Obj==object);
+0145                 
+0146                 <span class="keyword">if</span> ~isempty(ind)
+0147                     <span class="keyword">if</span> length(tobj.Obj)==1
+0148                         tobj.Obj=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0149                         tobj.N=0;
+0150                         tobj.detectionFrame=0;
+0151                         tobj.birthFrame=0;
+0152                         tobj.lastFrame=0;
+0153                         tobj.mothers=[];
+0154                         tobj.mother=0;
+0155                         tobj.daughterList=[];
+0156                         tobj.divisionTimes=[];
+0157                         tobj.budTimes=[];
+0158                         tobj.selected=false;
+0159                     <span class="keyword">else</span>
+0160                         tobj.Obj(ind)=[];
+0161                     <span class="keyword">end</span>
+0162                 <span class="keyword">end</span>
+0163             <span class="keyword">end</span>
+0164             
+0165             <span class="keyword">if</span> isa(object,<span class="string">'double'</span>)  <span class="comment">%if object==a double =&gt; delete all the objects with frame &gt; object</span>
+0166                 objects=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0167                 c=0;
+0168                 <span class="keyword">for</span> i=1:length(tobj.Obj)   <span class="comment">%find all the objects with image&gt;=frame</span>
+0169                     <span class="keyword">if</span> tobj.Obj(i).image&gt;=object
+0170                         c=c+1;
+0171                         objects(c)=tobj.Obj(i);
+0172                     <span class="keyword">end</span>
+0173                 <span class="keyword">end</span>
+0174                 
+0175                 <span class="keyword">if</span> c==length(tobj.Obj) <span class="comment">% if image to start==first image =&gt; delete all images</span>
+0176                     tobj.Obj=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0177                     tobj.N=0;
+0178                     tobj.detectionFrame=0;
+0179                     tobj.birthFrame=0;
+0180                     tobj.lastFrame=0;
+0181                     tobj.mothers=[];
+0182                     tobj.mother=0;
+0183                     tobj.daughterList=[];
+0184                     tobj.divisionTimes=[];
+0185                     tobj.budTimes=[];
+0186                     tobj.selected=false;
+0187                 <span class="keyword">else</span>
+0188                     <span class="keyword">for</span> i=1:c
+0189                         ind=find(tobj.Obj==objects(i));
+0190                         tobj.Obj(ind)=[];
+0191                     <span class="keyword">end</span>
+0192                 <span class="keyword">end</span>
+0193                     
+0194             
+0195             <span class="keyword">end</span>
+0196             
+0197             <span class="keyword">if</span> nargin&lt;=2  <span class="comment">%if no option (if the delete is complete delete all the instance of the objects)</span>
+0198                 names = fieldnames(objects(1));
+0199                 <span class="keyword">for</span> i=1:length(objects)
+0200                     <span class="keyword">for</span> j=1:length(names)
+0201                         objects(i).(names{j})=0;
+0202                     <span class="keyword">end</span>;
+0203                 <span class="keyword">end</span>
+0204             <span class="keyword">end</span>
+0205         <span class="keyword">end</span>
+0206         
+0207         
+0208         <span class="keyword">function</span> <a href="#_sub8" class="code" title="subfunction select(tobj)">select</a>(tobj)
+0209             tobj.selected=true;
+0210             <span class="keyword">for</span> i=1:length(tobj.Obj)
+0211                 tobj.Obj(i).selected=true;
+0212             <span class="keyword">end</span>
+0213         <span class="keyword">end</span>
+0214         
+0215         
+0216         <span class="keyword">function</span> <a href="#_sub9" class="code" title="subfunction deselect(tobj)">deselect</a>(tobj)
+0217             tobj.selected=false;
+0218             <span class="keyword">for</span> i=1:length(tobj.Obj)
+0219                 tobj.Obj(i).selected=false;
+0220             <span class="keyword">end</span>
+0221         <span class="keyword">end</span>
+0222         
+0223         <span class="comment">%before destroing the Tobject erase all the data from all the objects.</span>
+0224         <span class="keyword">function</span> <a href="#_sub10" class="code" title="subfunction deleteAll(tobj)">deleteAll</a>(tobj)
+0225             <span class="keyword">for</span> i=1:length(tobj.Obj)
+0226                 tobj.Obj(i).selected=false;
+0227             
+0228             tobj.Obj(i).x=[];
+0229             tobj.Obj(i).y=[];
+0230             tobj.Obj(i).ox=0;
+0231             tobj.Obj(i).oy=0;
+0232             tobj.Obj(i).n=0;
+0233             tobj.Obj(i).mother=0;
+0234             tobj.Obj(i).image=0;
+0235             
+0236             <span class="keyword">end</span>
+0237             tobj.Obj=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0238         <span class="keyword">end</span>
+0239         
+0240         <span class="comment">%find the frames of disparition of the object</span>
+0241         <span class="keyword">function</span> lostF=<a href="#_sub11" class="code" title="subfunction lostF=get.lostFrames(tobj)">get.lostFrames</a>(tobj)
+0242 
+0243             frames=zeros(1,tobj.lastFrame);
+0244             frames(tobj.detectionFrame:tobj.lastFrame)=1;
+0245             <span class="keyword">for</span> i=1:length(tobj.Obj)
+0246                 frames(tobj.Obj(i).image)=0;
+0247             <span class="keyword">end</span>
+0248             lostF=find(frames);
+0249 
+0250         <span class="keyword">end</span>
+0251         
+0252     <span class="keyword">end</span>
+0253 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

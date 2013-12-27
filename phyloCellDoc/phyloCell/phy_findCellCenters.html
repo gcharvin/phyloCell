@@ -1,0 +1,214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_findCellCenters</title>
+  <meta name="keywords" content="phy_findCellCenters">
+  <meta name="description" content="replace the previous findCellCenter function : about 8 faster !">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_findCellCenters
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>replace the previous findCellCenter function : about 8 faster !</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [listx2 listy2 distance imdistance2]=phy_findCellCenters(imdata,display,cellcelldistance) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> replace the previous findCellCenter function : about 8 faster !
+ find cell centers based on distance to edges.
+ display=1 shows the result as a figure;
+display=1;</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_localMaximum.html" class="code" title="function varargout = phy_localMaximum(imdata,minDist)">phy_localMaximum</a>	calculate the local maximus (equivalent to imregionalmax function but with respect of distance between points)</li><li><a href="phy_scale.html" class="code" title="function y = phy_scale(varargin)">phy_scale</a>	SCALE  Scales matrix elements to a new range.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_segmentCellsBallon.html" class="code" title="function cellsout=phy_segmentCellsBallon(image,cellsin,option,killcells,parametres)">phy_segmentCellsBallon</a>	find cell center based on phase image using bwdist to detect cell centers and</li><li><a href="phy_segmentCellsOmothetie.html" class="code" title="function cell=phy_segmentCellsOmothetie(imdata,param,display)">phy_segmentCellsOmothetie</a>	segmentation funtion of cells by omothetie</li><li><a href="phy_segmentCellsWatershed.html" class="code" title="function cells2=phy_segmentCellsWatershed(imdata,parametres)">phy_segmentCellsWatershed</a>	segment cells with watershed method</li><li><a href="phy_segmentCellsWatershedForme.html" class="code" title="function cells=phy_segmentCellsWatershedForme(imdata,parametres)">phy_segmentCellsWatershedForme</a>	segment cells with watershed method</li><li><a href="phy_segmentCellsWatershedFormeBF.html" class="code" title="function cells=phy_segmentCellsWatershedFormeBF(imdata,parametres)">phy_segmentCellsWatershedFormeBF</a>	segment cells with watershed method</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [listx2 listy2 distance imdistance2]=phy_findCellCenters(imdata,display,cellcelldistance)</a>
+0002 <span class="comment">% replace the previous findCellCenter function : about 8 faster !</span>
+0003 <span class="comment">% find cell centers based on distance to edges.</span>
+0004 <span class="comment">% display=1 shows the result as a figure;</span>
+0005 <span class="comment">%display=1;</span>
+0006 imdata=<a href="phy_scale.html" class="code" title="function y = phy_scale(varargin)">phy_scale</a>(imdata);
+0007 sizemin=cellcelldistance/20; <span class="comment">% minimal distance to edge to be considered, roughly the min cell radius , pixel units</span>
+0008 sizemax=cellcelldistance*1.5; <span class="comment">% maximal distance to edge that is tolerable</span>
+0009 <span class="comment">%cellcelldistance=15; % drough distance between cells</span>
+0010 
+0011 thresh=0.5:-0.05:0.05; <span class="comment">% thresholding applied to generate BW image</span>
+0012 
+0013 
+0014 <span class="comment">%find the right threshold to detect the contour of the colonie</span>
+0015 maxe=max(max(imdata));
+0016 meane=mean2(imdata);
+0017 
+0018 [counts,x]=imhist(imdata);
+0019 count2=filter(ones(1,1),1,counts);
+0020 d=diff(count2);
+0021 d2=filter(ones(1,1),1,d);
+0022 <span class="keyword">if</span> display
+0023     figure;plot(x(1:end-1),d2);
+0024 <span class="keyword">end</span>
+0025 [minv minind]=min(d2);
+0026 meanv=mean(d2);
+0027 ind=find(d2&gt;meanv+minv);
+0028 final_ind=find(ind&gt;minind,1,<span class="string">'first'</span>);
+0029 x(ind(final_ind));<span class="comment">% the value of threshold</span>
+0030 
+0031 imbw=round(double(im2bw(imdata,x(ind(final_ind))+0.05))); <span class="comment">%threshold+0.05</span>
+0032 <span class="keyword">if</span> display
+0033     figure;imshow(imbw);
+0034 <span class="keyword">end</span>
+0035 
+0036 
+0037 se = strel(<span class="string">'disk'</span>,round(cellcelldistance/2));
+0038 imbw=imclose(imbw,se);
+0039 
+0040 imbw=imfill(imbw,<span class="string">'holes'</span>);
+0041 <span class="comment">%figure;imshow(imbw);</span>
+0042 <span class="comment">%tic;imbw = bwmorph(imbw,'fill');toc</span>
+0043 
+0044 se = strel(<span class="string">'disk'</span>,3);
+0045 imbw=imopen(imbw,se);
+0046 imbw=bwareaopen(imbw,round(cellcelldistance^2*pi/2),4);
+0047 
+0048 C=~imbw;
+0049 
+0050 C=imdilate(C,strel(<span class="string">'disk'</span>,round(cellcelldistance/8)));
+0051 
+0052 <span class="keyword">if</span> display
+0053     figure; imshow(double(C)+imdata);
+0054     <span class="comment">% figure; imshow(double(C2)+imdata);</span>
+0055 <span class="keyword">end</span>
+0056 <span class="comment">%----------------------------------</span>
+0057 
+0058 <span class="comment">%C=0;</span>
+0059 
+0060 imbwtot=zeros(size(imdata));
+0061 imdistance=zeros(size(imdata));
+0062 immeandist=zeros(size(imdata));
+0063 imcount=zeros(size(imdata));
+0064 
+0065 imdistance2=zeros(size(imdata));
+0066 
+0067 
+0068 
+0069 <span class="comment">%img2=imdata+NG;</span>
+0070 
+0071 
+0072 <span class="keyword">for</span> it=thresh
+0073     
+0074     <span class="comment">% imbw=im2bw(imdata,double(meane+it*(maxe-meane))/65536);</span>
+0075     imbw=im2bw(imdata,double(meane+it*(maxe-meane)));
+0076     <span class="comment">%imbwNG=im2bw(NG,double(meanNG+it*(maxNG-meanNG)));</span>
+0077     
+0078     
+0079     imdist=bwdist(imbw|C);
+0080     
+0081     imdistance2=imdistance2+imdist;
+0082     
+0083 <span class="keyword">end</span>
+0084 
+0085 imdistance2=imdistance2/numel(thresh);
+0086 
+0087 imdistance2(C)=0;
+0088 
+0089 pix=<a href="phy_localMaximum.html" class="code" title="function varargout = phy_localMaximum(imdata,minDist)">phy_localMaximum</a>(imdistance2,cellcelldistance);
+0090 
+0091 temp2=zeros(size(imdata));
+0092 temp2(pix)=1;
+0093 
+0094 
+0095 
+0096 se = strel(<span class="string">'disk'</span>,1);
+0097 <span class="comment">%temp3 = imdilate(imdistance2,se);</span>
+0098 temp3=imdilate(temp2,se);
+0099 
+0100 
+0101 temp3=bwlabel(temp3);
+0102 
+0103 <span class="comment">%figure, imshow(temp3+imdata);</span>
+0104 
+0105 s  = regionprops(temp3, imdistance2, <span class="string">'Centroid'</span>,<span class="string">'MeanIntensity'</span>);
+0106 centroids = cat(1, s.Centroid);
+0107 meanInt=cat(1,s.MeanIntensity);
+0108 
+0109 listx2=[];
+0110 listy2=[];
+0111 distance=[];
+0112 <span class="comment">%distance2=uint8([]);</span>
+0113 
+0114 <span class="keyword">for</span> i=1:length(centroids(:,1))
+0115     
+0116     x=centroids(i,1);
+0117     y=centroids(i,2);
+0118     
+0119     dist=imdistance2(round(y),round(x));
+0120     <span class="comment">%dist2=meanInt(i);</span>
+0121     
+0122     <span class="keyword">if</span> dist&lt;sizemin
+0123         <span class="keyword">continue</span>;
+0124     <span class="keyword">end</span>
+0125     
+0126     <span class="keyword">if</span> dist&gt;sizemax
+0127         <span class="keyword">continue</span>;
+0128     <span class="keyword">end</span>
+0129     
+0130     <span class="keyword">if</span> x&lt;20
+0131         <span class="keyword">continue</span>;
+0132     <span class="keyword">end</span>
+0133     
+0134     <span class="keyword">if</span> y&lt;20
+0135         <span class="keyword">continue</span>;
+0136     <span class="keyword">end</span>
+0137     
+0138     <span class="keyword">if</span> y&gt;size(imdata,1)-20
+0139         <span class="keyword">continue</span>;
+0140     <span class="keyword">end</span>
+0141     
+0142     <span class="keyword">if</span> x&gt;size(imdata,2)-20
+0143         <span class="keyword">continue</span>;
+0144     <span class="keyword">end</span>
+0145     
+0146     
+0147     distance=[distance double(dist) ];
+0148     <span class="comment">% distance2=[distance2 uint8(round(dist2))];</span>
+0149     listx2=[listx2 x];
+0150     listy2=[listy2 y];
+0151 <span class="keyword">end</span>
+0152 
+0153 <span class="keyword">if</span> nargin&gt;=2
+0154     <span class="keyword">if</span> display==1
+0155         <span class="comment">%   figure, imshow(temp3,[]); hold on ;</span>
+0156         <span class="comment">%   line(listx2,listy2,'Marker','o','LineStyle','none');</span>
+0157         
+0158         figure, imshow(imdata,[]);
+0159         hold on; line(listx2,listy2,<span class="string">'Marker'</span>,<span class="string">'o'</span>,<span class="string">'LineStyle'</span>,<span class="string">'none'</span>,<span class="string">'Color'</span>,<span class="string">'r'</span>);
+0160         <span class="keyword">for</span> i=1:numel(listx2)
+0161             text(listx2(i),listy2(i)-2,num2str(round(distance(i))),<span class="string">'Color'</span>,<span class="string">'r'</span>);
+0162         <span class="keyword">end</span>
+0163     <span class="keyword">end</span>
+0164 <span class="keyword">end</span>
+0165 
+0166 
+0167 
+0168 
+0169</pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

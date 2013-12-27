@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_changePointNumber</title>
+  <meta name="keywords" content="phy_changePointNumber">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_changePointNumber
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [xnew ynew]=phy_changePointNumber(x,y,npoints) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_selfAvoding.html" class="code" title="function cellout=phy_selfAvoding(cells)">phy_selfAvoding</a>	separates the overlapping cells (from ball model)</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [xc yc]=findcoord(x,y,z)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xnew ynew]=phy_changePointNumber(x,y,npoints)</a>
+0002 
+0003 
+0004 
+0005 xvec=x(2:numel(x))-x(1:numel(x)-1);
+0006 yvec=y(2:numel(y))-y(1:numel(y)-1);
+0007 totaldist=floor(sum(sqrt(double(xvec.*xvec+yvec.*yvec))));
+0008 
+0009 opt=double(npoints);
+0010 
+0011 
+0012 sep=double(totaldist)/opt;
+0013 xnew(1)=x(1);
+0014 ynew(1)=y(1);
+0015 
+0016 jr=2;
+0017 <span class="keyword">for</span> ind=2:opt
+0018       [xc yc]=<a href="#_sub1" class="code" title="subfunction [xc yc]=findcoord(x,y,z)">findcoord</a>(x,y,(ind-1)*sep)  ;
+0019       <span class="keyword">if</span> (xc~=-10000)
+0020          <span class="comment">%xnew,ynew</span>
+0021          <span class="comment">%pause;</span>
+0022          xnew(jr)=xc;
+0023          ynew(jr)=yc;
+0024          jr=jr+1;
+0025          
+0026          
+0027       <span class="keyword">end</span>
+0028 <span class="keyword">end</span> 
+0029 
+0030 xnew(jr)=x(1);
+0031 ynew(jr)=y(1);
+0032 
+0033 <span class="comment">%xnew,ynew</span>
+0034 <span class="comment">%line(xnew,ynew,'Color','g');</span>
+0035 <span class="comment">%refresh;</span>
+0036 <span class="comment">%pause(0.1);</span>
+0037 
+0038 <a name="_sub1" href="#_subfunctions" class="code">function [xc yc]=findcoord(x,y,z)</a>
+0039 dist=0;
+0040 
+0041 <span class="keyword">for</span> i=1:numel(x)-1
+0042     xvec=x(i+1)-x(i);
+0043     yvec=y(i+1)-y(i);
+0044     locdist=sqrt(double(xvec*xvec+yvec*yvec));
+0045     <span class="keyword">if</span> (z&gt;=dist &amp;&amp; z&lt;dist+locdist)
+0046         ind=i;
+0047         val=z-dist;
+0048         xvec=x(ind+1)-x(ind);
+0049         yvec=y(ind+1)-y(ind);
+0050         dist=sqrt(double(xvec*xvec+yvec*yvec));
+0051         xc=x(ind)+double(xvec)*double(val)/double(dist);
+0052         yc=y(ind)+double(yvec)*double(val)/double(dist);
+0053         <span class="keyword">return</span>;
+0054     <span class="keyword">else</span>
+0055     dist=dist+locdist;
+0056     <span class="keyword">end</span>
+0057 <span class="keyword">end</span>
+0058 
+0059 xc=-10000;
+0060 yc=-10000;
+0061</pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_setColorsGui</title>
+  <meta name="keywords" content="phy_setColorsGui">
+  <meta name="description" content="set the colors of the displayed channels">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_setColorsGui
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>set the colors of the displayed channels</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function varargout = phy_setColorsGui(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">set the colors of the displayed channels
+input: the matrix data each chanel has a row in this matrix(RGBLoHiAl)
+       input images (not normalized)
+output: the values for each channel (RGBLoHiAl) in a form of matrix</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phyloCell_mainGUI.html" class="code" title="function varargout = phyloCell_mainGUI(varargin)">phyloCell_mainGUI</a>	Main graphical user interface;</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function phy_setColorsGui_OpeningFcn(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub2" class="code">function varargout = phy_setColorsGui_OutputFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub3" class="code">function slider_color_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub4" class="code">function slider_color_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub5" class="code">function slider_thresh_high_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub6" class="code">function slider_thresh_high_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub7" class="code">function slider_thresh_low_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub8" class="code">function slider_thresh_low_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub9" class="code">function slider_transparance_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub10" class="code">function slider_transparance_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub11" class="code">function listbox_Channels_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub12" class="code">function listbox_Channels_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub13" class="code">function figure1_WindowButtonMotionFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub14" class="code">function handles=changeDisp(handles,refresh)</a></li><li><a href="#_sub15" class="code">function pushbutton_crop_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub16" class="code">function pushbutton_Channel_OK_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub17" class="code">function checkbox_variable_transparence_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub18" class="code">function edit_color_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub19" class="code">function edit_thresh_low_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub20" class="code">function edit_thresh_high_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub21" class="code">function edit_transparance_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub22" class="code">function figure1_CloseRequestFcn(hObject, eventdata, handles)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%set the colors of the displayed channels</span>
+0002 <span class="comment">%input: the matrix data each chanel has a row in this matrix(RGBLoHiAl)</span>
+0003 <span class="comment">%       input images (not normalized)</span>
+0004 <span class="comment">%output: the values for each channel (RGBLoHiAl) in a form of matrix</span>
+0005 <a name="_sub0" href="#_subfunctions" class="code">function varargout = phy_setColorsGui(varargin)</a>
+0006 gui_Singleton = 1;
+0007 gui_State = struct(<span class="string">'gui_Name'</span>,       mfilename, <span class="keyword">...</span>
+0008                    <span class="string">'gui_Singleton'</span>,  gui_Singleton, <span class="keyword">...</span>
+0009                    <span class="string">'gui_OpeningFcn'</span>, @<a href="#_sub1" class="code" title="subfunction phy_setColorsGui_OpeningFcn(hObject, eventdata, handles, varargin)">phy_setColorsGui_OpeningFcn</a>, <span class="keyword">...</span>
+0010                    <span class="string">'gui_OutputFcn'</span>,  @<a href="#_sub2" class="code" title="subfunction varargout = phy_setColorsGui_OutputFcn(hObject, eventdata, handles)">phy_setColorsGui_OutputFcn</a>, <span class="keyword">...</span>
+0011                    <span class="string">'gui_LayoutFcn'</span>,  [] , <span class="keyword">...</span>
+0012                    <span class="string">'gui_Callback'</span>,   []);
+0013 <span class="keyword">if</span> nargin &amp;&amp; ischar(varargin{1})
+0014     gui_State.gui_Callback = str2func(varargin{1});
+0015 <span class="keyword">end</span>
+0016 
+0017 <span class="keyword">if</span> nargout
+0018     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+0019 <span class="keyword">else</span>
+0020     gui_mainfcn(gui_State, varargin{:});
+0021 <span class="keyword">end</span>
+0022 <span class="comment">% End initialization code - DO NOT EDIT</span>
+0023 
+0024 
+0025 <span class="comment">% --- Executes just before phy_setColorsGui is made visible.</span>
+0026 <a name="_sub1" href="#_subfunctions" class="code">function phy_setColorsGui_OpeningFcn(hObject, eventdata, handles, varargin)</a>
+0027 
+0028 <span class="comment">% Choose default command line output for phy_setColorsGui</span>
+0029 handles.output = hObject;
+0030 <span class="comment">%for debug only</span>
+0031 <span class="comment">% global segmentation;</span>
+0032 <span class="comment">% dispimg=segmentation.displayImage;</span>
+0033 <span class="comment">% handles.data=segmentation.colorData;</span>
+0034 <span class="comment">%----</span>
+0035 
+0036 handles.data=varargin{1};<span class="comment">%first argument: colors and thresh hold</span>
+0037 dispimg=varargin{2};<span class="comment">% second argument: the images displayed.</span>
+0038 handles.img=dispimg;
+0039 load phy_colormap; <span class="comment">%the color map of the colorbar</span>
+0040 handles.myColormaps=mycmap;
+0041 
+0042 handles.chanels(1)=1;<span class="comment">%first channel to display is channel 1</span>
+0043 
+0044 handles.pow=3; <span class="comment">%power at wich the value of the slider will be rised(middle value = 0.5^4=0.0625)</span>
+0045 
+0046 <span class="comment">%build the colorbar to chose the colors</span>
+0047 cb=zeros(1,64,3);
+0048 cb(:,:,1)=mycmap(:,1);
+0049 cb(:,:,2)=mycmap(:,2);
+0050 cb(:,:,3)=mycmap(:,3);
+0051 imshow(cb,<span class="string">'parent'</span>,handles.axes2,<span class="string">'InitialMagnification'</span>,<span class="string">'fit'</span>);
+0052 handles.hline=line([1 1],[0 3],<span class="string">'parent'</span>,handles.axes2,<span class="string">'color'</span>,<span class="string">'w'</span>,<span class="string">'linewidth'</span>,3); <span class="comment">%make a line to show the exact color</span>
+0053 
+0054 handles.himg=ones(1,size(dispimg,3));<span class="comment">%handles to dispaly images</span>
+0055 handles.himg(1)=imshow(dispimg(:,:,1),<span class="string">'parent'</span>,handles.axes1,<span class="string">'InitialMagnification'</span>,<span class="string">'fit'</span>);<span class="comment">%first image to display is image 1</span>
+0056 
+0057 <span class="comment">%initialize the listbox</span>
+0058 set(handles.listbox_Channels,<span class="string">'value'</span>,1);<span class="comment">%select first value</span>
+0059 str={};
+0060 <span class="keyword">for</span> i=1:size(dispimg,3)
+0061     str=[str;[<span class="string">'channel'</span>,num2str(i)]];
+0062 <span class="keyword">end</span>
+0063 set(handles.listbox_Channels,<span class="string">'string'</span>,str);<span class="comment">%write the channels(1 2 3...)</span>
+0064 
+0065 <span class="comment">%set the textx of displayed channels tu first channel</span>
+0066 set(handles.text_Channels,<span class="string">'string'</span>,str(1));
+0067 
+0068 <span class="comment">%initialize the sliders</span>
+0069 data=handles.data(1,:);
+0070 set(handles.slider_thresh_low,<span class="string">'Value'</span>,data(4)^(1/handles.pow));
+0071 set(handles.slider_thresh_high,<span class="string">'Value'</span>,data(5)^(1/handles.pow));
+0072 set(handles.slider_transparance,<span class="string">'Value'</span>,min(data(6),1));
+0073 <span class="keyword">if</span> data(6)==2
+0074     set(handles.checkbox_variable_transparence,<span class="string">'value'</span>,1);
+0075 <span class="keyword">else</span>
+0076     set(handles.checkbox_variable_transparence,<span class="string">'value'</span>,0);
+0077 <span class="keyword">end</span>
+0078 
+0079 <span class="comment">%initialize slider collor</span>
+0080 rgb=zeros(1,1,3);
+0081 rgb(:)=data([1 2 3]);
+0082 sval=rgb2ind(rgb,handles.myColormaps)+1;
+0083 set(handles.slider_color,<span class="string">'Value'</span>,sval);
+0084 
+0085 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles,<span class="string">'refresh'</span>);
+0086 
+0087 guidata(hObject, handles);<span class="comment">% Update handles structure</span>
+0088 
+0089 
+0090 <span class="comment">% UIWAIT makes phy_setColorsGui wait for user response (see UIRESUME)</span>
+0091 uiwait(handles.figure1);
+0092 uiwait(handles.figure1);
+0093 <span class="comment">%delete(handles.figure1);</span>
+0094 
+0095 <span class="comment">% --- Outputs from this function are returned to the command line.</span>
+0096 <a name="_sub2" href="#_subfunctions" class="code">function varargout = phy_setColorsGui_OutputFcn(hObject, eventdata, handles) </a>
+0097 
+0098 varargout{1}=handles.data;
+0099  varargout{2}=handles.chanels;
+0100  delete(handles.figure1);
+0101  
+0102 
+0103 
+0104 
+0105 <span class="comment">% --- Executes on slider movement.</span>
+0106 <a name="_sub3" href="#_subfunctions" class="code">function slider_color_Callback(hObject, eventdata, handles)</a>
+0107 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0108 guidata(hObject,handles);
+0109 
+0110 
+0111 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0112 <a name="_sub4" href="#_subfunctions" class="code">function slider_color_CreateFcn(hObject, eventdata, handles)</a>
+0113 
+0114 
+0115 <span class="comment">% Hint: slider controls usually have a light gray background.</span>
+0116 <span class="keyword">if</span> isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0117     set(hObject,<span class="string">'BackgroundColor'</span>,[.9 .9 .9]);
+0118 <span class="keyword">end</span>
+0119 
+0120 
+0121 <span class="comment">% --- Executes on slider movement.</span>
+0122 <a name="_sub5" href="#_subfunctions" class="code">function slider_thresh_high_Callback(hObject, eventdata, handles)</a>
+0123 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0124 guidata(hObject,handles);
+0125 
+0126 
+0127 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0128 <a name="_sub6" href="#_subfunctions" class="code">function slider_thresh_high_CreateFcn(hObject, eventdata, handles)</a>
+0129 <span class="comment">% hObject    handle to slider_thresh_high (see GCBO)</span>
+0130 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0131 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0132 
+0133 <span class="comment">% Hint: slider controls usually have a light gray background.</span>
+0134 <span class="keyword">if</span> isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0135     set(hObject,<span class="string">'BackgroundColor'</span>,[.9 .9 .9]);
+0136 <span class="keyword">end</span>
+0137 
+0138 
+0139 <span class="comment">% --- Executes on slider movement.</span>
+0140 <a name="_sub7" href="#_subfunctions" class="code">function slider_thresh_low_Callback(hObject, eventdata, handles)</a>
+0141 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0142 guidata(hObject,handles);
+0143 
+0144 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0145 <a name="_sub8" href="#_subfunctions" class="code">function slider_thresh_low_CreateFcn(hObject, eventdata, handles)</a>
+0146 <span class="comment">% hObject    handle to slider_thresh_low (see GCBO)</span>
+0147 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0148 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0149 
+0150 <span class="comment">% Hint: slider controls usually have a light gray background.</span>
+0151 <span class="keyword">if</span> isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0152     set(hObject,<span class="string">'BackgroundColor'</span>,[.9 .9 .9]);
+0153 <span class="keyword">end</span>
+0154 
+0155 <span class="comment">% --- Executes on slider movement.</span>
+0156 <a name="_sub9" href="#_subfunctions" class="code">function slider_transparance_Callback(hObject, eventdata, handles)</a>
+0157 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0158 guidata(hObject,handles);
+0159 
+0160 
+0161 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0162 <a name="_sub10" href="#_subfunctions" class="code">function slider_transparance_CreateFcn(hObject, eventdata, handles)</a>
+0163 <span class="comment">% hObject    handle to slider_transparance (see GCBO)</span>
+0164 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0165 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0166 
+0167 <span class="comment">% Hint: slider controls usually have a light gray background.</span>
+0168 <span class="keyword">if</span> isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0169     set(hObject,<span class="string">'BackgroundColor'</span>,[.9 .9 .9]);
+0170 <span class="keyword">end</span>
+0171 
+0172 
+0173 <span class="comment">% --- Executes on selection change in listbox_Channels.</span>
+0174 <a name="_sub11" href="#_subfunctions" class="code">function listbox_Channels_Callback(hObject, eventdata, handles)</a>
+0175 
+0176 butonType=get(handles.figure1,<span class="string">'SelectionType'</span>);
+0177 chval = get(handles.listbox_Channels,<span class="string">'Value'</span>);
+0178 chanels=handles.chanels;
+0179 data=handles.data;
+0180 <span class="keyword">if</span> strcmp(butonType,<span class="string">'open'</span>) <span class="comment">%if double click</span>
+0181     <span class="keyword">if</span> any(chanels==chval) <span class="comment">% if already dispayed</span>
+0182         chanels(chanels==chval)=[];
+0183         delete(handles.himg(chval)); <span class="comment">%undispayed it</span>
+0184     <span class="keyword">else</span> <span class="comment">%if not displayed</span>
+0185         chanels=[chanels chval];
+0186         hold(handles.axes1,<span class="string">'on'</span>);
+0187         img=handles.img(:,:,chval);
+0188         img=imadjust(img,data(chval,[4 5]),[]); <span class="comment">%set the limits of the image</span>
+0189         RGB=data(chval,[1 2 3]);
+0190         imgRGB=cat(3,img*RGB(1),img*RGB(2),img*RGB(3));
+0191         handles.himg(chval)=imshow(imgRGB,<span class="string">'Parent'</span>,handles.axes1,<span class="string">'InitialMagnification'</span>,<span class="string">'fit'</span>); <span class="comment">%display it</span>
+0192         <span class="keyword">if</span> data(chval,6)==2
+0193             set(handles.himg(chval),<span class="string">'AlphaData'</span>,img);        
+0194         <span class="keyword">else</span>
+0195             set(handles.himg(chval),<span class="string">'AlphaData'</span>,data(chval,6));
+0196         <span class="keyword">end</span>
+0197         hold(handles.axes1,<span class="string">'off'</span>);
+0198     <span class="keyword">end</span>
+0199 
+0200 <span class="keyword">end</span>
+0201 <span class="comment">%refresh text</span>
+0202 str=get(handles.listbox_Channels,<span class="string">'String'</span>);
+0203 set(handles.text_Channels,<span class="string">'string'</span>,{str{chanels}});
+0204 
+0205 <span class="comment">%save new channels to memory</span>
+0206 handles.chanels=chanels;
+0207 data=handles.data(chval,:);
+0208 <span class="comment">%actualize the sliders</span>
+0209 set(handles.slider_thresh_low,<span class="string">'Value'</span>,data(4)^(1/handles.pow));
+0210 set(handles.slider_thresh_high,<span class="string">'Value'</span>,data(5)^(1/handles.pow));
+0211 set(handles.slider_transparance,<span class="string">'Value'</span>,min(data(6),1));
+0212 <span class="comment">%set the variable transparence</span>
+0213 <span class="keyword">if</span> data(6)==2
+0214     set(handles.checkbox_variable_transparence,<span class="string">'value'</span>,1);
+0215 <span class="keyword">else</span>
+0216     set(handles.checkbox_variable_transparence,<span class="string">'value'</span>,0);
+0217 <span class="keyword">end</span>
+0218 
+0219 <span class="comment">%actuallize the color bar</span>
+0220 rgb=zeros(1,1,3);
+0221 rgb(:)=data([1 2 3]);
+0222 sval=rgb2ind(rgb,handles.myColormaps)+1;
+0223 set(handles.slider_color,<span class="string">'Value'</span>,sval);
+0224 
+0225 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0226 
+0227 <span class="comment">%update handles</span>
+0228 guidata(handles.figure1, handles);
+0229 
+0230 
+0231 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0232 <a name="_sub12" href="#_subfunctions" class="code">function listbox_Channels_CreateFcn(hObject, eventdata, handles)</a>
+0233 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0234     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0235 <span class="keyword">end</span>
+0236 
+0237 
+0238 
+0239 <span class="comment">% --- Executes on mouse motion over figure - except title and menu.</span>
+0240 <a name="_sub13" href="#_subfunctions" class="code">function figure1_WindowButtonMotionFcn(hObject, eventdata, handles)</a>
+0241 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0242 guidata(hObject,handles);
+0243 
+0244 
+0245 
+0246 
+0247 <a name="_sub14" href="#_subfunctions" class="code">function handles=changeDisp(handles,refresh)</a>
+0248 <span class="comment">%function called each time the mose moves</span>
+0249 chanels=handles.chanels;
+0250 
+0251 tresh_low=get(handles.slider_thresh_low,<span class="string">'Value'</span>);
+0252 tresh_high=get(handles.slider_thresh_high,<span class="string">'Value'</span>);
+0253 
+0254 <span class="keyword">if</span> tresh_low&gt;tresh_high <span class="comment">%check if the low value smaller than the high , else error in imadjust</span>
+0255     set(handles.slider_thresh_low,<span class="string">'Value'</span>,tresh_high-0.001);
+0256     tresh_low=tresh_high-0.001;
+0257 <span class="keyword">end</span>
+0258 
+0259 tresh_low=tresh_low^(handles.pow);<span class="comment">%rescale the sliders values</span>
+0260 tresh_high=tresh_high^(handles.pow);
+0261 <span class="comment">%get values from alpha and color slider</span>
+0262 alpha=get(handles.slider_transparance,<span class="string">'Value'</span>);
+0263 col=round(get(handles.slider_color,<span class="string">'Value'</span>));
+0264 color=handles.myColormaps(col,:);
+0265 ch=get(handles.listbox_Channels,<span class="string">'Value'</span>);
+0266 
+0267 <span class="keyword">if</span> get(handles.checkbox_variable_transparence,<span class="string">'value'</span>);
+0268     alpha=2;
+0269 <span class="keyword">end</span>
+0270 datanew=[color,tresh_low,tresh_high,alpha];
+0271 
+0272 <span class="comment">%update the texts and the colors.</span>
+0273 set(handles.edit_color,<span class="string">'string'</span>,num2str(color,<span class="string">'%0.1f '</span>));
+0274 set(handles.edit_color,<span class="string">'backgroundcolor'</span>,color);
+0275 set(handles.hline,<span class="string">'Xdata'</span>,[col,col]);
+0276 set(handles.edit_transparance,<span class="string">'string'</span>,num2str(alpha));
+0277 set(handles.edit_thresh_high,<span class="string">'string'</span>,num2str(tresh_high));
+0278 set(handles.edit_thresh_low,<span class="string">'string'</span>,num2str(tresh_low));
+0279 
+0280 
+0281 data=handles.data;
+0282 <span class="comment">%test new changes or 'refresh'</span>
+0283 <span class="keyword">if</span> any(data(ch,:)~=datanew)||(nargin==2) 
+0284     <span class="keyword">if</span> ishandle(handles.himg(ch))
+0285         img=handles.img(:,:,ch);
+0286         img=imadjust(img,datanew([4 5]),[]);
+0287 
+0288         RGB=datanew([1 2 3]);
+0289         imgRGB=cat(3,img*RGB(1),img*RGB(2),img*RGB(3));
+0290         set(handles.himg(ch),<span class="string">'CDAta'</span>,imgRGB);
+0291         <span class="keyword">if</span> alpha~=2
+0292             set(handles.himg(ch),<span class="string">'AlphaData'</span>,datanew(6));
+0293         <span class="keyword">else</span>
+0294             set(handles.himg(ch),<span class="string">'AlphaData'</span>,img);
+0295         <span class="keyword">end</span>
+0296     <span class="keyword">end</span>
+0297 <span class="keyword">end</span>
+0298 
+0299 handles.data(ch,:)=datanew;
+0300 <span class="comment">%set the transparence to all displayed channels</span>
+0301 <span class="keyword">for</span> i=chanels
+0302     
+0303     
+0304     <span class="comment">%first channel has always transparence of 1</span>
+0305     <span class="keyword">if</span> i==chanels(1)
+0306         <span class="keyword">if</span> ishandle(handles.himg(i))
+0307             set(handles.himg(i),<span class="string">'AlphaData'</span>,1);
+0308         <span class="keyword">end</span>
+0309     <span class="keyword">else</span>
+0310         <span class="keyword">if</span> i~=ch <span class="comment">%the others channels in the display window</span>
+0311             <span class="keyword">if</span> ishandle(handles.himg(i))
+0312                 <span class="keyword">if</span> data(i,6)~=2
+0313                     set(handles.himg(i),<span class="string">'AlphaData'</span>,data(i,6));
+0314                 <span class="keyword">else</span> <span class="comment">%if variable transparence</span>
+0315                     img=handles.img(:,:,i);
+0316                     img=imadjust(img,handles.data(i,[4 5]),[]); <span class="comment">%calculate the image for each channel</span>
+0317                     set(handles.himg(i),<span class="string">'AlphaData'</span>,img);
+0318                 <span class="keyword">end</span>
+0319             <span class="keyword">end</span>
+0320         <span class="keyword">end</span>;
+0321     <span class="keyword">end</span>
+0322 <span class="keyword">end</span>
+0323 
+0324 
+0325 guidata(handles.figure1, handles);
+0326 
+0327 
+0328 
+0329 <span class="comment">% --- Executes on button press in pushbutton_crop.</span>
+0330 <a name="_sub15" href="#_subfunctions" class="code">function pushbutton_crop_Callback(hObject, eventdata, handles)</a>
+0331 <span class="comment">%crop function to go faster</span>
+0332 <span class="comment">%use imcrop</span>
+0333 axes(handles.axes1);
+0334 pos=handles.chanels(1);
+0335 
+0336 [I2,rect] =imcrop(handles.himg(pos));
+0337 
+0338 handles.himg(pos)=imshow(I2,<span class="string">'Parent'</span>,handles.axes1,<span class="string">'InitialMagnification'</span>,<span class="string">'fit'</span>);
+0339 hold(handles.axes1,<span class="string">'on'</span>)
+0340 <span class="keyword">for</span> i=2:length(handles.chanels)
+0341     pos=handles.chanels(i);
+0342     handles.himg(pos)=imshow(I2,<span class="string">'Parent'</span>,handles.axes1,<span class="string">'InitialMagnification'</span>,<span class="string">'fit'</span>);
+0343 <span class="keyword">end</span>
+0344 hold(handles.axes1,<span class="string">'off'</span>);
+0345 
+0346 <span class="keyword">for</span> i=1:size(handles.img,3)
+0347     I(:,:,i)=imcrop(handles.img(:,:,i),rect);
+0348 <span class="keyword">end</span>
+0349 
+0350 handles.img=I;<span class="comment">%change all the input imaes</span>
+0351 
+0352 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles,1);
+0353 
+0354 guidata(hObject, handles);
+0355 
+0356 
+0357 <span class="comment">% --- Executes on button press in pushbutton_Channel_OK.</span>
+0358 <a name="_sub16" href="#_subfunctions" class="code">function pushbutton_Channel_OK_Callback(hObject, eventdata, handles)</a>
+0359 <span class="comment">%read all the values end exit;</span>
+0360 tresh_low=get(handles.slider_thresh_low,<span class="string">'Value'</span>);
+0361 tresh_low=tresh_low^(handles.pow);
+0362 tresh_high=get(handles.slider_thresh_high,<span class="string">'Value'</span>);
+0363 tresh_high=tresh_high^(handles.pow);
+0364 alpha=get(handles.slider_transparance,<span class="string">'Value'</span>);
+0365 col=round(get(handles.slider_color,<span class="string">'Value'</span>));
+0366 color=handles.myColormaps(col,:);
+0367 ch=get(handles.listbox_Channels,<span class="string">'Value'</span>);
+0368 <span class="keyword">if</span> get(handles.checkbox_variable_transparence,<span class="string">'value'</span>);
+0369     alpha=2;
+0370 <span class="keyword">end</span>
+0371 
+0372 datanew=[color,tresh_low,tresh_high,alpha];
+0373 handles.data(ch,:)=datanew;
+0374 guidata(hObject, handles);
+0375 
+0376 uiresume(handles.figure1);<span class="comment">%to call the output funtion and exit</span>
+0377 uiresume(handles.figure1);
+0378 
+0379 
+0380 <span class="comment">% --- Executes on button press in checkbox_variable_transparence.</span>
+0381 <a name="_sub17" href="#_subfunctions" class="code">function checkbox_variable_transparence_Callback(hObject, eventdata, handles)</a>
+0382 
+0383 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0384 guidata(hObject, handles);
+0385 
+0386 
+0387 
+0388 
+0389 <a name="_sub18" href="#_subfunctions" class="code">function edit_color_Callback(hObject, eventdata, handles)</a>
+0390 col=zeros(1,1,3);
+0391 col(:)=str2num(get(hObject,<span class="string">'String'</span>));
+0392 colind=rgb2ind(col,handles.myColormaps)+1;
+0393 set(handles.slider_color,<span class="string">'value'</span>,colind);
+0394 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0395 guidata(hObject, handles);
+0396 
+0397 
+0398 <a name="_sub19" href="#_subfunctions" class="code">function edit_thresh_low_Callback(hObject, eventdata, handles)</a>
+0399 val=str2double(get(hObject,<span class="string">'String'</span>));
+0400 set(handles.slider_thresh_low,<span class="string">'value'</span>,val);
+0401 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0402 guidata(hObject, handles);
+0403 
+0404 
+0405 
+0406 <a name="_sub20" href="#_subfunctions" class="code">function edit_thresh_high_Callback(hObject, eventdata, handles)</a>
+0407 val=str2double(get(hObject,<span class="string">'String'</span>));
+0408 set(handles.slider_thresh_high,<span class="string">'value'</span>,val);
+0409 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0410 guidata(hObject, handles);  
+0411 
+0412 
+0413 
+0414 <a name="_sub21" href="#_subfunctions" class="code">function edit_transparance_Callback(hObject, eventdata, handles)</a>
+0415 val=str2double(get(hObject,<span class="string">'String'</span>));
+0416 set(handles.slider_transparance,<span class="string">'value'</span>,val);
+0417 handles=<a href="#_sub14" class="code" title="subfunction handles=changeDisp(handles,refresh)">changeDisp</a>(handles);
+0418 guidata(hObject, handles);
+0419 
+0420 
+0421 <span class="comment">% --- Executes when user attempts to close figure1.</span>
+0422 <a name="_sub22" href="#_subfunctions" class="code">function figure1_CloseRequestFcn(hObject, eventdata, handles)</a>
+0423 
+0424 <span class="keyword">if</span> isequal(get(hObject,<span class="string">'waitstatus'</span>),<span class="string">'waiting'</span>)
+0425  uiresume(hObject);
+0426 <span class="keyword">else</span>
+0427     delete(hObject);
+0428 <span class="keyword">end</span>
+0429 
+0430 
+0431</pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

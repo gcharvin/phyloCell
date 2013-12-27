@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_loadTimeLapseImage</title>
+  <meta name="keywords" content="phy_loadTimeLapseImage">
+  <meta name="description" content="toa an image from a project">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_loadTimeLapseImage
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>toa an image from a project</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function image=phy_loadTimeLapseImage(pos,frame,ch,option) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">toa an image from a project</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phyloCell_mainGUI.html" class="code" title="function varargout = phyloCell_mainGUI(varargin)">phyloCell_mainGUI</a>	Main graphical user interface;</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%toa an image from a project</span>
+0002 <a name="_sub0" href="#_subfunctions" class="code">function image=phy_loadTimeLapseImage(pos,frame,ch,option)</a>
+0003 
+0004 <span class="keyword">global</span> timeLapse;
+0005 framestr=num2str(frame);
+0006     <span class="keyword">if</span> numel(framestr)==2
+0007        framestr=[<span class="string">'0'</span> framestr];
+0008     <span class="keyword">end</span>
+0009     <span class="keyword">if</span> numel(framestr)==1
+0010        framestr=[<span class="string">'00'</span> framestr];
+0011     <span class="keyword">end</span>
+0012     
+0013  <span class="keyword">if</span> nargin==3
+0014 fullpath=strcat(timeLapse.realPath,timeLapse.filename,<span class="string">'-retreat/'</span>,timeLapse.pathList.channels(pos,ch),timeLapse.pathList.names(pos,ch),<span class="string">'-'</span>,framestr,<span class="string">'.jpg'</span>);
+0015  <span class="keyword">else</span>
+0016 fullpath=strcat(timeLapse.realPath,timeLapse.pathList.channels(pos,ch),timeLapse.pathList.names(pos,ch),<span class="string">'-'</span>,framestr,<span class="string">'.jpg'</span>);    
+0017  <span class="keyword">end</span>
+0018 
+0019  
+0020 <span class="comment">%image=uint16(imread(cell2mat(fullpath)));</span>
+0021 image=(imread(cell2mat(fullpath)));
+0022</pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

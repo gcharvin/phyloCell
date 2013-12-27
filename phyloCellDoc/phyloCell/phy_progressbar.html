@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_progressbar</title>
+  <meta name="keywords" content="phy_progressbar">
+  <meta name="description" content="this m-file modified by Quan Quach on 12/12/07">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_progressbar
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>this m-file modified by Quan Quach on 12/12/07</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [stopBar] =  phy_progressbar(fractiondone, position) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">this m-file modified by Quan Quach on 12/12/07
+email: quan.quach@gmail.com
+Original Author: Steve Hoelzer</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_setMothersWithoutBudneck.html" class="code" title="function phy_setMothersWithoutBudneck(fch,firstMCell,firstCells)">phy_setMothersWithoutBudneck</a>	</li><li><a href="phyloCell_mainGUI.html" class="code" title="function varargout = phyloCell_mainGUI(varargin)">phyloCell_mainGUI</a>	Main graphical user interface;</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function changecolor(h,e,progpatch)</a></li><li><a href="#_sub2" class="code">function timestr = sec2timestr(sec)</a></li><li><a href="#_sub3" class="code">function closeBar(src,evnt)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%this m-file modified by Quan Quach on 12/12/07</span>
+0002 <span class="comment">%email: quan.quach@gmail.com</span>
+0003 <span class="comment">%Original Author: Steve Hoelzer</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function [stopBar] =  phy_progressbar(fractiondone, position)</a>
+0005 
+0006 <span class="keyword">if</span>(~exist(<span class="string">'fractiondone'</span>))
+0007     <span class="keyword">return</span>
+0008 <span class="keyword">end</span>
+0009 <span class="comment">% Description:</span>
+0010 <span class="comment">%   progressbar(fractiondone,position) provides an indication of the progress of</span>
+0011 <span class="comment">% some task using graphics and text. Calling progressbar repeatedly will update</span>
+0012 <span class="comment">% the figure and automatically estimate the amount of time remaining.</span>
+0013 <span class="comment">%   This implementation of progressbar is intended to be extremely simple to use</span>
+0014 <span class="comment">% while providing a high quality user experience.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Features:</span>
+0017 <span class="comment">%   - Can add progressbar to existing m-files with a single line of code.</span>
+0018 <span class="comment">%   - The figure closes automatically when the task is complete.</span>
+0019 <span class="comment">%   - Only one progressbar can exist so old figures don't clutter the desktop.</span>
+0020 <span class="comment">%   - Remaining time estimate is accurate even if the figure gets closed.</span>
+0021 <span class="comment">%   - Minimal execution time. Won't slow down code.</span>
+0022 <span class="comment">%   - Random color and position options. When a programmer gets bored....</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Usage:</span>
+0025 <span class="comment">%   fractiondone specifies what fraction (0.0 - 1.0) of the task is complete.</span>
+0026 <span class="comment">% Typically, the figure will be updated according to that value. However, if</span>
+0027 <span class="comment">% fractiondone == 0.0, a new figure is created (an existing figure would be</span>
+0028 <span class="comment">% closed first). If fractiondone == 1.0, the progressbar figure will close.</span>
+0029 <span class="comment">%   position determines where the progressbar figure appears on screen. This</span>
+0030 <span class="comment">% argument only has an effect when a progress bar is first created or is reset</span>
+0031 <span class="comment">% by calling with fractiondone = 0. The progress bar's position can be specifed</span>
+0032 <span class="comment">% as follows:</span>
+0033 <span class="comment">%       [x, y]  - Position of lower left corner in normalized units (0.0 - 1.0)</span>
+0034 <span class="comment">%           0   - Centered (Default)</span>
+0035 <span class="comment">%           1   - Upper right</span>
+0036 <span class="comment">%           2   - Upper left</span>
+0037 <span class="comment">%           3   - Lower left</span>
+0038 <span class="comment">%           4   - Lower right</span>
+0039 <span class="comment">%           5   - Random [x, y] position</span>
+0040 <span class="comment">%   The color of the progressbar is choosen randomly when it is created or</span>
+0041 <span class="comment">% reset. Clicking inside the figure will cause a random color change.</span>
+0042 <span class="comment">%   For best results, call progressbar(0) (or just progressbar) before starting</span>
+0043 <span class="comment">% a task. This sets the proper starting time to calculate time remaining.</span>
+0044 <span class="comment">%</span>
+0045 <span class="comment">% Example Function Calls:</span>
+0046 <span class="comment">%   progressbar(fractiondone,position)</span>
+0047 <span class="comment">%   progressbar               % Initialize/reset</span>
+0048 <span class="comment">%   progressbar(0)            % Initialize/reset</span>
+0049 <span class="comment">%   progressbar(0,4)          % Initialize/reset and specify position</span>
+0050 <span class="comment">%   progressbar(0,[0.2 0.7])  % Initialize/reset and specify position</span>
+0051 <span class="comment">%   progressbar(0.5)          % Update</span>
+0052 <span class="comment">%   progressbar(1)            % Close</span>
+0053 <span class="comment">%</span>
+0054 <span class="comment">% Demo:</span>
+0055 <span class="comment">%   n = 1000;</span>
+0056 <span class="comment">%   progressbar % Create figure and set starting time</span>
+0057 <span class="comment">%   for i = 1:n</span>
+0058 <span class="comment">%       pause(0.01) % Do something important</span>
+0059 <span class="comment">%       progressbar(i/n) % Update figure</span>
+0060 <span class="comment">%   end</span>
+0061 <span class="comment">%</span>
+0062 <span class="comment">% Author: Steve Hoelzer</span>
+0063 <span class="comment">%</span>
+0064 <span class="comment">% Revisions:</span>
+0065 <span class="comment">% 2002-Feb-27   Created function</span>
+0066 <span class="comment">% 2002-Mar-19   Updated title text order</span>
+0067 <span class="comment">% 2002-Apr-11   Use floor instead of round for percentdone</span>
+0068 <span class="comment">% 2002-Jun-06   Updated for speed using patch (Thanks to waitbar.m)</span>
+0069 <span class="comment">% 2002-Jun-19   Choose random patch color when a new figure is created</span>
+0070 <span class="comment">% 2002-Jun-24   Click on bar or axes to choose new random color</span>
+0071 <span class="comment">% 2002-Jun-27   Calc time left, reset progress bar when fractiondone == 0</span>
+0072 <span class="comment">% 2002-Jun-28   Remove extraText var, add position var</span>
+0073 <span class="comment">% 2002-Jul-18   fractiondone input is optional</span>
+0074 <span class="comment">% 2002-Jul-19   Allow position to specify screen coordinates</span>
+0075 <span class="comment">% 2002-Jul-22   Clear vars used in color change callback routine</span>
+0076 <span class="comment">% 2002-Jul-29   Position input is always specified in pixels</span>
+0077 <span class="comment">% 2002-Sep-09   Change order of title bar text</span>
+0078 <span class="comment">% 2003-Jun-13   Change 'min' to 'm' because of built in function 'min'</span>
+0079 <span class="comment">% 2003-Sep-08   Use callback for changing color instead of string</span>
+0080 <span class="comment">% 2003-Sep-10   Use persistent vars for speed, modify titlebarstr</span>
+0081 <span class="comment">% 2003-Sep-25   Correct titlebarstr for 0% case</span>
+0082 <span class="comment">% 2003-Nov-25   Clear all persistent vars when percentdone = 100</span>
+0083 <span class="comment">% 2004-Jan-22   Cleaner reset process, don't create figure if percentdone = 100</span>
+0084 <span class="comment">% 2004-Jan-27   Handle incorrect position input</span>
+0085 <span class="comment">% 2004-Feb-16   Minimum time interval between updates</span>
+0086 <span class="comment">% 2004-Apr-01   Cleaner process of enforcing minimum time interval</span>
+0087 <span class="comment">% 2004-Oct-08   Seperate function for timeleftstr, expand to include days</span>
+0088 <span class="comment">% 2004-Oct-20   Efficient if-else structure for sec2timestr</span>
+0089 <span class="comment">%</span>
+0090 stopBar = 0;
+0091 <span class="keyword">persistent</span> progfig progpatch starttime lastupdate firstIteration
+0092 
+0093 <span class="comment">% Set defaults for variables not passed in</span>
+0094 <span class="keyword">if</span> nargin &lt; 1
+0095     fractiondone = 0;
+0096 <span class="keyword">end</span>
+0097 <span class="keyword">if</span> nargin &lt; 2
+0098     position = 0;
+0099 <span class="keyword">end</span>
+0100 
+0101 <span class="keyword">try</span>
+0102     <span class="comment">% Access progfig to see if it exists ('try' will fail if it doesn't)</span>
+0103     dummy = get(progfig,<span class="string">'UserData'</span>);
+0104     <span class="comment">% If progress bar needs to be reset, close figure and set handle to empty</span>
+0105     <span class="keyword">if</span> fractiondone == 0
+0106         delete(progfig) <span class="comment">% Close progress bar</span>
+0107         progfig = []; <span class="comment">% Set to empty so a new progress bar is created</span>
+0108     <span class="keyword">end</span>
+0109 <span class="keyword">catch</span>
+0110     progfig = []; <span class="comment">% Set to empty so a new progress bar is created</span>
+0111 <span class="keyword">end</span>
+0112 
+0113 
+0114 percentdone = floor(100*fractiondone);
+0115 
+0116 <span class="comment">% Create new progress bar if needed</span>
+0117 
+0118 <span class="keyword">if</span> (isempty(progfig) &amp;&amp; (isempty(firstIteration)))
+0119     firstIteration = 1;
+0120     <span class="comment">% Calculate position of progress bar in normalized units</span>
+0121     scrsz = [0 0 1 1];
+0122     width = scrsz(3)/4;
+0123     height = scrsz(4)/50;
+0124     <span class="keyword">if</span> (length(position) == 1)
+0125         hpad = scrsz(3)/64; <span class="comment">% Padding from left or right edge of screen</span>
+0126         vpad = scrsz(4)/24; <span class="comment">% Padding from top or bottom edge of screen</span>
+0127         left   = scrsz(3)/2 - width/2; <span class="comment">% Default</span>
+0128         bottom = scrsz(4)/2 - height/2; <span class="comment">% Default</span>
+0129         <span class="keyword">switch</span> position
+0130             <span class="keyword">case</span> 0 <span class="comment">% Center</span>
+0131                 <span class="comment">% Do nothing (default)</span>
+0132             <span class="keyword">case</span> 1 <span class="comment">% Top-right</span>
+0133                 left   = scrsz(3) - width  - hpad;
+0134                 bottom = scrsz(4) - height - vpad;
+0135             <span class="keyword">case</span> 2 <span class="comment">% Top-left</span>
+0136                 left   = hpad;
+0137                 bottom = scrsz(4) - height - vpad;
+0138             <span class="keyword">case</span> 3 <span class="comment">% Bottom-left</span>
+0139                 left   = hpad;
+0140                 bottom = vpad;
+0141             <span class="keyword">case</span> 4 <span class="comment">% Bottom-right</span>
+0142                 left   = scrsz(3) - width  - hpad;
+0143                 bottom = vpad;
+0144             <span class="keyword">case</span> 5 <span class="comment">% Random</span>
+0145                 left   = rand * (scrsz(3)-width);
+0146                 bottom = rand * (scrsz(4)-height);
+0147             <span class="keyword">otherwise</span>
+0148                 warning(<span class="string">'position must be (0-5). Reset to 0.'</span>)
+0149         <span class="keyword">end</span>
+0150         position = [left bottom];
+0151     <span class="keyword">elseif</span> length(position) == 2
+0152         <span class="comment">% Error checking on position</span>
+0153         <span class="keyword">if</span> (position(1) &lt; 0) | (scrsz(3)-width &lt; position(1))
+0154             position(1) = max(min(position(1),scrsz(3)-width),0);
+0155             warning(<span class="string">'Horizontal position adjusted to fit on screen.'</span>)
+0156         <span class="keyword">end</span>
+0157         <span class="keyword">if</span> (position(2) &lt; 0) | (scrsz(4)-height &lt; position(2))
+0158             position(2) = max(min(position(2),scrsz(4)-height),0);
+0159             warning(<span class="string">'Vertical position adjusted to fit on screen.'</span>)
+0160         <span class="keyword">end</span>
+0161     <span class="keyword">else</span>
+0162         error(<span class="string">'position is not formatted correctly'</span>)
+0163     <span class="keyword">end</span>
+0164     
+0165     <span class="comment">% Initialize progress bar</span>
+0166     progfig = figure(<span class="keyword">...</span>
+0167         <span class="string">'Units'</span>,            <span class="string">'normalized'</span>,<span class="keyword">...</span>
+0168         <span class="string">'Position'</span>,         [position width height],<span class="keyword">...</span>
+0169         <span class="string">'NumberTitle'</span>,      <span class="string">'off'</span>,<span class="keyword">...</span>
+0170         <span class="string">'Resize'</span>,           <span class="string">'off'</span>,<span class="keyword">...</span>
+0171         <span class="string">'MenuBar'</span>,          <span class="string">'none'</span>,<span class="keyword">...</span>
+0172         <span class="string">'BackingStore'</span>,     <span class="string">'off'</span> );
+0173     progaxes = axes(<span class="keyword">...</span>
+0174         <span class="string">'Position'</span>,         [0.02 0.15 0.96 0.70],<span class="keyword">...</span>
+0175         <span class="string">'XLim'</span>,             [0 1],<span class="keyword">...</span>
+0176         <span class="string">'YLim'</span>,             [0 1],<span class="keyword">...</span>
+0177         <span class="string">'Box'</span>,              <span class="string">'on'</span>,<span class="keyword">...</span>
+0178         <span class="string">'ytick'</span>,            [],<span class="keyword">...</span>
+0179         <span class="string">'xtick'</span>,            [] );
+0180     progpatch = patch(<span class="keyword">...</span>
+0181         <span class="string">'XData'</span>,            [0 0 0 0],<span class="keyword">...</span>
+0182         <span class="string">'YData'</span>,            [0 0 1 1],<span class="keyword">...</span>
+0183         <span class="string">'EraseMode'</span>,        <span class="string">'none'</span> );
+0184     
+0185 <span class="comment">% enable this code if you want the bar to change colors when the</span>
+0186 <span class="comment">% user clicks on the progress bar</span>
+0187 <span class="comment">%     set(progfig,  'ButtonDownFcn',{@changecolor,progpatch});</span>
+0188 <span class="comment">%     set(progaxes, 'ButtonDownFcn',{@changecolor,progpatch});</span>
+0189 <span class="comment">%     set(progpatch,'ButtonDownFcn',{@changecolor,progpatch});</span>
+0190 <span class="comment">%     changecolor(0,0,progpatch)</span>
+0191 
+0192     set(progpatch,<span class="string">'FaceColor'</span>,[.1 1 .1]);
+0193     
+0194     <span class="comment">% Set time of last update to ensure a redraw</span>
+0195     lastupdate = clock - 1;
+0196     
+0197     <span class="comment">% Task starting time reference</span>
+0198     <span class="keyword">if</span> isempty(starttime) | (fractiondone == 0)
+0199         starttime = clock;
+0200     <span class="keyword">end</span>
+0201     
+0202     set(progfig,<span class="string">'CloseRequestFcn'</span>,@<a href="#_sub3" class="code" title="subfunction closeBar(src,evnt)">closeBar</a>);
+0203     
+0204 <span class="keyword">end</span>
+0205 
+0206 <span class="comment">%if the user closes the progress bar during the data processing</span>
+0207 <span class="comment">%then this will erase all the variables are return 1 to the output</span>
+0208 <span class="keyword">if</span> (isempty(progfig) &amp;&amp; ~(fractiondone==0))
+0209     delete(progfig) <span class="comment">% Close progress bar</span>
+0210 
+0211     <span class="comment">% Clear persistent vars</span>
+0212     clear progfig progpatch starttime lastupdate firstIteration
+0213     stopBar = 1;
+0214     <span class="keyword">return</span>    
+0215     
+0216 <span class="keyword">end</span>
+0217     
+0218     
+0219 <span class="comment">%Enforce a minimum time interval between updates</span>
+0220 <span class="comment">%but allows for the case when the bar reaches 100% so that the user can see</span>
+0221 <span class="comment">%it</span>
+0222 <span class="keyword">if</span> (etime(clock,lastupdate) &lt; 0.01 &amp;&amp; ~(percentdone == 100))
+0223     <span class="keyword">return</span>
+0224 <span class="keyword">end</span>
+0225 
+0226 <span class="comment">% Update progress patch</span>
+0227 set(progpatch,<span class="string">'XData'</span>,[0 fractiondone fractiondone 0])
+0228 
+0229 <span class="comment">% Update progress figure title bar</span>
+0230 <span class="keyword">if</span> (fractiondone == 0)
+0231     titlebarstr = <span class="string">' 0%'</span>;
+0232 <span class="keyword">else</span>
+0233     runtime = etime(clock,starttime);
+0234     timeleft = runtime/fractiondone - runtime;
+0235     timeleftstr = <a href="#_sub2" class="code" title="subfunction timestr = sec2timestr(sec)">sec2timestr</a>(timeleft);
+0236     titlebarstr = sprintf(<span class="string">'%2d%%    %s remaining'</span>,percentdone,timeleftstr);
+0237 <span class="keyword">end</span>
+0238 set(progfig,<span class="string">'Name'</span>,titlebarstr)
+0239 
+0240 <span class="comment">% Force redraw to show changes</span>
+0241 drawnow
+0242 
+0243 <span class="comment">% If task completed, close figure and clear vars, then exit</span>
+0244 
+0245 <span class="keyword">if</span> percentdone == 100 <span class="comment">% Task completed</span>
+0246 <span class="comment">%     delete(progfig) % Close progress bar</span>
+0247 
+0248     <span class="comment">%change the close request function back to normal</span>
+0249     set(progfig,<span class="string">'CloseRequestFcn'</span>,<span class="string">'closereq'</span>); 
+0250     <span class="comment">%close figure</span>
+0251     close(progfig);
+0252     <span class="comment">% Clear persistent vars</span>
+0253     clear progfig progpatch starttime lastupdate firstIteration 
+0254     <span class="keyword">return</span>
+0255 <span class="keyword">end</span>
+0256 <span class="comment">% Record time of this update</span>
+0257 lastupdate = clock;
+0258 
+0259 <span class="comment">%%</span>
+0260 
+0261 <span class="comment">% ------------------------------------------------------------------------------</span>
+0262 <a name="_sub1" href="#_subfunctions" class="code">function changecolor(h,e,progpatch)</a>
+0263 <span class="comment">%Change the color of the progress bar patch</span>
+0264 
+0265 colorlim = 2.8; <span class="comment">% Must be &lt;= 3.0 - This keeps the color from being too light</span>
+0266 thiscolor = rand(1,3);
+0267 <span class="keyword">while</span> sum(thiscolor) &gt; colorlim
+0268     thiscolor = rand(1,3);
+0269 <span class="keyword">end</span>
+0270 set(progpatch,<span class="string">'FaceColor'</span>,thiscolor);
+0271 
+0272 
+0273 
+0274 <span class="comment">%%</span>
+0275 <span class="comment">% ------------------------------------------------------------------------------</span>
+0276 <a name="_sub2" href="#_subfunctions" class="code">function timestr = sec2timestr(sec)</a>
+0277 <span class="comment">% Convert a time measurement from seconds into a human readable string.</span>
+0278 
+0279 <span class="comment">% Convert seconds to other units</span>
+0280 d = floor(sec/86400); <span class="comment">% Days</span>
+0281 sec = sec - d*86400;
+0282 h = floor(sec/3600); <span class="comment">% Hours</span>
+0283 sec = sec - h*3600;
+0284 m = floor(sec/60); <span class="comment">% Minutes</span>
+0285 sec = sec - m*60;
+0286 s = floor(sec); <span class="comment">% Seconds</span>
+0287 
+0288 <span class="comment">% Create time string</span>
+0289 <span class="keyword">if</span> d &gt; 0
+0290     <span class="keyword">if</span> d &gt; 9
+0291         timestr = sprintf(<span class="string">'%d day'</span>,d);
+0292     <span class="keyword">else</span>
+0293         timestr = sprintf(<span class="string">'%d day, %d hr'</span>,d,h);
+0294     <span class="keyword">end</span>
+0295 <span class="keyword">elseif</span> h &gt; 0
+0296     <span class="keyword">if</span> h &gt; 9
+0297         timestr = sprintf(<span class="string">'%d hr'</span>,h);
+0298     <span class="keyword">else</span>
+0299         timestr = sprintf(<span class="string">'%d hr, %d min'</span>,h,m);
+0300     <span class="keyword">end</span>
+0301 <span class="keyword">elseif</span> m &gt; 0
+0302     <span class="keyword">if</span> m &gt; 9
+0303         timestr = sprintf(<span class="string">'%d min'</span>,m);
+0304     <span class="keyword">else</span>
+0305         timestr = sprintf(<span class="string">'%d min, %d sec'</span>,m,s);
+0306     <span class="keyword">end</span>
+0307 <span class="keyword">else</span>
+0308     timestr = sprintf(<span class="string">'%d sec'</span>,s);
+0309 <span class="keyword">end</span>
+0310 
+0311 <span class="comment">%%</span>
+0312 <a name="_sub3" href="#_subfunctions" class="code">function closeBar(src,evnt)</a>
+0313  
+0314 selection = questdlg(<span class="string">'Do you want to stop this process?'</span>,<span class="keyword">...</span>
+0315                      <span class="string">'Stop process'</span>,<span class="keyword">...</span>
+0316                      <span class="string">'Yes'</span>,<span class="string">'No'</span>,<span class="string">'Yes'</span>);
+0317 <span class="keyword">switch</span> selection,
+0318    <span class="keyword">case</span> <span class="string">'Yes'</span>,
+0319     delete(gcf)
+0320    <span class="keyword">case</span> <span class="string">'No'</span>
+0321      <span class="keyword">return</span>
+0322 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

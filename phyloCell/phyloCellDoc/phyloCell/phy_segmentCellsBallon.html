@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_segmentCellsBallon</title>
+  <meta name="keywords" content="phy_segmentCellsBallon">
+  <meta name="description" content="find cell center based on phase image using bwdist to detect cell centers and">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_segmentCellsBallon
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>find cell center based on phase image using bwdist to detect cell centers and</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function cellsout=phy_segmentCellsBallon(image,cellsin,option,killcells,parametres) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> find cell center based on phase image using bwdist to detect cell centers and
+ then inflate a contour from the center using ball model</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_Object.html" class="code" title="">phy_Object</a>	</li><li><a href="phy_ballModel.html" class="code" title="function [xnew ynew bre]=phy_ballModel(x,y,gradx,grady,option)">phy_ballModel</a>	ball model is a further evolution of ball that lets one relax many cells</li><li><a href="phy_findCellCenters.html" class="code" title="function [listx2 listy2 distance imdistance2]=phy_findCellCenters(imdata,display,cellcelldistance)">phy_findCellCenters</a>	replace the previous findCellCenter function : about 8 faster !</li><li><a href="phy_formatCellsForBallModel.html" class="code" title="function [x y]=phy_formatCellsForBallModel(cells,cellList)">phy_formatCellsForBallModel</a>	</li><li><a href="phy_getCellCenter.html" class="code" title="function [a b]=phy_getCellCenter(x,y)">phy_getCellCenter</a>	get the center of the cells</li><li><a href="phy_selfAvoding.html" class="code" title="function cellout=phy_selfAvoding(cells)">phy_selfAvoding</a>	separates the overlapping cells (from ball model)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phyloCell_mainGUI.html" class="code" title="function varargout = phyloCell_mainGUI(varargin)">phyloCell_mainGUI</a>	Main graphical user interface;</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function cellsout=detectCell(cells,image)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% find cell center based on phase image using bwdist to detect cell centers and</span>
+0002 <span class="comment">% then inflate a contour from the center using ball model</span>
+0003 
+0004 <a name="_sub0" href="#_subfunctions" class="code">function cellsout=phy_segmentCellsBallon(image,cellsin,option,killcells,parametres)</a>
+0005 
+0006 
+0007 warning off all;
+0008 
+0009 
+0010 needsROI=0;
+0011 
+0012 <span class="keyword">if</span> numel(cellsin)==0
+0013     needsROI=1;
+0014 <span class="keyword">end</span>
+0015 
+0016 <span class="keyword">if</span> isfield(cellsin,<span class="string">'n'</span>)
+0017     <span class="keyword">if</span> cellsin.n==0
+0018         needsROI=1;
+0019     <span class="keyword">end</span>
+0020 <span class="keyword">end</span>
+0021 
+0022 <span class="keyword">if</span> needsROI==1
+0023     <span class="keyword">if</span> nargin&gt;=3
+0024         
+0025         <span class="keyword">if</span> isnumeric(option)
+0026             ROI=option;
+0027         <span class="keyword">else</span>
+0028             
+0029             <span class="keyword">if</span> strcmp(option,<span class="string">'ROI'</span>)
+0030                 
+0031                 <span class="comment">% ROI=[300 300 400 400];</span>
+0032                 
+0033                 ROI=[1 1 size(image,2) size(image,1)];
+0034             <span class="keyword">else</span>
+0035                 
+0036                 figure, imshow(image,[]);
+0037                 warning off all;
+0038                 [b xe ye]=roipolyold(); <span class="comment">%define region of interest</span>
+0039                 warning on all;
+0040                 ROI=[min(xe) min(ye) max(xe)-min(xe) max(ye)-min(ye)]; <span class="comment">% define la region [a b a+x a+y]</span>
+0041                 close;
+0042             <span class="keyword">end</span>
+0043             
+0044         <span class="keyword">end</span>
+0045         
+0046     <span class="keyword">else</span>
+0047         figure, imshow(image,[]);
+0048         [b xe ye]=roipolyold();
+0049         ROI=[min(xe) min(ye) max(xe)-min(xe) max(ye)-min(ye)];
+0050         close;
+0051     <span class="keyword">end</span>
+0052 <span class="keyword">else</span>
+0053     
+0054     
+0055     xt=cellsin.x;
+0056     yt=cellsin.y;
+0057     
+0058     cx=mean(xt);
+0059     cy=mean(yt);
+0060     distx=1.1*(max(max(xt))-min(min(xt)));
+0061     disty=1.1*(max(max(yt))-min(min(yt)));
+0062     distx=max(distx,200);
+0063     disty=max(disty,200);
+0064     
+0065     distx=max(distx,disty);
+0066     
+0067     
+0068     
+0069     ROI=[ round(cx-0.5*distx-50) round(cy-0.5*distx-50) round(distx+100) round(distx+100)];
+0070     ROI(1)=max(1,round(cx-0.5*distx-50));
+0071     ROI(2)=max(1,round(cy-0.5*disty-50));
+0072     
+0073     
+0074     ROI(4)=min(ROI(4),size(image,1)-ROI(2));
+0075     ROI(3)=min(ROI(3),size(image,2)-ROI(1));
+0076     
+0077     <span class="comment">%ROI,cellsin</span>
+0078     cellsin.x=cellsin.x-ROI(1);
+0079     cellsin.y=cellsin.y-ROI(2);
+0080     cellsin.ox=cellsin.ox-ROI(1);
+0081     cellsin.oy=cellsin.oy-ROI(2);
+0082     <span class="comment">%'after'</span>
+0083     <span class="comment">%ROI</span>
+0084 <span class="keyword">end</span>
+0085 
+0086 <span class="keyword">if</span> numel(killcells)==0
+0087 <span class="keyword">else</span>
+0088     killcells.x=killcells.x-ROI(1);
+0089     killcells.y=killcells.y-ROI(2);
+0090     
+0091 <span class="keyword">end</span>
+0092 
+0093 cellsout=cellsin;
+0094 
+0095 
+0096 image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
+0097 
+0098 
+0099 <span class="comment">%find the centers of the cells</span>
+0100 
+0101 <span class="comment">% [listx listy distance]=findCellCenters(image,cellsin,killcells);</span>
+0102 cell_radius=round(parametres.cell_diameter/2.0);
+0103 [listx listy distance imdistance]=<a href="phy_findCellCenters.html" class="code" title="function [listx2 listy2 distance imdistance2]=phy_findCellCenters(imdata,display,cellcelldistance)">phy_findCellCenters</a>(image,0,cell_radius);
+0104 
+0105 
+0106 <span class="keyword">if</span> numel(listx)==0
+0107     <span class="keyword">if</span> numel(cellsin)==0
+0108         <span class="keyword">return</span>;
+0109     <span class="keyword">end</span>
+0110 <span class="keyword">end</span>
+0111 
+0112 <span class="comment">% initial state for the cell contour - adding new cells</span>
+0113 
+0114 <span class="keyword">if</span> numel(cellsin)==0
+0115     nx=32;
+0116     <span class="comment">% cells=[];</span>
+0117     nc=0;
+0118     cell=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0119 <span class="keyword">else</span>
+0120     nx=cellsin.nx;
+0121     nc=cellsin.n;
+0122     cells=cellsin;
+0123     cells.color=zeros(1,cells.n);
+0124 <span class="keyword">end</span>
+0125 
+0126 rad=0.7;
+0127 n=nc;
+0128 
+0129 <span class="keyword">for</span> i=1:numel(listx)
+0130     
+0131     x=zeros(nx+1,1);
+0132     y=zeros(nx+1,1);
+0133     
+0134     <span class="keyword">for</span> j=0:nx
+0135         x(j+1)=2*rad*distance(i)*cos(2*pi*j/nx)+listx(i);
+0136         y(j+1)=2*rad*distance(i)*sin(2*pi*j/nx)+listy(i);
+0137     <span class="keyword">end</span>
+0138     
+0139     <span class="comment">% the factor 2 is due to cell scaling at the beginning of detect cells</span>
+0140     cell(i).n=nx;
+0141     cell(i).x=x;
+0142     cell(i).y=y;
+0143     
+0144     cells.x(n*(nx+1)+1:(n+1)*(nx+1))=x;
+0145     cells.y(n*(nx+1)+1:(n+1)*(nx+1))=y;
+0146     cells.n=n+1;
+0147     [cells.ox(n+1) cells.oy(n+1)]=<a href="phy_getCellCenter.html" class="code" title="function [a b]=phy_getCellCenter(x,y)">phy_getCellCenter</a>(x,y);
+0148     cells.area(n+1)=round(polyarea(x,y));
+0149     cell(i).area=round(polyarea(x,y));
+0150     cells.nx=nx;
+0151     
+0152     cells.connect(n+1)=0;
+0153     cells.isNucleated(n+1)=0;
+0154     cells.color(n+1)=0;
+0155     
+0156     n=n+1;
+0157 <span class="keyword">end</span>
+0158 
+0159 <span class="comment">% display original contours</span>
+0160 <span class="keyword">if</span> nargin&gt;=3
+0161     <span class="keyword">if</span> strcmp(option,<span class="string">'display'</span>) <span class="comment">%'display'</span>
+0162         figure, imshow(image,[]);
+0163         <span class="keyword">for</span> i=1:numel(cell)
+0164             n=i-1;
+0165             x=cells.x(n*(nx+1)+1:(n+1)*(nx+1));
+0166             y=cells.y(n*(nx+1)+1:(n+1)*(nx+1));
+0167             <span class="comment">%          x=cell(i).x;</span>
+0168             <span class="comment">%          y=cell(i).y;</span>
+0169             x=0.5*(x-mean(x))+mean(x);
+0170             y=0.5*(y-mean(y))+mean(y);
+0171             line(x,y,<span class="string">'Color'</span>,<span class="string">'b'</span>);
+0172         <span class="keyword">end</span>
+0173     <span class="keyword">end</span>
+0174 <span class="keyword">end</span>
+0175 
+0176 <span class="comment">%cells</span>
+0177 <span class="comment">% contour detection using the ball model</span>
+0178 
+0179 cellsout=<a href="#_sub1" class="code" title="subfunction cellsout=detectCell(cells,image)">detectCell</a>(cells,image);
+0180 
+0181 <span class="comment">% remove the cells that are too small</span>
+0182 <span class="comment">% will use color coding to keep the cells that were already detected !</span>
+0183 
+0184 <span class="comment">%con=1;</span>
+0185 con=1; <span class="comment">%con=1</span>
+0186 tempcells=cellsout;
+0187 ite=1;
+0188 <span class="keyword">while</span> con
+0189     <span class="comment">%a=tempcells.area(ite)</span>
+0190     <span class="keyword">if</span> tempcells.area(ite)&lt;500 || tempcells.bre(ite)==1
+0191         tempcells=deleteOneCell(tempcells,ite);
+0192     <span class="keyword">else</span>
+0193         ite=ite+1; <span class="comment">%'iterate'</span>
+0194     <span class="keyword">end</span>
+0195     
+0196     <span class="keyword">if</span> ite==tempcells.n+1
+0197         con=0;
+0198     <span class="keyword">end</span>
+0199 <span class="keyword">end</span>
+0200 <span class="comment">%%%%%%%</span>
+0201 cellsout=tempcells;
+0202 <span class="comment">%%%%%</span>
+0203 <span class="comment">% display newly found contours</span>
+0204 <span class="keyword">if</span> nargin&gt;=3
+0205     <span class="keyword">if</span> strcmp(option,<span class="string">'ROI'</span>)  <span class="comment">%'display'</span>
+0206         <span class="keyword">for</span> i=1:cellsout.n
+0207             n=i-1;
+0208             x=cellsout.x(n*(nx+1)+1:(n+1)*(nx+1));
+0209             y=cellsout.y(n*(nx+1)+1:(n+1)*(nx+1));
+0210             cell(i).x=x;
+0211             cell(i).y=y;
+0212             
+0213         <span class="keyword">end</span>
+0214     <span class="keyword">end</span>
+0215 <span class="keyword">end</span>
+0216 
+0217 cellsout.x=cellsout.x+ROI(1);
+0218 cellsout.y=cellsout.y+ROI(2);
+0219 cellsout.ox=cellsout.ox+ROI(1);
+0220 cellsout.oy=cellsout.oy+ROI(2);
+0221 warning on all;
+0222 
+0223 <a name="_sub1" href="#_subfunctions" class="code">function cellsout=detectCell(cells,image)</a>
+0224 
+0225 
+0226 cellList=1:1:cells.n;
+0227 <span class="comment">%1:1:cells.n;</span>
+0228 
+0229 nx=cells.nx;
+0230 
+0231 [xt yt]=<a href="phy_formatCellsForBallModel.html" class="code" title="function [x y]=phy_formatCellsForBallModel(cells,cellList)">phy_formatCellsForBallModel</a>(cells,cellList);
+0232 
+0233 cx=mean2(xt);
+0234 cy=mean2(yt);
+0235 distx=1.1*(max(max(xt))-min(min(xt)));
+0236 disty=1.1*(max(max(yt))-min(min(yt)));
+0237 distx=max(distx,50);
+0238 disty=max(disty,50);
+0239 
+0240 distx=max(distx,disty);
+0241 ROI=[ round(cx-distx) round(cy-disty) round(2*distx) round(2*distx)];
+0242 ROI(1)=max(1,round(cx-distx));
+0243 ROI(2)=max(1,round(cy-disty));
+0244 
+0245 ROI(4)=min(ROI(4),size(image,1)-ROI(2));
+0246 ROI(3)=min(ROI(3),size(image,2)-ROI(1));
+0247 
+0248 nx=cells.nx;
+0249 
+0250 
+0251 
+0252 image=image(ROI(2):ROI(2)+ROI(4),ROI(1):ROI(1)+ROI(3));
+0253 
+0254 
+0255 
+0256 xt=xt-ROI(1);
+0257 yt=yt-ROI(2);
+0258 
+0259 gradx=diff(double(image),1,2);
+0260 gradx(:,size(gradx,2)+1)=gradx(:,size(gradx,2));
+0261 grady=diff(double(image),1,1);
+0262 grady(size(grady,1)+1,:)=grady(size(grady,1),:);
+0263 
+0264 
+0265 
+0266 [xnew ynew bre]=<a href="phy_ballModel.html" class="code" title="function [xnew ynew bre]=phy_ballModel(x,y,gradx,grady,option)">phy_ballModel</a>(xt,yt, gradx,grady,<span class="string">'scale'</span>);
+0267 
+0268 xnew(nx+1,:)=xnew(1,:);
+0269 ynew(nx+1,:)=ynew(1,:);
+0270 
+0271 xnew=xnew+ROI(1);
+0272 ynew=ynew+ROI(2);
+0273 
+0274 ct=1;
+0275 <span class="keyword">for</span> s=cellList
+0276     cells.x((s-1)*(nx+1)+1:(s)*(nx+1))=(xnew(:,ct))';
+0277     cells.y((s-1)*(nx+1)+1:(s)*(nx+1))=(ynew(:,ct))';
+0278     [cells.ox(s) cells.oy(s)]=<a href="phy_getCellCenter.html" class="code" title="function [a b]=phy_getCellCenter(x,y)">phy_getCellCenter</a>(xnew(1:nx,ct)',ynew(1:nx,ct)');
+0279     cells.area(s)=round(polyarea(xnew(:,ct),ynew(:,ct)));
+0280     ct=ct+1;
+0281 <span class="keyword">end</span>
+0282 
+0283 cells=<a href="phy_selfAvoding.html" class="code" title="function cellout=phy_selfAvoding(cells)">phy_selfAvoding</a>(cells);
+0284 cellsout=cells;
+0285 cellsout.bre=bre;</pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

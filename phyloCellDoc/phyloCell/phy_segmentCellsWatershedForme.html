@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phy_segmentCellsWatershedForme</title>
+  <meta name="keywords" content="phy_segmentCellsWatershedForme">
+  <meta name="description" content="segment cells with watershed method">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<!-- # phyloCell -->
+<h1>phy_segmentCellsWatershedForme
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>segment cells with watershed method</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function cells=phy_segmentCellsWatershedForme(imdata,parametres) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">segment cells with watershed method
+inputs:    imdata= image to segment
+           parametres=the struct with the cell diameter</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phy_Object.html" class="code" title="">phy_Object</a>	</li><li><a href="phy_findCellCenters.html" class="code" title="function [listx2 listy2 distance imdistance2]=phy_findCellCenters(imdata,display,cellcelldistance)">phy_findCellCenters</a>	replace the previous findCellCenter function : about 8 faster !</li><li><a href="phy_scale.html" class="code" title="function y = phy_scale(varargin)">phy_scale</a>	SCALE  Scales matrix elements to a new range.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="phyloCell_mainGUI.html" class="code" title="function varargout = phyloCell_mainGUI(varargin)">phyloCell_mainGUI</a>	Main graphical user interface;</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%segment cells with watershed method</span>
+0002 <span class="comment">%inputs:    imdata= image to segment</span>
+0003 <span class="comment">%           parametres=the struct with the cell diameter</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function cells=phy_segmentCellsWatershedForme(imdata,parametres)</a>
+0005 
+0006 <span class="comment">%imdata=phy_anisodiff(imdata,10,100,0.24,1);</span>
+0007 
+0008 <span class="comment">%filter original image</span>
+0009 h=fspecial(<span class="string">'disk'</span>,5);
+0010 imdata = filter2(h,imdata);
+0011 imdata=<a href="phy_scale.html" class="code" title="function y = phy_scale(varargin)">phy_scale</a>(imdata);
+0012 
+0013 <span class="comment">%find cell center and ghet the centre of cells (list x, list y)</span>
+0014 cell_radius=round(parametres.cell_diameter/2.0);
+0015 [listx listy distance imdistance]=<a href="phy_findCellCenters.html" class="code" title="function [listx2 listy2 distance imdistance2]=phy_findCellCenters(imdata,display,cellcelldistance)">phy_findCellCenters</a>(imdata,0,cell_radius);
+0016 imdistance=<a href="phy_scale.html" class="code" title="function y = phy_scale(varargin)">phy_scale</a>(imdistance);
+0017  <span class="comment">%figure; imshow(imdistance);</span>
+0018 <span class="comment">%level = graythresh(imdistance);</span>
+0019 
+0020 <span class="comment">%listx=listx([1]);</span>
+0021 <span class="comment">%listy=listy([1]);</span>
+0022 
+0023 cells=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0024 
+0025 <span class="comment">%invers the distance image and keep only the highest part</span>
+0026 imbw=im2bw(imdistance,0.5); 
+0027 imdistance2=imdistance.*imbw;
+0028 D=imdistance2*(-1);
+0029 
+0030 <span class="comment">%calculate the markers</span>
+0031 <span class="comment">%prepare the image for the watershed imersion</span>
+0032 <span class="comment">%the centres and the background(distance 0) will be the markers in the</span>
+0033 <span class="comment">%watershed imersion</span>
+0034 pix = sub2ind(size(D), round(listy), round(listx));
+0035 D(pix)=-1;
+0036 G=zeros(size(D));
+0037 G(imdistance==0)=1;
+0038 <span class="keyword">for</span> i=1:length(pix)
+0039     G(pix(i))=i+1;
+0040 <span class="keyword">end</span>
+0041 
+0042 <span class="comment">%the high pixels(the borders of the cells) are cut from the watershed image</span>
+0043 level = graythresh(imdata);
+0044 imbw=im2bw(imdata,0.5); 
+0045 G(imbw)=1;
+0046 <span class="comment">%figure; imagesc(G);</span>
+0047 
+0048 <span class="comment">%calculate the gradient of the initial image</span>
+0049 [FX,FY] = gradient(imdata);
+0050 NG = sqrt( FX.*FX + FY.*FY );
+0051 <span class="comment">%filter and scale the gradient</span>
+0052 h=fspecial(<span class="string">'disk'</span>,2);
+0053 NG = filter2(h,NG);
+0054 NG=<a href="phy_scale.html" class="code" title="function y = phy_scale(varargin)">phy_scale</a>(NG);
+0055 <span class="comment">%figure;imshow(NG)</span>
+0056 
+0057 
+0058 <span class="comment">%construct the imersion relief for waershed: the gradiant + initial image+</span>
+0059 <span class="comment">%distance image ()</span>
+0060 D=NG+imdata/2+D/2;
+0061 <span class="comment">%figure; imagesc(D);</span>
+0062 
+0063 tic;[L Out] = phy_WatershedForme(D,G,parametres.numberPixelsWat);toc;
+0064 <span class="comment">%tic;L = myWatershed(D,G);toc;</span>
+0065 
+0066 <span class="comment">%figure;imagesc(Out);</span>
+0067 <span class="comment">%figure;imagesc(L);</span>
+0068 
+0069 <span class="comment">% post processing</span>
+0070 L=L-1; <span class="comment">%background equals 0</span>
+0071 L((L&lt;0))=0;
+0072 
+0073 
+0074 
+0075 
+0076 <span class="comment">%eliminate smals regions</span>
+0077 area_cell=cell_radius^2*pi;
+0078 final = bwareaopen(L,round(area_cell/10),4);
+0079 L=final.*L;
+0080 
+0081 <span class="comment">%make contours from the labeled image</span>
+0082 sfi=10;<span class="comment">% size filter (for contour smoothnes)</span>
+0083 <span class="keyword">for</span> k = 1:max(max(L))
+0084     objMask=zeros(size(L));
+0085     objMask(L==k)=1;
+0086     <span class="comment">%figure;imshow(objMask);</span>
+0087     B = bwboundaries(objMask,4,<span class="string">'noholes'</span>);
+0088     <span class="keyword">if</span> isempty(B)
+0089         cells(k)=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0090         <span class="keyword">continue</span>;
+0091     <span class="keyword">end</span>
+0092     <span class="keyword">if</span> length(B)&gt;1
+0093         boundary = B{1}; <span class="comment">%case an object was split in more than 1 parts</span>
+0094         <span class="keyword">for</span> i=2:length(B)
+0095             <span class="keyword">if</span> size(B{i},1)&gt;size(boundary,1)
+0096                 boundary = B{i};
+0097             <span class="keyword">end</span>
+0098         <span class="keyword">end</span>
+0099     <span class="keyword">else</span>
+0100         boundary = B{1};
+0101     <span class="keyword">end</span>
+0102     
+0103     x=boundary(1:1:<span class="keyword">end</span>,2);  <span class="comment">%x contour</span>
+0104     <span class="keyword">if</span> length(x)&lt;sfi
+0105         cells(k)=<a href="phy_Object.html" class="code" title="">phy_Object</a>;
+0106         <span class="keyword">continue</span>
+0107     <span class="keyword">end</span>
+0108     [x2,zf]=filter(ones(1,sfi)/sfi,1,x);
+0109     x=filter(ones(1,sfi)/sfi,1,x,zf);
+0110     cells(k).x=x;
+0111     y=boundary(1:1:<span class="keyword">end</span>,1);   <span class="comment">% y contur</span>
+0112     [y2,zf]=filter(ones(1,sfi)/sfi,1,y);
+0113     y=filter(ones(1,sfi)/sfi,1,y,zf);
+0114     cells(k).y=y;
+0115     cells(k).ox=mean(boundary(:,2)); <span class="comment">%x center</span>
+0116     cells(k).oy=mean(boundary(:,1));  <span class="comment">%y center</span>
+0117     cells(k).n=k;
+0118 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 27-Oct-2010 20:01:59 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>
