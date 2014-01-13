@@ -66,12 +66,10 @@ cla(handles.axes1);
 
 
 if ~exist('javitools.AVITools', 'class')
-    if isunix
-        pathout=phy_findFunctionPath('phyloCellv2.2/addon/ag');
-    else
-        pathout=phy_findFunctionPath('phyloCellv2.2\addon\ag');
-    end
-    javaaddpath([pathout '/javitools.jar']);
+    p = mfilename('fullpath');
+    [p f e]=fileparts(p);
+    p2=[p '/./addon/ag/javitools.jar'];
+   javaaddpath([p '/../addon/ag/javitools.jar']); 
 end
 
 global segmentation
@@ -2150,7 +2148,7 @@ segmentation.pedigree.orientation=str2double(answer{2});
 segmentation.pedigree.objects=answer{4};
 
 if numel(answer{3})~=0
-    segmentation.pedigree.cellindex=str2double(answer{3});
+    segmentation.pedigree.cellindex=str2num(answer{3});
 else
     segmentation.pedigree.cellindex=[];
 end

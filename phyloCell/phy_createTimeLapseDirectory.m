@@ -30,6 +30,7 @@ for i=1:maxpos
     
     for j=1:numel(localTimeLapse.list)
         chpos=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID);
+        
         path2=strcat(timeLapse.path,dirpos);
         fullpath=strcat(path2,chpos);
         mkdir(path2,chpos);

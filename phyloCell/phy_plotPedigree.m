@@ -327,6 +327,7 @@ title(['Pedigree of ' featname]);
 
 function xpos=buildNode(tcells,xpos,i,posmin,posmax)
 %get the list of cells xpositinon in pedigree
+
 daughterList=tcells(i).daughterList;
 
 if ~issorted(tcells(i).divisionTimes)

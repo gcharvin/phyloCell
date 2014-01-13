@@ -61,7 +61,7 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
    % 'project already exist'
    
     if nargin==3
-        'project already exist'
+        'project already exists'
     status('loading saved file segmentation',handles);
     pause(0.2);
     end

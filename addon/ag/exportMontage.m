@@ -58,8 +58,7 @@ end
 
 noseg=0;
 if numel(segmentation)==0
-    timeLapse = load(fullfile(base, [project '-project.mat']));
-    timeLapse = timeLapse.timeLapse;
+    load(fullfile(base, [project '-project.mat']));
     noseg=1;
 else
     global timeLapse
@@ -93,7 +92,7 @@ end
 for position = positions
     
     if noseg
-    [segmentation timeLapse]=phy_openSegmentationProject(position);
+     phy_openSegmentationProject(position,[]);
     end
     
     channels = collectChannels;
@@ -631,6 +630,7 @@ end
                     channel = find(channels == j);
                     image = imread(char(imageNames(i, channel)));
                     channelInfo = timeLapse.list(j);
+                    %j
                     lowLevel = channelInfo.setLowLevel;
                     highLevel = channelInfo.setHighLevel;
                     warning off all
@@ -641,9 +641,10 @@ end
                         image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
                     end
                     
-                    %size(image)
                     
                     image = double(imadjust(image, [lowLevel highLevel] / grayBinCount, [])) / grayBinCount;
+                    
+                    
                     warning on all;
                     
                     if k == 1

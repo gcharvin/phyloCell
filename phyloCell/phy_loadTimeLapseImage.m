@@ -2,16 +2,21 @@
 function [image map]=phy_loadTimeLapseImage(pos,frame,ch,option)
 
 global timeLapse;
+
 framestr=num2str(frame);
-    if numel(framestr)==2
-       framestr=['0' framestr];
-    end
-    if numel(framestr)==1
-       framestr=['00' framestr];
-    end
+
+    nzer=max(3,length(num2str(timeLapse.numberOfFrames)));
+        
+        for jk=1:nzer
+            if (numel(framestr)<nzer)
+                framestr=strcat('0',framestr);
+            end
+        end
     
+    if numel(timeLapse.realPath)
     if ~strcmp(timeLapse.realPath(end),'/')
         timeLapse.realPath=[timeLapse.realPath '/'];
+    end
     end
     
    % pos,ch
