@@ -958,6 +958,7 @@ global segmentation
 set(segmentation.selectedObj.htext,'visible','off');
 set(segmentation.selectedObj.hcontour,'visible','off');
 [x,y] = getline(handles.axes1,'closed');
+[x,y]=phy_changePointNumber(x,y,50);
 segmentation.selectedObj.x=x;
 segmentation.selectedObj.y=y;
 segmentation.selectedObj.ox=mean(x);
@@ -1058,6 +1059,7 @@ if ~Cancelled
     [bw x y]=roipolyold;
     x
     y
+    [x,y]=phy_changePointNumber(x,y,50);
     %vertices=wait(hellipse);
     %x=vertices(:,1);
     %y=vertices(:,2);
@@ -1882,7 +1884,7 @@ phy_progressbar(1);
 toc;
 
 status('Check Cells',handles);
-Check_Cells_Callback([], [], handles);
+phy_check_cells;%Check_Cells_Callback([], [], handles);
 
 
 
@@ -2400,22 +2402,8 @@ function Check_Callback(hObject, eventdata, handles)
 function Check_Cells_Callback(hObject, eventdata, handles)
 global segmentation
 
-
-feat=segmentation.processing.selectedFeature;
-proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
-
-featname=segmentation.processing.features{feat};
-
-parametres=segmentation.processing.parameters(feat,proc);
-parametres=parametres{1,1};
-
-cSeg1=find(segmentation.cells1Segmented);
-
-[segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
-
-delcell=[];
-
-
+phy_checkAndDisp_cells(hObject,eventdata,handles);
+   
 
 
 % --------------------------------------------------------------------
@@ -3257,16 +3245,8 @@ if strcmp(eventdata.Key,'leftarrow')
     pushbutton_Previous1_Callback(handles.pushbutton_Previous1, [], handles);
 end
 
-if strcmp(eventdata.Key,'e')
-    pushbutton_Edit_Contour_Callback(handles.pushbutton_Edit_Contour, [], handles);
-end
-
-if strcmp(eventdata.Key,'q')
-    pushbutton_Create_Object_Callback(hObject, eventdata, handles);
-end
-
-if strcmp(eventdata.Key,'n')
-    pushbutton_Set_Number_Callback(handles.pushbutton_Set_Number, [], handles);
+if strcmp(eventdata.Key,'a')
+    phy_cut_bud_mother(hObject, eventdata, handles);
 end
 
 if strcmp(eventdata.Key,'b')
@@ -3283,6 +3263,10 @@ if strcmp(eventdata.Key,'b')
     %handles)
 end
 
+if strcmp(eventdata.Key,'c')
+    Context_Objects_Copy_Callback(handles.Context_Objects_Copy, [], handles);
+end
+
 if strcmp(eventdata.Key,'d')
     %disp('left');
     
@@ -3297,20 +3281,48 @@ if strcmp(eventdata.Key,'d')
     %handles)
 end
 
+if strcmp(eventdata.Key,'e')
+    pushbutton_Edit_Contour_Callback(handles.pushbutton_Edit_Contour, [], handles);
+end
+
+% h & j are used
+
+% k & l are used
+
 if strcmp(eventdata.Key,'m')
     Context_Objects_Merge_Callback(handles.Context_Objects_Merge, [], handles);
+end
+
+if strcmp(eventdata.Key,'n')
+    pushbutton_Set_Number_Callback(handles.pushbutton_Set_Number, [], handles);
+end
+
+% o & p are used
+
+if strcmp(eventdata.Key,'q')
+    pushbutton_Create_Object_Callback(hObject, eventdata, handles);
+end
+
+if strcmp(eventdata.Key,'r')
+    resetAxes_Callback(hObject, eventdata, handles);
 end
 
 if strcmp(eventdata.Key,'s')
     Context_Objects_Swap_Callback(handles.Context_Objects_Swap, [], handles);
 end
 
+% t is used
+
+if strcmp(eventdata.Key,'v')
+    Context_Image_Paste_Callback(handles.Context_Image_Paste, [], handles);
+end
+
 if strcmp(eventdata.Key,'w')
     Context_Objects_Copy_Next_Frame_Callback(handles.Context_Objects_Copy_Next_Frame, [], handles);
 end
 
-if strcmp(eventdata.Key,'c')
-    Context_Objects_Copy_Callback(handles.Context_Objects_Copy, [], handles);
+if strcmp(eventdata.Key,'y')
+    phy_checkAndDisp_cells(hObject,eventdata,handles);
 end
 
 if strcmp(eventdata.Key,'v')
@@ -3703,7 +3715,7 @@ if strcmp(eventdata.Key,'z')
                 segmentation.selectedTObj.birthFrame=segmentation.selectedTObj.detectionFrame;
                 tobj=segmentation.(['t',segmentation.selectedType]);
                 divisionStart=segmentation.selectedTObj.detectionFrame;
-                divisionEnd=segmentation.selectedTObj.detectionFrame;
+                divisionEnd=0; %segmentation.selectedTObj.detectionFrame;
                 tobj(m).addDaughter(segmentation.selectedTObj.N,divisionStart,divisionEnd);
                 segmentation.(['t',segmentation.selectedType])=tobj;
                 %segmentation.frameChanged(segmentation.selectedTObj.detectionFrame:segmentation.selectedTObj.lastFrame)=1;
