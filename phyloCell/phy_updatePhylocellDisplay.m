@@ -140,7 +140,7 @@ if isfield(timeLapse,'pathList')
     
     str='';
     for k=1:numel(segList)
-        str{k}= [num2str(k) ' - ' segList(k).filename '- Position ' num2str(segList(k).position)];
+        str{k}= [num2str(k) ' - ' segList(k).filename '- Position ' num2str(segList(k).position) ' - Seg: ' segmentation.filename];
     end
     
    % str

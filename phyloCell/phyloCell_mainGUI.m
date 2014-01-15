@@ -701,7 +701,7 @@ for i=1:numel(segList)
     status(['Saving project ' num2str(i) ' - Be patient !'],handles);
     segmentation=segList(i).s;
     timeLapse=segList(i).t;
-    save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},'segmentation-batch.mat'),'segmentation');
+    save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
 end
 
 segmentation=segList(cur).s;
@@ -727,8 +727,8 @@ cur=find([segList.selected]==1);
 segList(cur).s=segmentation;
 segList(cur).t=timeLapse;
 
-save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},'segmentation-batch.mat'),'segmentation');
-save(fullfile(timeLapse.realPath,[timeLapse.realName,'-project.mat']),'timeLapse');
+save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
 
 toc
 status('Idle',handles);
@@ -1616,8 +1616,12 @@ status('loading timeLapse project',handles);
 load(strcat(timeLapsepath,timeLapsefile));
 timeLapse.realPath=timeLapsepath;
 
-phy_openSegmentationProject([],[]);
+out=phy_openSegmentationProject([],[]);
 
+if out==0
+    errordlg('Could not open segmentation project');
+    return;
+end
 % add the project in the segList variable
 
 l=numel(segList);
@@ -1662,7 +1666,10 @@ status('loading timeLapse project',handles);
 
 a=segmentation.colorData;
 
-phy_openSegmentationProject([],[]);
+out=phy_openSegmentationProject([],[]);
+if out==0
+    return;
+end
 
 segmentation.colorData=a;
 % add the project in the segList variable

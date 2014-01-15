@@ -1,31 +1,10 @@
-function phy_openSegmentationProject(position,varname,handles)
+function out=phy_openSegmentationProject(position,varname,handles)
 global timeLapse segmentation
 
-%%batch=1;
-%if batch==1
-%   filen='segmentation-batch.mat'; 
-%else
-%   filen='segmentation.mat'; 
-%end
+out=0;
 
-
-if numel(varname)~=0
-filen=varname;
-else
-filen='segmentation-batch.mat';    
-end
-
-% get and load project file
+if numel(position)==0
     
-    %if nargin==5
-    %status('loading timeLapse project',handles);
-    %end
-    
-   
-    %timeLapsepath
-    
-    if numel(position)==0
-        
     %dialog box for entering the position
     %------------------------------------
     prompt = {'Enter position:'};
@@ -33,24 +12,59 @@ end
     num_lines = 1;
     def = {'1'};
     val=0;
-    while ~val
+
         
-        answer = inputdlg(prompt,dlg_title,num_lines,def);
-        if isempty(answer)
+        count=1; cc={};
+        for i=1:numel(timeLapse.position.list)
+                cc{count}=num2str(i);
+                count=count+1;
+        end
+        
+        [sel,ok] = listdlg('ListString',cc,'Name','Select Position','SelectionMode','single');
+        
+        
+        if ok==0
             return
         end
+        position=sel;
         try
-            position=str2double(answer{1});
             img=phy_loadTimeLapseImage(position,1,1,'non retreat');
             val=1;
         catch
-            status('wrong position',handles);
-            prompt = {'Enter a valid position:'};
+            status('wrong position : cannot load timeLapse images',handles);
+           
+        end
+    
+end
+
+
+% check if there is any segmentation file corresponding to this
+% variable
+
+
+if numel(varname)~=0
+    filen=varname;
+else
+    
+    lifi=dir([timeLapse.realPath timeLapse.pathList.position{position}]);
+    
+    count=1; cc={};
+    for i=1:numel(lifi)
+        [p,n,ext]=fileparts(lifi(i).name);
+        if strcmp(ext,'.mat')
+            cc{count}=lifi(i).name;
+            count=count+1;
         end
     end
-   
+    
+    [sel,ok] = listdlg('ListString',cc,'Name','Segmentation file','SelectionMode','single');
+    
+    if ok==0
+        return;
     end
     
+    filen=cc{sel};
+end
 
 % check if data are already segmented
 
@@ -58,16 +72,15 @@ end
 %exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
 
 if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
-   % 'project already exist'
-   
+    % 'project already exist'
+    
     if nargin==3
-        'project already exists'
-    status('loading saved file segmentation',handles);
-    pause(0.2);
+        status('loading saved file segmentation',handles);
+        pause(0.2);
     end
     
     load(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen))
-
+    
     
     if ~isfield(segmentation,'processing')
         % old project , need to generate new variable
@@ -82,53 +95,40 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
     end
     
     
-    
-    if nargin==3
-    status('refresh tbudnecks',handles);
-    end
-
-%    [segmentation.tbudnecks fchange]=phy_makeTObject(segmentation.budnecks,segmentation.tbudnecks);
-%    segmentation.frameChanged(fchange)=1;
-
-    if nargin==3
-    status('refresh tcells1',handles);
-    end
- 
-%    [segmentation.tcells1 fchange]=phy_makeTObject(segmentation.cells1,segmentation.tcells1);
- %   segmentation.frameChanged(fchange)=1;
-    
     if ~isfield(segmentation,'discardImage')
         segmentation.discardImage=zeros(1,timeLapse.numberOfFrames);
     end
     
     if nargin==3
-    status('Idle',handles);
+        status('Idle',handles);
     end
     
 else
     %' creat new segmentation structure'
     
     if nargin==3
-    status('creating the segmentation file',handles);
+        status('creating the segmentation file',handles);
     end
     
     nch=length(timeLapse.pathList.channels(1,:));
-%dialog box for entering the position
-%------------------------------------
-
-    segmentation=phy_createSegmentation(timeLapse,position);
+    %dialog box for entering the position
+    %------------------------------------
     
+    segmentation=phy_createSegmentation(timeLapse,position);
+    segmentation.filename=filen;
     save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},filen),'segmentation');
     
     if nargin==3
-    status('idle',handles);
+        status('idle',handles);
     end
 end
 
 segmentation.position=position;
+segmentation.filename=filen;
+out=1;
 
 if nargin==3
-   phy_updatePhylocellDisplay(handles); 
+    phy_updatePhylocellDisplay(handles);
 end
 
 

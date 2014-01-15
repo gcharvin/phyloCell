@@ -33,6 +33,7 @@
 % contours.incells=[ 2 5 65 847] % cells to display. Leave blank if
 % contours.cycle=1 % plot cell cycle
 % contours.channelGroup=[1 2]; % specify to which channelGroup contours
+% contours.filename='segmentation-batch.mat')
 % should apply
 % list of contour objects is permitted
 
@@ -91,8 +92,11 @@ end
 
 for position = positions
     
+    
     if noseg
-     phy_openSegmentationProject(position,[]);
+        if numel(contours)
+     out=phy_openSegmentationProject(position,contours.filename);
+        end
     end
     
     channels = collectChannels;
