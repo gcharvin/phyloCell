@@ -1,6 +1,6 @@
 function objects=phy_segmentNucleus(im,thr,minSize,maxSize,channel)
 
-
+imgstore=img;
 img = medfilt2(im,[4 4]);% filtre median
 
 %figure,imshow(img,[]); colormap(jet)
@@ -97,7 +97,7 @@ n = length(contours);
 phy_Objects = phy_Object();
 
 warning off all
-a=regionprops(L,Imeas,'MeanIntensity','Eccentricity','PixelValues');%,'Eccentricity','MajorAxisLength','Solidity','Perimeter','Area','EquivDiameter');
+a=regionprops(L,imgstore,'MeanIntensity','Eccentricity','PixelValues');%,'Eccentricity','MajorAxisLength','Solidity','Perimeter','Area','EquivDiameter');
 warning on all
 
 
