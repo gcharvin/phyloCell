@@ -69,7 +69,7 @@ if ~exist('javitools.AVITools', 'class')
     p = mfilename('fullpath');
     [p f e]=fileparts(p);
     p2=[p '/./addon/ag/javitools.jar'];
-   javaaddpath([p '/../addon/ag/javitools.jar']); 
+   javaaddpath([p '/../addon/javitools.jar']); 
 end
 
 global segmentation
@@ -2299,29 +2299,6 @@ pause(0.1);
 %status('Saving to file',handles);
 %save(fullfile(timeLapse.path,timeLapse.pathList.position{segmentation.position},'segmentation.mat'),'segmentation','-append');
 Change_Disp1('refresh',handles);
-
-
-function Add_Arrow_Callback(hObject, eventdata, handles)
-global segmentation;
-
-[axx axy] = ginput(2);   % Returns list of x, list of y in data space
-% Transform from data space to figure space
-[arrowx,arrowy] = dsxy2figxy(gca, axx, axy);
-h = annotation('textarrow',arrowx,arrowy,'LineWidth',2,'Color','b');
-
-if isfield(segmentation,'arrow')
-    nflech=length(segmentation.arrow);
-    segmentation.arrow(end+1)=h;
-end
-
-%content = sprintf('(%4.2f,%4.2f)',axx(2), axy(2));
-
-% Plot anno text centered at the tail of the arrow
-%set(har,'String',content,'Fontsize',8)
-
-Change_Disp1('refresh',handles);
-
-plotedit(handles);
 
 
 % --------------------------------------------------------------------
