@@ -2,6 +2,15 @@ function phy_change_Disp1(pos,handles,dispCells)
 global timeLapse segmentation
 
 if numel(segmentation)==0
+    figure(handles.figure1);
+    noiseim=rand(128,128);
+    imshow(noiseim,[]);
+    return;
+end
+if numel(timeLapse)==0
+    figure(handles.figure1);
+    noiseim=rand(128,128);
+    imshow(noiseim,[]);
     return;
 end
 

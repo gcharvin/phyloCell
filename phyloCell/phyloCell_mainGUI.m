@@ -1468,7 +1468,10 @@ function File_Callback(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function File_Open_TimeLapse_Project_Callback(hObject, eventdata, handles)
+global timeLapse
+
 if ~isempty(handles.openedProjects)
+    
     set(handles.show_Environment_Variable,'Value',0);
     Change_Disp1('refresh',handles);
 end
@@ -5281,17 +5284,19 @@ if numel(segList)>1
     set(handles.info,'Value',val);
     
     
-    Change_Disp1('refresh',handles);
+    
 else
     segList=[];
     segmentation=[];
     segmentation.frame1=1;
     timeLapse=[];
+
     
     set(handles.info,'String','-');
     set(handles.info,'Value',1);
     
 end
+Change_Disp1('refresh',handles);
 
 
 % --- Executes on button press in checkbox_ShowFoci.
