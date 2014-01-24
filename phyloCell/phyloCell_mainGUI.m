@@ -4049,6 +4049,8 @@ else
         n1= segmentation.selectedObj.n;
         n2= segmentation.swapObj.n;
         
+        
+        
         %collect n1 cells and delete from n1 tobject
         c=0;
         objectMoved1=phy_Object;
@@ -4102,8 +4104,6 @@ else
         %             minFrame=max(1,minFrame(pix)-1);
         %             segmentation.selectedTObj.lastFrame=minFrame;
         
-        
-        
         segmentation.(['t',segmentation.selectedType])=tobj;
         % segmentation.frameChanged(segmentation.frame1:tobj(n).lastFram
         % e)=1;
@@ -4116,6 +4116,10 @@ else
         tobj=segmentation.(['t',segmentation.selectedType]);
         n1= segmentation.selectedObj.n;
         n2= segmentation.swapObj.n;
+        
+        'ok1'
+         tobj(n2).mother
+         tobj(n1).mother
         
         %collect n1 cells and delete from n1 tobject
         c=0;
@@ -4135,7 +4139,10 @@ else
         for i=1:c
             segmentation.selectedTObj.deleteObject(objectMoved1(i),'only from tobject');
         end
-        
+        'ok2'
+          tobj(n2).mother
+         tobj(n1).mother
+         
         %collect n2 cells and delete from n2 tobject
         c=0;
         objectMoved2=phy_Object;
@@ -4151,10 +4158,19 @@ else
                 
             end
         end
+        
+           'ok2b'
+          tobj(n2).mother
+         tobj(n1).mother
+         
         for i=1:c
             tobj(n2).deleteObject(objectMoved2(i),'only from tobject');
         end
         
+           'ok3'
+          tobj(n2).mother
+         tobj(n1).mother
+         
         tobj(n2).addObject(objectMoved1);
         segmentation.selectedTObj.addObject(objectMoved2);
         
@@ -4177,9 +4193,16 @@ else
         %             segmentation.selectedTObj.lastFrame=minFrame;
         
         
-        
+           'ok4'
+          tobj(n2).mother
+         tobj(n1).mother
+         
         segmentation.(['t',segmentation.selectedType])=tobj;
         % segmentation.frameChanged(segmentation.frame1:tobj(n).lastFrame)=1;
+        
+           'ok5'
+          tobj(n2).mother
+         tobj(n1).mother
     end
     
     

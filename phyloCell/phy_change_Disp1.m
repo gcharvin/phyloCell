@@ -37,6 +37,7 @@ if pos>timeLapse.numberOfFrames
 end
 
 
+
 % Check that the entered value falls within the allowable range.
 set(handles.editFrame1,'String',round(pos));
 set(handles.slider1,'Value',pos);

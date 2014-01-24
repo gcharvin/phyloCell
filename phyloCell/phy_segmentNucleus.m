@@ -1,6 +1,6 @@
 function objects=phy_segmentNucleus(im,thr,minSize,maxSize,channel)
 
-imgstore=img;
+imgstore=im;
 img = medfilt2(im,[4 4]);% filtre median
 
 %figure,imshow(img,[]); colormap(jet)
