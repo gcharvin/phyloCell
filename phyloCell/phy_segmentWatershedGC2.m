@@ -3,6 +3,12 @@ function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,display)
 
 global segmentation
 
+
+%display=1
+
+
+
+ 
  %img=segmentation.realImage(:,:,1);
  tic;
  sca=1;
@@ -76,7 +82,7 @@ end
  %newlabels=imresize(newlabels,2);
  
  %newlabels=uint16(newlabels);
- 
+
  if display
 figure; imshow(img,[]); hold on;
  end
@@ -94,7 +100,8 @@ for i=1:numel(stat)
    %a=stat(i).Area
    %end
    
-   if stat(i).Area <minSize || stat(i).Area >maxSize || stat(i).Eccentricity>0.85
+   
+   if stat(i).Area <minSize || stat(i).Area >maxSize || stat(i).Eccentricity>0.9
       
    newlabels(tmp)=0;
    else
