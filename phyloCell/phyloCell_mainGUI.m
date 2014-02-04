@@ -37,7 +37,7 @@ function phyloCell_mainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %Open projects is empty when a new widow is oppen
 handles.openedProjects={};
 
-%%%%%%%
+%%%%
 
 %The folder of export is set to current folder
 handles.exportDir=pwd;
