@@ -475,7 +475,14 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
         case 15 % foci segmentation
             parametres=parametres{1,1};
             
-            budnecktemp=phy_segmentNucleus(segmentation.segmentationImage(:,:,parametres{1,2}),parametres{4,2},parametres{2,2},parametres{3,2},parametres{1,2});
+            im=segmentation.segmentationImage(:,:,parametres{1,2});
+            
+            
+            
+            %im=mat2gray(im);
+            im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
+            
+            budnecktemp=phy_segmentNucleus(im,parametres{4,2},parametres{2,2},parametres{3,2},parametres{1,2});
             
             i=1;
             budneck=phy_Object;
@@ -489,12 +496,12 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             
             for j=1:length(budneck)
                 budneck(j).image=segmentation.frame1;
-                if get(handles.checkbox_Use_Cropped_Image,'value')
+                %if get(handles.checkbox_Use_Cropped_Image,'value')
                     budneck(j).x=budneck(j).x+ax(1)-1;
                     budneck(j).y=budneck(j).y+ax(3)-1;
                     budneck(j).ox=budneck(j).ox+ax(1)-1;
                     budneck(j).oy=budneck(j).oy+ax(3)-1;
-                end
+               %end
                 myObject(segmentation.frame1,j)=budneck(j);
             end
             

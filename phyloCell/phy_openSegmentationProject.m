@@ -57,6 +57,7 @@ else
         end
     end
     
+    if numel(cc)~=0
     [sel,ok] = listdlg('ListString',cc,'Name','Segmentation file','SelectionMode','single');
     
     if ok==0
@@ -64,6 +65,9 @@ else
     end
     
     filen=cc{sel};
+    else
+    filen='segmentation-batch.mat';    
+    end
 end
 
 % check if data are already segmented

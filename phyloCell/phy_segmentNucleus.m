@@ -162,7 +162,7 @@ for i = 1:n
         %phy_Objects(cc).ox = mean(xnew);
         %phy_Objects(cc).oy = mean(ynew);
         %'ok'
-        %line(phy_Objects(cc).x,phy_Objects(cc).y,'Color','r');
+       % line(phy_Objects(cc).x,phy_Objects(cc).y,'Color','r');
         cc=cc+1;
     end
     
