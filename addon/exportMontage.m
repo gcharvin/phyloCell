@@ -45,7 +45,7 @@
 %% Optional argument : cell cycle phase 'cycle', cycle
 %% Example : 'cycle',cycle
 
-% exemple of function call: 
+% exemple of function call:
 % exportMontage('', 'HTB2_GFP WT', 1:5, {'1 0 2 0'}, [], 0, [], 'contours',contours)
 
 
@@ -53,7 +53,11 @@ function exportMontage(base, project, positions, channelGroups, frameIndices, ma
 
 
 if manualStart
-    javaaddpath('javitools.jar');
+    if ~exist('javitools.AVITools', 'class')
+        p = mfilename('fullpath');
+        [p f e]=fileparts(p);
+        javaaddpath([p './javitools.jar']);
+    end
 end
 %javaaddpath('javitools.jar');
 
@@ -95,7 +99,7 @@ for position = positions
     
     if noseg
         if numel(contours)
-     out=phy_openSegmentationProject(position,contours.filename);
+            out=phy_openSegmentationProject(position,contours.filename);
         end
     end
     
@@ -115,7 +119,7 @@ for position = positions
         h=ROI(4);
         w=ROI(3);
     else
-        ROI=[1 1 scale*maxSize(1) scale*maxSize(2)]; 
+        ROI=[1 1 scale*maxSize(1) scale*maxSize(2)];
     end
     
     montageFrame = zeros(h, w * groupCount, 3);
@@ -147,13 +151,13 @@ for position = positions
     
     % for object tracking
     if numel(contours)
-            if numel(tracking)
-             %   tracking
+        if numel(tracking)
+            %   tracking
             tcell=segmentation.(['t'  contours(1).object])(tracking);
             ima=[tcell.Obj.image];
             imax=smooth([tcell.Obj.ox],10); % smooth trajectory of object
             imay=smooth([tcell.Obj.oy],10);
-            end
+        end
     end
     
     if numel(frameIndices)==0
@@ -161,30 +165,30 @@ for position = positions
     end
     
     
-  %frameIndices 
-    for i = frameIndices 
+    %frameIndices
+    for i = frameIndices
         
         % for object tracking
         if numel(contours)
-            if numel(tracking) 
-                    % first contour is used for tracking
-                    %ima
-                    pix=find(ima==i);
+            if numel(tracking)
+                % first contour is used for tracking
+                %ima
+                pix=find(ima==i);
+                
+                if numel(pix)==0
+                    continue
+                end
+                % tcell
+                % frames(i),im
+                %length(pix)
+                
+                if numel(pix)
                     
-                    if numel(pix)==0
-                        continue
-                    end
-                   % tcell
-                    % frames(i),im
-                    %length(pix)
-                    
-                    if numel(pix)
-                        
                     xcc=scale*tcell.Obj(pix).x;
                     ycc=scale*tcell.Obj(pix).y;
-                    end
-                   
-                    
+                end
+                
+                
                 ROI(2)=round(scale*imay(pix)-ROI(4)/2);
                 ROI(1)=round(scale*imax(pix)-ROI(3)/2);
                 
@@ -223,106 +227,106 @@ for position = positions
         
         drawText(jim, timestamp, [0.05*w ymin] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
-     
         
         
-       
+        
+        
         % plot object contours
         if numel(contours)
             for ik=1:length(contours)
                 for lk=1:length(contours(ik).channelGroup)
-
+                    
                     if numel(segmentation.(contours(ik).object)(:,1))<i
                         continue;
                     end
-                        
+                    
                     nc=[segmentation.(contours(ik).object)(i,:).n];
                     
                     if numel(contours(ik).incells)
-                    [pix ia ib]=intersect(nc,contours(ik).incells);
-                    indc=ia;
+                        [pix ia ib]=intersect(nc,contours(ik).incells);
+                        indc=ia;
                     else
-                    indc=find(nc>0);    
+                        indc=find(nc>0);
                     end
                     
                     for kk=1:length(indc)
                         
-                    cells=segmentation.(contours(ik).object)(i,indc(kk));
-                    
-                    xc=cells.x;
-                    yc=cells.y;
-                    
-                    xc2=xc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
-                    yc2=yc-ROI(2);
-                    
-                    % remove points that not in the right frame
-                    pix=find(xc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & xc2< (contours(ik).channelGroup(lk))*ROI(3));
-                    xc3=xc2(pix);
-                    yc3=yc2(pix);
- 
-                    width=contours(ik).lineWidth;
-                    
-                   %xc3,yc3,contours(ik)
-                   
-                   if numel(contours(ik).cycle)==0 % don't draw if cell cycle is on
-                    drawContours(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
-                   end
-                    
-                    if isfield(contours(ik),'link') % plot mother bud link
-                        if contours(ik).link==1
-                            mother=cells.mother;
-                            
-                            if mother~=0
-                            nn=[segmentation.(contours(ik).object)(i,:).n];
-                            pix=find(nn==mother);
-                            if numel(pix)
-                            mother=segmentation.(contours(ik).object)(i,pix);
-                            
-                            oxc=scale*cells.ox;
-                            oyc=scale*cells.oy;
-                    
-                            oxc2=oxc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
-                            oyc2=oyc-ROI(2);
-                            
-                            pix=find(oxc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & oxc2< (contours(ik).channelGroup(lk))*ROI(3));
-                            oxc3=oxc2(pix);
-                            oyc3=oyc2(pix);
-                            
-                            mxc=scale*mother.ox;
-                            myc=scale*mother.oy;
-                    
-                            mxc2=mxc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
-                            myc2=myc-ROI(2);
-                            
-                            pix=find(mxc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & mxc2< (contours(ik).channelGroup(lk))*ROI(3));
-                            mxc3=mxc2(pix);
-                            myc3=myc2(pix);
-                            
-                            %[oxc3 mxc3], [oyc3 myc3]
-                            drawContours(jim, [oxc3 mxc3], [oyc3 myc3], java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                        cells=segmentation.(contours(ik).object)(i,indc(kk));
+                        
+                        xc=cells.x;
+                        yc=cells.y;
+                        
+                        xc2=xc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
+                        yc2=yc-ROI(2);
+                        
+                        % remove points that not in the right frame
+                        pix=find(xc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & xc2< (contours(ik).channelGroup(lk))*ROI(3));
+                        xc3=xc2(pix);
+                        yc3=yc2(pix);
+                        
+                        width=contours(ik).lineWidth;
+                        
+                        %xc3,yc3,contours(ik)
+                        
+                        if numel(contours(ik).cycle)==0 % don't draw if cell cycle is on
+                            drawContours(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                        end
+                        
+                        if isfield(contours(ik),'link') % plot mother bud link
+                            if contours(ik).link==1
+                                mother=cells.mother;
+                                
+                                if mother~=0
+                                    nn=[segmentation.(contours(ik).object)(i,:).n];
+                                    pix=find(nn==mother);
+                                    if numel(pix)
+                                        mother=segmentation.(contours(ik).object)(i,pix);
+                                        
+                                        oxc=scale*cells.ox;
+                                        oyc=scale*cells.oy;
+                                        
+                                        oxc2=oxc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
+                                        oyc2=oyc-ROI(2);
+                                        
+                                        pix=find(oxc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & oxc2< (contours(ik).channelGroup(lk))*ROI(3));
+                                        oxc3=oxc2(pix);
+                                        oyc3=oyc2(pix);
+                                        
+                                        mxc=scale*mother.ox;
+                                        myc=scale*mother.oy;
+                                        
+                                        mxc2=mxc-ROI(1)+(contours(ik).channelGroup(lk)-1)*ROI(3);
+                                        myc2=myc-ROI(2);
+                                        
+                                        pix=find(mxc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & mxc2< (contours(ik).channelGroup(lk))*ROI(3));
+                                        mxc3=mxc2(pix);
+                                        myc3=myc2(pix);
+                                        
+                                        %[oxc3 mxc3], [oyc3 myc3]
+                                        drawContours(jim, [oxc3 mxc3], [oyc3 myc3], java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                                    end
+                                end
                             end
+                            
+                        end
+                        
+                        %cycle
+                        if numel(contours(ik).cycle)
+                            %valcycle=max(1,round(cells.Min));
+                            %col1=col(valcycle,1);col2=col(valcycle,2);col3=col(valcycle,3);
+                            
+                            col=getCellColor(contours(ik).cycle,cells.n,segmentation.position,i);
+                            %width
+                            if numel(col)
+                                drawCycle(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.Color(col(1),col(2),col(3)), java.awt.BasicStroke(width))
                             end
                         end
-                            
+                        
                     end
-                    
-                    %cycle
-                    if numel(contours(ik).cycle)
-                       %valcycle=max(1,round(cells.Min));
-                       %col1=col(valcycle,1);col2=col(valcycle,2);col3=col(valcycle,3);
-                       
-                       col=getCellColor(contours(ik).cycle,cells.n,segmentation.position,i);
-                       %width
-                       if numel(col)
-                       drawCycle(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.Color(col(1),col(2),col(3)), java.awt.BasicStroke(width))
-                       end
-                    end
- 
-                    end
-                end   
-               end
+                end
             end
-           
+        end
+        
         
         
         if ~isempty(aviWriter)
@@ -333,7 +337,7 @@ for position = positions
             javax.imageio.ImageIO.write(jim, 'jpg', java.io.File(imageFileName));
         end
         
-       updateProgressMonitor('Progress', progress,  size(frameIndices, 2));
+        updateProgressMonitor('Progress', progress,  size(frameIndices, 2));
         
         progress = progress + 1.0;
     end
@@ -353,10 +357,10 @@ for position = positions
     [~, ~, ~] = rmdir(tmpDirectory, 's');
 end
 
-% %% 
-     function col=getCellColor(cycle,n,position,i)
+% %%
+    function col=getCellColor(cycle,n,position,i)
         
-        col=[]; 
+        col=[];
         ind=find(cycle(:,2)==position & cycle(:,3)==n);
         
         if numel(ind)==0
@@ -376,16 +380,16 @@ end
                 return;
             end
             
-                
+            
         else
             if ind==1
                 %col=[]
                 return;
             else
-            cycle=cycle(ind-1,:);
-            
+                cycle=cycle(ind-1,:);
+                
             end
-        
+            
         end
         
         sc=cycle(1,7)+cycle(1,9)+[0 cycle(1,11) cycle(1,11)+cycle(1,12) cycle(1,11)+cycle(1,12)+cycle(1,13) cycle(1,11)+cycle(1,12)+cycle(1,13)+cycle(1,14)];
@@ -404,8 +408,8 @@ end
         end
         
         
-
-     end
+        
+    end
 
     function result = initializeFrameIndices
         result = frameIndices;
@@ -640,7 +644,7 @@ end
                     warning off all
                     image=imresize(image, maxSize);
                     
-                 %   ROI
+                    %   ROI
                     if numel(ROI)
                         image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
                     end
@@ -682,7 +686,9 @@ end
     function maxSize = computeMaxSize
         sizes = [];
         
+       
         for j = 1:channelCount
+          
             sizes = [sizes; size(imread(char(imageNames(1, j))))];
         end
         
