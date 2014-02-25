@@ -3342,10 +3342,6 @@ if strcmp(eventdata.Key,'y')
     phy_checkAndDisp_cells(hObject,eventdata,handles);
 end
 
-if strcmp(eventdata.Key,'v')
-    Context_Image_Paste_Callback(handles.Context_Image_Paste, [], handles);
-end
-
 if strcmp(eventdata.Key,'rightarrow')
     %disp('rightarrow');
     pushbutton_Next1_Callback(handles.pushbutton_Next1, [], handles);
@@ -4295,7 +4291,6 @@ if ~isempty(segmentation.copyedObj)
         
         segmentation.(['t',segmentation.selectedType])=tobj;
     end
-    
     
     Change_Disp1('refresh',handles);
     
