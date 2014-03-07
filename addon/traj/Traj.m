@@ -88,7 +88,8 @@ classdef Traj < handle
                     %t.bottomColor=[0.1 0.1 0];
                     %t.topColor=[1 1 1];
                     warning off all;
-                    t.colorIndex=ones(1,size(t.rec(:,1)));
+                    
+                    t.colorIndex=ones(1,numel(t.rec(:,1)));
                     warning on all;
                     t.topColorIndex=t.colorIndex;
                     t.bottomColorIndex=t.colorIndex;

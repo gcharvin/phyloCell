@@ -3359,7 +3359,6 @@ if strcmp(eventdata.Key,'backspace')
     pushbutton_Delete_Object_Callback(handles.pushbutton_Delete_Object, [], handles);
 end
 
-
 if strcmp(eventdata.Key,'o') || strcmp(eventdata.Key,'p')
     
     if strcmp(get(handles.manualMapping,'State'),'on')

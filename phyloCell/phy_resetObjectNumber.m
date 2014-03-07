@@ -1,6 +1,10 @@
 function phy_resetObjectNumber(objectname) % rest the numbers of object // this discards the current mapping
 global segmentation timeLapse;
 
+for i=1:length(segmentation.(['t' objectname]))
+    segmentation.(['t' objectname])(i).setMother(0);
+end
+
 segmentation.(['t' objectname])=phy_Tobject;
 object=segmentation.(objectname);
 segmentation.([objectname 'Mapped'])=zeros(1,timeLapse.numberOfFrames);
