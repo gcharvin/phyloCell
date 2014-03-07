@@ -18,7 +18,6 @@ cSeg1=find(segmentation.cells1Segmented);
 
 delcell=[];
 
-
 %delete cell whose length is inferior to persistent length
 for i=1:length(segmentation.(['t' featname]))
     if segmentation.(['t' featname])(i).N~=0
