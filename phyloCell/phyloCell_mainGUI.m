@@ -795,6 +795,11 @@ end
 function pushbutton_Set_Number_Callback(hObject, eventdata, handles)
 global segmentation
 
+if isempty(segmentation.selectedObj)
+    errordlg('First select a cell');
+    return;
+end
+
 tobj=segmentation.(['t',segmentation.selectedType]);
 obj= segmentation.(segmentation.selectedType);
 
@@ -900,6 +905,10 @@ global segmentation
 % segmentation.selectedObj.oy=0;
 % segmentation.selectedObj.n=0;
 
+if isempty(segmentation.selectedObj)   
+    errordlg('First select a cell');
+return;
+end
 
 if get(handles.radiobutton_Image,'Value')
     set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
@@ -3257,6 +3266,7 @@ end
 if isfield(eventdata,'VerticalScrollCount')
     return
 end
+
 if strcmp(eventdata.Key,'leftarrow')
     %disp('left');
     pushbutton_Previous1_Callback(handles.pushbutton_Previous1, [], handles);
@@ -3347,11 +3357,11 @@ if strcmp(eventdata.Key,'rightarrow')
     pushbutton_Next1_Callback(handles.pushbutton_Next1, [], handles);
 end
 
-if strcmp(eventdata.Key,'delete')
+if strcmp(eventdata.Key,'equal')
     pushbutton_Delete_Object_Callback(handles.pushbutton_Delete_Object, [], handles);
 end
 
-if strcmp(eventdata.Key,'backspace')
+if strcmp(eventdata.Key,'delete')
     pushbutton_Delete_Object_Callback(handles.pushbutton_Delete_Object, [], handles);
 end
 
@@ -4027,6 +4037,10 @@ selObj=get(gco,'userdata');
 %segmentation.copyedObj=selObj;
 %segmentation.copyedType=segmentation.selectedType;
 
+if isempty(segmentation.selectedObj)   
+    errordlg('First select a cell');
+return;
+end
 
 status('Swapping...',handles);
 pause(0.1);
