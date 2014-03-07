@@ -352,8 +352,8 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             
             im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
             
-            budnecktemp=phy_segmentFoci3(im,parametres{2,2},parametres{3,2},parametres{1,2},parametres{5,2},parametres{4,2},parametres{6,2},segmentation.frame1);
-            
+            budnecktemp=phy_segmentFoci(im,parametres{2,2},parametres{3,2},parametres{1,2},parametres{5,2},parametres{4,2},parametres{6,2},segmentation.frame1);
+
             
             
             i=1;
@@ -3342,10 +3342,6 @@ if strcmp(eventdata.Key,'y')
     phy_checkAndDisp_cells(hObject,eventdata,handles);
 end
 
-if strcmp(eventdata.Key,'v')
-    Context_Image_Paste_Callback(handles.Context_Image_Paste, [], handles);
-end
-
 if strcmp(eventdata.Key,'rightarrow')
     %disp('rightarrow');
     pushbutton_Next1_Callback(handles.pushbutton_Next1, [], handles);
@@ -4294,7 +4290,6 @@ if ~isempty(segmentation.copyedObj)
         
         segmentation.(['t',segmentation.selectedType])=tobj;
     end
-    
     
     Change_Disp1('refresh',handles);
     
