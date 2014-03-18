@@ -4407,11 +4407,12 @@ global segmentation segList
 
 %dialog
 
+
 %-------------------------------------------------------------------------
-prompt = {'Enter Min pixel value','Enter Max pixel value'};
+prompt = {'Enter Min pixel value','Enter Max pixel value','object type'};
 dlg_title = 'Analyse fluorescence inside contours';
 num_lines = 1;
-def = {'10','10'};
+def = {'10','10','cells1'};
 answer = inputdlg(prompt,dlg_title,num_lines,def);
 if isempty(answer)
     return
@@ -4419,19 +4420,11 @@ end
 %------------------------------------------------------------------------
 
 
-% determine the link between budnecks and cells numbers
-
-if mean(segmentation.budnecksSegmented)~=0
-   % status('Link budnecks to cell contours...',handles);
-   % phy_linkBudnecksToCells();
-end
-
-
 % compute fluo levels for cells and budnecks
 
-segmentedFrames=find(segmentation.cells1Segmented);%all segemented frames
-cells1=segmentation.cells1;
-budnecks=segmentation.tbudnecks;
+object=answer{3};
+segmentedFrames=find(segmentation.([object 'Segmented']));%all segemented frames
+cells1=segmentation.(object);
 
 status('Measure Fluorescence.... Be patient !',handles);
 
