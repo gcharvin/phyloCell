@@ -181,7 +181,7 @@ if option==1
                 tcell=segmentation.tcells1(ince(xx));
                 ima=[tcell.Obj.image];
                 
-                bud=segmentation.budnecks(frames(i),:);
+                bud=segmentation.nucleus(frames(i),:);
                 %bud
                 
               %  if xx>1
@@ -226,8 +226,8 @@ if option==1
                     oyc=tcell.Obj(pix).oy;
                     
                     
-                    ox=[segmentation.budnecks(frames(i),:).ox];
-                    oy=[segmentation.budnecks(frames(i),:).oy];
+                    ox=[segmentation.nucleus(frames(i),:).ox];
+                    oy=[segmentation.nucleus(frames(i),:).oy];
                     
                     dist=sqrt((ox-oxc).^2+(oy-oyc).^2);
                     
@@ -242,13 +242,13 @@ if option==1
                     
                     for zz=pix
                         
-                        %  l,i,segmentation.budnecks(l,i).n
+                        %  l,i,segmentation.nucleus(l,i).n
                         
-                        if segmentation.budnecks(frames(i),zz).n~=0
+                        if segmentation.nucleus(frames(i),zz).n~=0
                             
-                            bx=segmentation.budnecks(frames(i),zz).x-ROI(1);
+                            bx=segmentation.nucleus(frames(i),zz).x-ROI(1);
                          %   1);
-                            by=segmentation.budnecks(frames(i),zz).y-ROI(2);
+                            by=segmentation.nucleus(frames(i),zz).y-ROI(2);
                             
                             bwbud=poly2mask(bx,by,ROI(4),ROI(3));
                             bwbud = bwbud & bwcell;

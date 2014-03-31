@@ -149,7 +149,7 @@ for i = 1:n
                  maxpix=min(10,length(sorted));
 %                 %length(sorted)
                  if numel(sorted)~=0
-                     phy_Objects(cc).fluoMin(channel)=mean(sorted(end-minpix:end));
+                     phy_Objects(cc).fluoMin(channel)=mean(sorted(end-minpix+1:end));
                      phy_Objects(cc).fluoMax(channel)=mean(sorted(1:maxpix));
                  else
                      phy_Objects(cc).fluoMin(channel)=0;
