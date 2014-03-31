@@ -16,18 +16,10 @@ y=segmentation.selectedObj.y;
 x=repmat(x,2,1);
 y=repmat(y,2,1);
 
-size(x)
-size(y)
-
 [xc,yc] = getpts(handles.axes1);
-size(xc)
-size(yc)
 
 xc=repmat(xc,1,length(x));
 yc=repmat(yc,1,length(x));
-size(xc)
-size(yc)
-
 
 dist=(x-xc).^2+(y-yc).^2;
 
@@ -39,7 +31,7 @@ y=segmentation.selectedObj.y;
 indMin=min(ind);
 indMax=max(ind);
 
-if (indMax-indMin)<(round(length(x))+1)
+if (indMax-indMin)<(round(length(x)/2)+1)
     xb=horzcat(x(indMin:indMax),x(indMin));
     yb=horzcat(y(indMin:indMax),y(indMin));
     xm=horzcat(x(1:indMin),x(indMax:end));

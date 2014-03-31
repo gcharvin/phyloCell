@@ -4033,6 +4033,9 @@ status('Idle',handles);
 function Context_Objects_Swap_Callback(hObject, eventdata, handles)
 global segmentation;
 selObj=get(gco,'userdata');
+
+selObj
+segmentation.swapObj
 %segmentation.copyedObj=selObj;
 %segmentation.copyedType=segmentation.selectedType;
 
@@ -4134,8 +4137,8 @@ else
         n2= segmentation.swapObj.n;
         
         'ok1'
-         tobj(n2).mother
-         tobj(n1).mother
+        tobj(n2).mother
+        tobj(n1).mother
         
         %collect n1 cells and delete from n1 tobject
         c=0;
