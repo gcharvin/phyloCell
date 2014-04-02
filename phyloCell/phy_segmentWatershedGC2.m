@@ -1,4 +1,4 @@
-function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,display)
+function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,thresh,display)
 
 
 global segmentation
@@ -24,23 +24,31 @@ img=mat2gray(img);
 level = graythresh(img);
 BW2 = im2bw(img,level);
 
-%figure, imshow(BW3,[]);
+%if display
+%figure, imshow(BW2,[]);
+%end
 
 for j=1:1 % currently, only one loop is necessary 
    % l=0.005-0.001*(j); % for log filter
-    l=0.25-0.02*(j-1);
+    l=thresh-0.02*(j-1);
+    
 BW=edge(img,'canny',l); % try other edge detection filters ? 
 BW = bwareaopen(BW, 10);
 
 %BW = im2bw(img,l);
 %BW=BW3;
 
-%figure,imshow(BW,[]);
+if display
+figure,imshow(BW,[]);
+end
 
 imdist=bwdist(BW);
 imdist = imclose(imdist, strel('disk',2));
 imdist = imhmax(imdist,2);
-%figure,imshow(imdist,[0 10]); colormap jet
+
+if display
+figure,imshow(imdist,[0 30]); colormap jet
+end
 
 sous=BW - imdist;
 
@@ -73,7 +81,9 @@ end
 oldlabels = newlabels;
 end
 
-%figure, imshow(newlabels,[]);
+if display
+figure, imshow(newlabels,[]);
+end
 
 if sca~=1;
  img=imresize(img,sca);

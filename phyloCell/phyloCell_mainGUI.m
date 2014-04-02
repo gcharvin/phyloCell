@@ -453,7 +453,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             %    C=C(ax(3)+1:ax(4), ax(1)+1:ax(2));
             %tmp=phy_segmentWatershedGC(im,parametres{2,2},parametres{3,2},parametres{4,2},parametres{5,2},parametres{6,2},parametres{7,2});
             
-            tmp=phy_segmentWatershedGC2(im,parametres{2,2},parametres{3,2},parametres{7,2});
+            tmp=phy_segmentWatershedGC2(im,parametres{2,2},parametres{3,2},parametres{5,2},parametres{7,2});
             
             % else
             %    tmp=phy_segmentWatershedGC(im,parametres{4,2},parametres{5,2},0,parametres{2,2},parametres{3,2},parametres{7,2});%,~C);
@@ -708,7 +708,14 @@ for i=1:numel(segList)
     status(['Saving project ' num2str(i) ' - Be patient !'],handles);
     segmentation=segList(i).s;
     timeLapse=segList(i).t;
-    save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+    
+    localpath=userpath;
+   localpath=localpath(1:end-1);
+
+save([localpath '/segmentation-autotrack.mat'],'segmentation');
+copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
+%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
+%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
 end
 
 segmentation=segList(cur).s;
@@ -734,8 +741,20 @@ cur=find([segList.selected]==1);
 segList(cur).s=segmentation;
 segList(cur).t=timeLapse;
 
-save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
-save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
+
+localpath=userpath;
+localpath=localpath(1:end-1);
+
+save([localpath '/segmentation-autotrack.mat'],'segmentation');
+copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
+%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
+
+save([localpath '/timeLapse.mat'],'timeLapse');
+copyfile([localpath '/timeLapse.mat'],fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']));
+
+
+%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+%save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
 
 toc
 status('Idle',handles);

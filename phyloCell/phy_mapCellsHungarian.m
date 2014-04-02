@@ -105,9 +105,9 @@ for i=1:length(ind0)
                continue
            end
        else
-           %if abs(sizedist)>cell0(id).area
-           %    continue
-           %end
+           if abs(sizedist)>cell0(id).area
+               continue
+           end
        end
        end
        
