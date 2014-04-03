@@ -109,7 +109,7 @@ npoints=32;
 %figure, imshow(L>0,[]);
 
 cc=1;
-for i = 1:n
+for i = 1:n-1 % removed '1' to remove the right bottom corner.... 
     
     contour = contours{i};
     

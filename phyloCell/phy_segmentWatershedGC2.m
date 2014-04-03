@@ -10,7 +10,7 @@ global segmentation
 
  
  %img=segmentation.realImage(:,:,1);
- tic;
+ %tic;
  sca=1;
  
  if sca~=1;
@@ -132,7 +132,7 @@ for i=1:numel(stat)
    end
 end
 
-toc;
+%toc;
 
 
 function out=updateLabels(oldlabels,newlabels,Matching)

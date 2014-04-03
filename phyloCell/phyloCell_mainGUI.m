@@ -715,13 +715,16 @@ for i=1:numel(segList)
 %save([localpath '/segmentation-autotrack.mat'],'segmentation');
 %copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
 
+if isunix
 save([localpath '/segmentation-autotrack.mat'],'segmentation');
 eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},filename)]);
 
-
+else
 
 %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
-%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+end
+
 end
 
 segmentation=segList(cur).s;
@@ -753,11 +756,13 @@ localpath=localpath(1:end-1);
 
 %save([localpath '/segmentation-autotrack.mat'],'segmentation');
 %copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
+
 %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
 
 %save([localpath '/timeLapse.mat'],'timeLapse');
 %copyfile([localpath '/timeLapse.mat'],fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']));
 
+if isunix
 save([localpath '/segmentation-autotrack.mat'],'segmentation');
 eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename)]);
 %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
@@ -765,9 +770,10 @@ eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.re
 save([localpath '/timeLapse.mat'],'timeLapse');
 eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[timeLapse.filename '-project.mat'])]);
 
-
-%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
-%save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
+else
+save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
+end
 
 toc
 status('Idle',handles);
