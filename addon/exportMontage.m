@@ -1,4 +1,4 @@
-% Argument: frameIndices
+ % Argument: frameIndices
 %   Example: [] for all frames
 %   Example: 10:20 for frames 10 to 20
 %   Example: 20:-2:10 for even frames in reverse order from 20 to 10

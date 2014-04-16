@@ -1,4 +1,4 @@
-%toa an image from a project
+%load  an image from a project
 function [image map]=phy_loadTimeLapseImage(pos,frame,ch,option)
 
 global timeLapse;
