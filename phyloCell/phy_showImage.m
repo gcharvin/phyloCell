@@ -9,7 +9,7 @@ global segmentation timeLapse
 % 'frames', frames to be displayed; if multiple, returns, an array of
 % handles
 
-% 'channels', channels=struct('number',1,'rgb',[1 1 1],'limits',[500
+% 'channels', channels=struct('number',1,'rgb',[1 1 1],'binning',1,'limits',[500
 % 8000]);
 
 % 'ROI', [lef top width height]
@@ -33,25 +33,13 @@ channels=getMapValue(varargin, 'channels');
 if numel(channels)==0
     channels=struct('number',1,'rgb',[1 1 1],'limits',[]);
 end
-timestamp=getMapValue(varargin, 'timestamp'); if numel(timestamp)==0 timestamp=14; end
+timestamp=getMapValue(varargin, 'timestamp'); %if numel(timestamp)==0 timestamp=14; end
 
 ROI=getMapValue(varargin, 'ROI');
 tracking=getMapValue(varargin, 'tracking');
 contours=getMapValue(varargin, 'contours');
 
 cc=1;
-
-
-if numel(contours)
-    if numel(tracking)
-        %   tracking
-        tcell=segmentation.(['t'  contours(1).object])(tracking);
-        ima=[tcell.Obj.image];
-        imax=[tcell.Obj.ox]; % smooth trajectory of object
-        imay=[tcell.Obj.oy];
-    end
-end
-
 
 for i=frames
     
@@ -61,8 +49,13 @@ for i=frames
         
         img=phy_loadTimeLapseImage(segmentation.position,i,channels(j).number,'non retreat');
         
+        if channels(j).binning~=1
+            img=imresize(img, uint8(round(channels(j).binning)));
+        end
         
         if j==1
+            
+            
             refheight=size(img,1);
             refwidth=size(img,2);
             
@@ -73,16 +66,14 @@ for i=frames
             else
                 ROI=[1 1 refheight refwidth];
             end
-        else
-            img=imresize(img, uint8(round(refheight/size(img,1))));
         end
         
-        if tracking 
+        if tracking
             ROI=initTracking(ROI,tracking,contours,i,refwidth,refheight);
         end
         
         if numel(ROI) img=img(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1); end
-
+        
         if numel(channels(j).limits)
             img=imadjust(img,[channels(j).limits(1)/65535 channels(j).limits(2)/65535],[]);
         end
@@ -98,12 +89,12 @@ for i=frames
     end
     imshow(imgRGBsum);
     
-    if numel(timestamp)
-        drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
-    end
-    
     if numel(contours)
         drawContours(contours,ROI,tracking,i,refheight,refwidth) ;
+    end
+    
+    if numel(timestamp)
+        drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
     end
     
     h(cc)=gca;
@@ -113,52 +104,53 @@ end
 
 
 function ROIout=initTracking(ROI,tracking,contours,i,refwidth,refheight)
-    global segmentation
-    
-    scale=1;
-    tcell=segmentation.(['t'  contours(1).object])(tracking);
-    ima=[tcell.Obj.image];
-    imax=[tcell.Obj.ox]; % smooth trajectory of object
-    imay=[tcell.Obj.oy];
-    
-    % first contour is used for tracking
-    %ima
-    pix=find(ima==i);
-    
-    if numel(pix)==0
-        ROIout=ROI;
-        return;
-    end
-    % tcell
-    % frames(i),im
-    %length(pix)
-    
-    if numel(pix)
-        
-        xcc=scale*tcell.Obj(pix).x;
-        ycc=scale*tcell.Obj(pix).y;
-    end
-    
-    
-    ROI(2)=round(scale*imay(pix)-ROI(4)/2);
-    ROI(1)=round(scale*imax(pix)-ROI(3)/2);
-    
-    if ROI(2)<1
-        %delta=1-ROI(2);
-        ROI(2)=1;
-    end
-    if ROI(2)+ROI(4)>refwidth
-        ROI(2)=refwidth-ROI(4);
-    end
-    if ROI(1)<1
-        %delta=1-ROI(2);
-        ROI(1)=1;
-    end
-    if ROI(1)+ROI(3)>refheight
-        ROI(1)=refheight-ROI(3);
-    end
-    
+global segmentation
+
+scale=1;
+%tcell=segmentation.(['t'  contours(1).object])(tracking);
+tcell=segmentation.tcells1(tracking);
+ima=[tcell.Obj.image];
+imax=[tcell.Obj.ox]; % smooth trajectory of object
+imay=[tcell.Obj.oy];
+
+% first contour is used for tracking
+%ima
+pix=find(ima==i);
+
+if numel(pix)==0
     ROIout=ROI;
+    return;
+end
+% tcell
+% frames(i),im
+%length(pix)
+
+if numel(pix)
+    
+    xcc=scale*tcell.Obj(pix).x;
+    ycc=scale*tcell.Obj(pix).y;
+end
+
+
+ROI(2)=round(scale*imay(pix)-ROI(4)/2);
+ROI(1)=round(scale*imax(pix)-ROI(3)/2);
+
+if ROI(2)<1
+    %delta=1-ROI(2);
+    ROI(2)=1;
+end
+if ROI(2)+ROI(4)>refwidth
+    ROI(2)=refwidth-ROI(4);
+end
+if ROI(1)<1
+    %delta=1-ROI(2);
+    ROI(1)=1;
+end
+if ROI(1)+ROI(3)>refheight
+    ROI(1)=refheight-ROI(3);
+end
+
+ROIout=ROI;
 
 
 
@@ -203,7 +195,20 @@ for ik=1:length(contours)
         %xc3,yc3,contours(ik)
         
         if numel(contours(ik).cycle)==0 % don't draw if cell cycle is on
-            line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+            
+            
+            ok=0;
+            if numel(tracking)
+                if strcmp(contours(ik).object,'cells1') & cells.n==tracking
+                    ok=1;
+                end
+            end
+            
+            if ok==1
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',2*contours(ik).lineWidth);
+            else
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+            end
         end
         
         if isfield(contours(ik),'link') % plot mother bud link

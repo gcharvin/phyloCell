@@ -452,7 +452,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             %    [max2 bw2 C]=alignCavity(im,bw1,'fine',0,C);
             %    C=C(ax(3)+1:ax(4), ax(1)+1:ax(2));
             %tmp=phy_segmentWatershedGC(im,parametres{2,2},parametres{3,2},parametres{4,2},parametres{5,2},parametres{6,2},parametres{7,2});
-            
+            %a=parametres{5,2}
             tmp=phy_segmentWatershedGC2(im,parametres{2,2},parametres{3,2},parametres{5,2},parametres{7,2});
             
             % else
