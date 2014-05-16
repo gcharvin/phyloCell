@@ -219,13 +219,22 @@ for position = positions
         t = double((i-1) * secondsPerFrame);
         hours = floor(t / 3600);
         minutes = mod(floor(t / 60), 60);
+%         if i<42
+%             T=30;
+%             col=java.awt.Color.GREEN;
+%         else
+%             T=38;
+%             col=java.awt.Color.RED;
+%         end
         timestamp = sprintf('%d h %02d min', hours, minutes);
+%         tempstamp = sprintf('T = %d °C', T);
         drawRectangleWithBorder(jim, 10 * scale, 10 * scale, round(5 / pixelSize)* scale, 20 * scale, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
         taillemin=max(0.05*w,20);
         ymin=max(20 * scale+30,0.2*h);
         
         drawText(jim, timestamp, [0.05*w ymin] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+%         drawText(jim, tempstamp, [11*0.05*w ymin] , taillemin, col, java.awt.Color.BLACK);
         
         
         

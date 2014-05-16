@@ -1,4 +1,4 @@
-function mothers=phy_setCellLinks3(filtre,noiteration)
+function mothers=phy_setCellLinks3(filtre)
 global segmentation candarrstore narrstore scorearrstore
 
 % new pedigree construction based on budnecks detection without using
@@ -41,7 +41,7 @@ for i=1:numel(tcells)
             end
             
             % tcells(i).setMother(0);
-            %tcells(i).removeDaughter('ALL');
+            tcells(i).removeDaughter('ALL');
             
             % tcells(i).mothers=[];
             %i
@@ -271,107 +271,18 @@ ener=[];
 moth.mothers=[];
 cc2=0;
 
-if nargin==2 % no iterations wanted : just build the pedigree tree based on scoring
+
     mothers=buildTree(narr,candarr,tcells);
 
     problems=checkBadTimings(mothers,minDivisionTime,firstFrame);
-else
-    
-    while cc<200
-        
-        % assign daughters to candidate mothers
-        mothers=buildTree(narr,candarr,tcells);
-        
-        %return
-        %a=mothers(24),b=mothers(29)
-        
-        problems=checkBadTimings(mothers,minDivisionTime,firstFrame);
-        
-        
-        
-        if numel(problems)==0
-            
-            energy=-sum(scorearr(:,1));
-            ener(cc)=energy;
-            moth(cc).mothers=mothers;
-            
-            y = randsample(narr(:,3),1);
-            pix=find(narr(:,3)==y);
-            if candarr(pix,1)~=0
-  %'ok'
-                problems(1,:)=[candarr(pix,1) y y];
-            end
-            cc2=0;
-        else
-            listDau=[listDau problems(1,2:3)];
-            cc2=cc2+1;
-            %        if cc2>1000 % unsolvable problems
-            %
-            %
-            %            nbin=1:1:length(mothers);
-            %             hl=hist(listDau,nbin);
-            %             [mx ix]=max(hl);
-            %
-            %             'got an unsolvable problem with cell:', ix
-            %
-            %             pix=find(narr(:,1)==ix);
-            %
-            %             narr(pix:end-1,:)=narr(pix+1:end,:);
-            %             narr=narr(1:end-1,:);
-            %
-            %             candarr(pix:end-1,:)=candarr(pix+1:end,:);
-            %             candarr=candarr(1:end-1,:);
-            %
-            %             scorearr(pix:end-1,:)=scorearr(pix+1:end,:);
-            %             scorearr=scorearr(1:end-1,:);
-            %
-            %             listDau=[];
-            %             cc2=0;
-            %        end
-        end
-        
-        if numel(problems)~=0
-          %  problems(1,:)
-            [candarr scorearr]=makeNewConfig(narr,candarr,scorearr,problems(1,:));
-        end
-        
-        %cc2
-        %end
-        %pause;
-        
-        % if cc>1000
-        %   break
-        %end
-        cc=cc+1;
-    end
-    toc;
-    
-    
-    
-    if numel(ener)~=0
-        figure, plot(ener);
-        [ccm cci]=min(ener);
-        idx=cci;
-        mothers=moth(idx).mothers;
-    else
-        fprintf('Could not assign some of the daughter cells; exiting....');
-        %problems
-        %mothers=[];
-        %return;
-    end
-    
-end
 
-%narr,candarr,scorearr
-
-% assign mothers and daughters
-
-%a=tcells(1)
+   
 
 for i=1:numel(mothers)
     n=[tcells.N];
     list=mothers(i).daughterList;
     detect=mothers(i).budTimes;
+
     %tcells(i).setMother(0);
     
     for j=1:numel(list)
@@ -381,9 +292,11 @@ for i=1:numel(mothers)
         if numel(find(tcells(i).daughterList==dau))==0
             pix=find(n==dau);
             tcells(pix).setMother(n(i));
+            
             tcells(i).addDaughter(dau,tcells(pix).detectionFrame);%,tcells(pix).detectionFrame); %add a new daughter to the mother
         end
     end
+   % pause
 end
 
 %b=tcells(1)

@@ -107,8 +107,9 @@ if ~isempty(warningDisparitionCells)
                 segmentation.selectedObj={};
             end
             nObject=indNb(s);
-            strObjects=get(handles.popupmenu_Find_Object,'String');
-            strObj=strObjects{feat}
+            %strObjects=get(handles.popupmenu_Find_Object,'String');
+            %strObj=strObjects{feat}
+            strObj=segmentation.processing.features{segmentation.processing.selectedFeature};
             n=size(segmentation.(strObj),2);
             a=[segmentation.(strObj)(segmentation.frame1,:).n];
             numel2=find(a==nObject);

@@ -2056,7 +2056,7 @@ segList(cur).s=segmentation;
 a=[segList.selected];
 pix=find(a);
 
-phy_plotPedigree('index',pix,'mode',0,'vertical','Object',segmentation.pedigree.objects);
+%phy_plotPedigree('index',pix,'mode',0,'vertical','Object',segmentation.pedigree.objects);
 
 
 % --------------------------------------------------------------------
