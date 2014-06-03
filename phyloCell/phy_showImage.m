@@ -268,7 +268,8 @@ function drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
 global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);
-t = double((i) * timeLapse.interval);
+%t = double((i) * timeLapse.interval);
+t = double((i) * timeLapse.interval/60);
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);
 
@@ -280,7 +281,10 @@ else
     ypos=0.1*refheight;
 end
 
-text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+
+text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+
 
 function value = getMapValue(map, key)
 value = [];
