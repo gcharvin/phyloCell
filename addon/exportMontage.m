@@ -1,3 +1,4 @@
+
 % Argument: frameIndices
 %   Example: [] for all frames
 %   Example: 10:20 for frames 10 to 20
@@ -222,10 +223,11 @@ for position = positions
         timestamp = sprintf('%d h %02d min', hours, minutes);
         drawRectangleWithBorder(jim, 10 * scale, 10 * scale, round(5 / pixelSize)* scale, 20 * scale, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
-        taillemin=max(0.05*w,20);
+        taillemin=min(max(0.05*w,20),40);
+        
         ymin=max(20 * scale+30,0.2*h);
         
-        drawText(jim, timestamp, [0.05*w ymin] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+        drawText(jim, timestamp, [0.05*w 500] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
         
         

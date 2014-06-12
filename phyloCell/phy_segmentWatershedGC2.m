@@ -5,9 +5,6 @@ global segmentation
 
 
 %display=1
-
-
-
  
  %img=segmentation.realImage(:,:,1);
  %tic;
