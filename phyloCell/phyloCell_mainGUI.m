@@ -477,8 +477,6 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             
             im=segmentation.segmentationImage(:,:,parametres{1,2});
             
-            
-            
             %im=mat2gray(im);
             im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
             
