@@ -217,10 +217,18 @@ for position = positions
         
         jim = im2JavaBufferedImage(montageFrame);
         %t = double((i -frameIndices(1) ) * secondsPerFrame);
-        t = double((i) * secondsPerFrame);
+        t = double((i-1) * secondsPerFrame);
         hours = floor(t / 3600);
         minutes = mod(floor(t / 60), 60);
+%         if i<42
+%             T=30;
+%             col=java.awt.Color.GREEN;
+%         else
+%             T=38;
+%             col=java.awt.Color.RED;
+%         end
         timestamp = sprintf('%d h %02d min', hours, minutes);
+%         tempstamp = sprintf('T = %d °C', T);
         drawRectangleWithBorder(jim, 10 * scale, 10 * scale, round(5 / pixelSize)* scale, 20 * scale, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
         taillemin=min(max(0.05*w,20),40);
@@ -228,6 +236,7 @@ for position = positions
         ymin=max(20 * scale+30,0.2*h);
         
         drawText(jim, timestamp, [0.05*w 500] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+%         drawText(jim, tempstamp, [11*0.05*w ymin] , taillemin, col, java.awt.Color.BLACK);
         
         
         

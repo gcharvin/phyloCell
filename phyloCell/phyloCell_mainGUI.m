@@ -452,7 +452,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             %    [max2 bw2 C]=alignCavity(im,bw1,'fine',0,C);
             %    C=C(ax(3)+1:ax(4), ax(1)+1:ax(2));
             %tmp=phy_segmentWatershedGC(im,parametres{2,2},parametres{3,2},parametres{4,2},parametres{5,2},parametres{6,2},parametres{7,2});
-            
+            %a=parametres{5,2}
             tmp=phy_segmentWatershedGC2(im,parametres{2,2},parametres{3,2},parametres{5,2},parametres{7,2});
             
             % else
@@ -476,8 +476,6 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             parametres=parametres{1,1};
             
             im=segmentation.segmentationImage(:,:,parametres{1,2});
-            
-            
             
             %im=mat2gray(im);
             im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
@@ -2056,7 +2054,7 @@ segList(cur).s=segmentation;
 a=[segList.selected];
 pix=find(a);
 
-phy_plotPedigree('index',pix,'mode',0,'vertical','Object',segmentation.pedigree.objects);
+%phy_plotPedigree('index',pix,'mode',0,'vertical','Object',segmentation.pedigree.objects);
 
 
 % --------------------------------------------------------------------

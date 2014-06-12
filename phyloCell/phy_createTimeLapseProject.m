@@ -116,13 +116,13 @@ for i=1:maxpos
         
         [pathstr, name, ext] = fileparts(sourcefile);
         
-        if strcmp(ext,'.jpg')
-       destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
+     %   if strcmp(ext,'.jpg')
+       destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,'.jpg');
        str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
-        else
-        destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
-       str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);    
-        end
+      %  else
+      %  destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
+      % str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);    
+     %   end
         copyfile(sourcefile,destination);
       
       % imwrite(tempi,str,'BitDepth',12,'Mode','lossless');

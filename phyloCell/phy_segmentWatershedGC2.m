@@ -4,7 +4,7 @@ function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,thresh,display)
 global segmentation
 
 
-%display=1
+%display=0;
  
  %img=segmentation.realImage(:,:,1);
  %tic;
