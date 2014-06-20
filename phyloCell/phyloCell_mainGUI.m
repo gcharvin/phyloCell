@@ -4508,15 +4508,17 @@ for i=segmentedFrames
     %create masks and get readouts
     masktotal=zeros(segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
     maskcyto=masktotal;
-    xtot=[];
-    ytot=[];
+    %xtot=[];
+    %ytot=[];
     
     for j=1:length(cells1(i,:))
         if cells1(i,j).n~=0 && ~isempty(cells1(i,j).x)
             mask = poly2mask(cells1(i,j).x,cells1(i,j).y,segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
             masktotal(mask)=1;
-            xtot=[xtot cells1(i,j).x];
-            ytot=[ytot cells1(i,j).y];
+            
+           % size(cells1(i,j).x)
+            %xtot=[xtot cells1(i,j).x];
+            %ytot=[ytot cells1(i,j).y];
         end
     end
     % figure, imshow(masktotal,[]);
