@@ -182,8 +182,8 @@ for ik=1:length(contours)
         xc=cells.x;
         yc=cells.y;
         
-        xc3=xc-ROI(1);
-        yc3=yc-ROI(2);
+        xc3=xc-ROI(1)+1;
+        yc3=yc-ROI(2)+1;
         
         %% remove points that not in the right frame
         %pix=find(xc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & xc2< (contours(ik).channelGroup(lk))*ROI(3));
@@ -205,7 +205,7 @@ for ik=1:length(contours)
             end
             
             if ok==1
-                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',2*contours(ik).lineWidth);
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             else
                 line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             end
