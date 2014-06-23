@@ -26,6 +26,7 @@ end
 
 numP=1;
 Data=sortrows([x,y]);
+peak=[];
 for i=1:rx
     isP=getPeak(Data,i,s);
     if  sum(isnan(isP))==0
@@ -35,8 +36,10 @@ for i=1:rx
 end
 
 if nargin == 4
+    if numel(peak)~=0
     peak=peak(find(peak(:,1)>=Range(1) & peak(:,1)<=Range(2)),:);
     peak=peak(find(peak(:,2)>=Range(3) & peak(:,2)<=Range(4)),:);
+    end
 end
 
 %-------------------------------------------
