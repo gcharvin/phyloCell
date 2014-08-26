@@ -26,14 +26,14 @@
 % Optional argument : 'contours', contours
 % Example : 'contours',contours
 % contours is a struct with fields :
-% contours.object='nucleus'
-% contours.color=[1 0 0];
-% contours.lineWidth=2;
-% contours.link=1 % link between mother and daughter
-% contours.incells=[ 2 5 65 847] % cells to display. Leave blank if
-% contours.cycle=1 % plot cell cycle
-% contours.channelGroup=[1 2]; % specify to which channelGroup contours
-% contours.filename='segmentation-batch.mat')
+%contours.object='nucleus'
+%contours.color=[1 0 0];
+%contours.lineWidth=2;
+%contours.link=1 % link between mother and daughter
+%contours.incells=[ 2 5 65 847] % cells to display. Leave blank if
+%contours.cycle=1 % plot cell cycle
+%contours.channelGroup=[1 2]; % specify to which channelGroup contours
+%contours.filename='segmentation-batch.mat')
 % should apply
 % list of contour objects is permitted
 
@@ -732,6 +732,7 @@ end
             files = dir(fullfile(base, positionName, channelName));
             channelImageFiles = files(arrayfun(@(file) ~isempty(strfind(file.name, '.jpg')), files));
             channelImageFiles = arrayfun(@(imageFile) fullfile(base, positionName, channelName, imageFile.name), channelImageFiles, 'UniformOutput', false);
+            %size(channelImageFiles), size(imageNames), pause
             imageNames = [imageNames channelImageFiles];
         end
     end

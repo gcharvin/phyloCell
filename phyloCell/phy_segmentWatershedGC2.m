@@ -1,18 +1,14 @@
-function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,thresh,display)
-
+function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,thresh,display,mask)
 
 global segmentation
 
+%display=1;
 
-%display=0;
-
-
-
- 
  %img=segmentation.realImage(:,:,1);
  %tic;
  sca=1;
  
+ imgstore=img;
  if sca~=1;
  img=imresize(img,1/sca);
  end
@@ -42,6 +38,15 @@ if display
 figure,imshow(BW,[]);
 end
 
+if nargin==6
+    BW=BW | mask;
+end
+
+if display
+figure,imshow(BW,[]);
+end
+
+
 imdist=bwdist(BW);
 imdist = imclose(imdist, strel('disk',2));
 imdist = imhmax(imdist,2);
@@ -51,6 +56,10 @@ figure,imshow(imdist,[0 30]); colormap jet
 end
 
 sous=BW - imdist;
+
+if nargin==6
+   BW2=BW2 | mask; 
+end
 
 labels = double(watershed(sous,8)).* ~BW2; % .* mask; % watershed
 warning off all
@@ -98,7 +107,7 @@ figure; imshow(img,[]); hold on;
  end
 
 % tic;
-stat = regionprops(newlabels, 'Area','Eccentricity');
+stat = regionprops(newlabels,imgstore, 'Area','Eccentricity','PixelValues');
 
 phy_Objects = phy_Object();
 
@@ -121,6 +130,10 @@ for i=1:numel(stat)
    
    if min(sca*xnew)>1 && min(sca*ynew)>1 && max(sca*xnew)<size(img,2) && max(sca*ynew)<size(img,1)
    phy_Objects(cc) = phy_Object(cc, sca*(xnew+1), sca*(ynew+1),0,0,mean(sca*(xnew+1)),mean(sca*(ynew+1)),0);
+   
+  
+   phy_Objects(cc).fluoMean(1)=mean(stat(i).PixelValues);
+   phy_Objects(cc).fluoVar(1)=std(double(stat(i).PixelValues));
    
    if display
        line( phy_Objects(cc).x,phy_Objects(cc).y,'Color','r','LineWidth',1);

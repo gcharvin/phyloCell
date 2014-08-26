@@ -42,6 +42,7 @@ end
 
 
 if length(fy)>length(ffilter), ffilter=[ffilter ffilter(1)];end
+
 ffy=fy.*ffilter;  % Multiply filter by Fourier Transfork of signal
 ry=real(ifft(ffy));
 

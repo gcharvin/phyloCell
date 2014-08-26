@@ -53,6 +53,7 @@ cc=1;
     %return;
 %end
 
+
 for i=1:numel(objects)
     n=objects(i).n;
     
@@ -100,7 +101,7 @@ end
 %%% sort phy_objects so that they appear chronologically
 
 for i=1:numel(tObjectOut)
-    
+  % fprintf('.');
    %tempObj=phy_Object;
    
    %a=tObjectOut(i).Obj;
@@ -125,4 +126,4 @@ for i=1:numel(tObjectOut)
    tObjectOut(i).detectionFrame=frames(1);
    tObjectOut(i).lastFrame=frames(end);
 end
-
+%fprintf('\n');
