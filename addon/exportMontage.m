@@ -22,6 +22,8 @@
 % Optional argument : output movie name 'output', output
 % Example : 'output','toto'
 
+% Optional argument : cavity tracking 'cavity', cavity number
+% Example : 'cavity','number'
 
 % Optional argument : 'contours', contours
 % Example : 'contours',contours
@@ -42,8 +44,8 @@
 % structure.
 % Example : 'tracking', 698
 
-%% Optional argument : cell cycle phase 'cycle', cycle
-%% Example : 'cycle',cycle
+% Optional argument : cell cycle phase 'cycle', cycle
+% Example : 'cycle',cycle
 
 % exemple of function call:
 % exportMontage('', 'HTB2_GFP WT', 1:5, {'1 0 2 0'}, [], 0, [], 'contours',contours)
@@ -81,6 +83,7 @@ quality = initializeQuality;
 encoder = initializeEncoder;
 fps = initializeFPS;
 ROI = initializeROI;
+cavity = initializeCavity;
 pixelSize = initializePixel;
 output = initializeOutput;
 contours=initializeContours;
@@ -98,7 +101,14 @@ for position = positions
     
     
     if noseg
+        mustopenseg=0;
         if numel(contours)
+            mustopenseg=1;
+        end
+           if numel(cavity)
+            mustopenseg=1;
+           end
+        if mustopenseg
             out=phy_openSegmentationProject(position,contours.filename);
         end
     end
@@ -122,6 +132,16 @@ for position = positions
         ROI=[1 1 scale*maxSize(1) scale*maxSize(2)];
     end
     
+    orient=1; % orientation for cavities
+    if numel(cavity)
+     ncav=[segmentation.ROI(frameIndices(1)).ROI.n];
+     pix=find(ncav==cavity);
+     ROI=segmentation.ROI(frameIndices(1)).ROI(pix).box;
+     h=ROI(4);
+     w=ROI(3);
+     orient=segmentation.ROI(frameIndices(1)).ROI(pix).orient;
+    end
+    
     montageFrame = zeros(h, w * groupCount, 3);
     montageWidth = size(montageFrame, 2);
     montageHeight = size(montageFrame, 1);
@@ -129,6 +149,11 @@ for position = positions
     positionIndex = positionIndex + 1;
     
     aviFileName = [output '-pos' num2str(position) '.avi'];
+    
+    if numel(cavity)
+        aviFileName = [output '-pos' num2str(position) '-cavity' num2str(cavity) '.avi'];
+    end
+    
     aviWriter = [];
     
     if strcmp(encoder, 'javitools')
@@ -209,8 +234,14 @@ for position = positions
                 
             end
         end
-        
-        
+
+
+        % cavity tracking
+if numel(cavity)
+    ncav=[segmentation.ROI(i).ROI.n];
+    pix=find(ncav==cavity);
+ROI=segmentation.ROI(i).ROI(pix).box;
+end
         
         updateMontageFrame;
         
@@ -274,6 +305,14 @@ for position = positions
                         yc3=yc2(pix);
                         
                         width=contours(ik).lineWidth;
+                        
+                        
+                        % rotate contours if cavity is upside down
+                        if orient==0
+                           xc3=ROI(3)-xc3+2*(contours(ik).channelGroup(lk)-1)*ROI(3);
+                           yc3=ROI(4)-yc3;
+                          
+                        end
                         
                         %xc3,yc3,contours(ik)
                         
@@ -550,6 +589,15 @@ end
         end
     end
 
+function cavity = initializeCavity
+
+cavity = getMapValue(varargin, 'cavity');
+
+if isempty(cavity)
+cavity=[];
+end
+end
+
 %%
 
     function jim = im2JavaBufferedImage(im)
@@ -653,7 +701,7 @@ end
                     warning off all
                     image=imresize(image, maxSize);
                     
-                    %   ROI
+                    
                     if numel(ROI)
                         image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
                     end
@@ -661,10 +709,16 @@ end
                     
                     image = double(imadjust(image, [lowLevel highLevel] / grayBinCount, [])) / grayBinCount;
                     
+                    if orient==0 % rotate image so that cavity is upside down
+                       %image=fliplr(image);
+                       %image=flipud(image);
+                       image=rot90(image,2);
+                    end
                     
                     warning on all;
                     
                     if k == 1
+                       
                         montageFrame(:, columnIndices, :) = repmat(image,  [1, 1, colorCount]);
                         grayUsed = 1;
                     else

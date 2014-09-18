@@ -8,34 +8,46 @@ global segmentation
  %tic;
  sca=1;
  
+  %if display
+ %figure, imshow(img,[]);
+ % end
+  
  imgstore=img;
  if sca~=1;
  img=imresize(img,1/sca);
  end
- %figure, imshow(img,[]);
- 
+
+
 img=mat2gray(img);
 
 %returns thresh containing N threshold values using Otsu's method
+if thresh==0
 level = graythresh(img);
-BW2 = im2bw(img,level);
+else
+level=thresh;    
+end
 
-%if display
-%figure, imshow(BW2,[]);
-%end
+BW2 = im2bw(img,level+0.05);
+
+if display
+figure, imshow(BW2,[]);
+end
 
 for j=1:1 % currently, only one loop is necessary 
    % l=0.005-0.001*(j); % for log filter
     l=thresh-0.02*(j-1);
     
-BW=edge(img,'canny',l); % try other edge detection filters ? 
-BW = bwareaopen(BW, 10);
+%BW=edge(img,'canny',l); % try other edge detection filters ? 
+BW = im2bw(img,level);
+
+BW = bwareaopen(BW, 20);
 
 %BW = im2bw(img,l);
 %BW=BW3;
 
 if display
 figure,imshow(BW,[]);
+
 end
 
 if nargin==6
@@ -120,7 +132,7 @@ for i=1:numel(stat)
    %end
    
    
-   if stat(i).Area <minSize || stat(i).Area >maxSize || stat(i).Eccentricity>0.9
+   if stat(i).Area <minSize || stat(i).Area >maxSize %|| stat(i).Eccentricity>0.9
       
    newlabels(tmp)=0;
    else
