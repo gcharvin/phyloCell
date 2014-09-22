@@ -74,12 +74,14 @@ imdist = imhmax(imdist, 2); % ecretage de l'image de distance
 
 borders=~bw_bud;
 
-I3(~bw_bud)=0;
+%I3(~bw_bud)=0;
 
-%figure, imshow(borders-I3,[]);
+%figure, imshow(borders-imdist,[]);
+%figure, imshow(-imdist,[]);
+
 
 labels = double(watershed(borders - imdist)).* ~borders;
-
+%labels=~borders;
 %figure, imshow(labels>0,[]);
 
 warning off all

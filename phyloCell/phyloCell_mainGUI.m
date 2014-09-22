@@ -3312,6 +3312,8 @@ if strcmp(eventdata.Key,'a')
     phy_cut_bud_mother(hObject, eventdata, handles);
 end
 
+
+
 if strcmp(eventdata.Key,'b')
     %disp('left');
     
@@ -4070,8 +4072,8 @@ function Context_Objects_Swap_Callback(hObject, eventdata, handles)
 global segmentation;
 selObj=get(gco,'userdata');
 
-selObj
-segmentation.swapObj
+%selObj
+%segmentation.swapObj
 %segmentation.copyedObj=selObj;
 %segmentation.copyedType=segmentation.selectedType;
 
@@ -4540,6 +4542,7 @@ for i=segmentedFrames
             %                 budmasksum=budmask;
             %             end
             cells1(i,j).fluoMean=[];
+            cells1(i,j).fluoVar=[];
             cells1(i,j).fluoNuclMean=[];
             cells1(i,j).fluoCytoMean=[];
             
@@ -5473,6 +5476,7 @@ nObject=str2double(get(hObject,'string')); %get the value of the edit case
 feat=get(handles.popupmenu_Find_Object,'Value');
 str=get(handles.popupmenu_Find_Object,'String');
 strObj=str{feat};
+
 if nObject<=length(segmentation.(['t' strObj])) && nObject>=1 %if it is in the limits
     if segmentation.(['t' strObj])(nObject).N==nObject %check if it was deleted (.N==0)
         segmentation.(['t' strObj])(nObject).select(); %select the new cell
@@ -5586,3 +5590,20 @@ global segmentation;
 val=get(hObject,'Value');
 str=get(hObject,'String');
 segmentation.environment=str{val};
+
+
+% --- Executes on button press in celltraj.
+function celltraj_Callback(hObject, eventdata, handles)
+% hObject    handle to celltraj (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global segmentation celltrajsel
+
+
+set(handles.showSpecificCells,'String',num2str(celltrajsel));
+
+segmentation.(['t' 'cells1'])(celltrajsel).select(); %select the new cell
+segmentation.selectedTObj=segmentation.(['t' 'cells1'])(celltrajsel); % copy it
+        
+Change_Disp1(segmentation.(['t' 'cells1'])(celltrajsel).lastFrame,handles);

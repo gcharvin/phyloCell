@@ -106,6 +106,7 @@ for i=1:length(ind0)
            end
        else
            if abs(sizedist)>cell0(id).area
+             %  'ok'
                continue
            end
        end
@@ -208,7 +209,6 @@ for i=1:length(newcell)
    end
    end
 end
-
 
 if display
 

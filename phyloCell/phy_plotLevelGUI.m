@@ -368,23 +368,23 @@ for i=1:length(cells)
     h(i)=plot(val2,val1,'color',couleurs(compt+1,:),'lineWidth',2); hold on;
     compt=compt+1;
     
-    % indicate position of bud times in case it's known
-    if numel(cells(i).budTimes)~=0
-    ar=cells(i).budTimes-cells(i).Obj(1).image+1;
-    val1b=val1(ar);
-    val2b=val2(ar);
-    
-    plot(val2b,val1b,'Color','k','LineStyle','.','Marker','o','lineWidth',2); hold on;
-    end
-    
-     % indicate position of division times in case it's known
-    if numel(cells(i).divisionTimes)~=0
-    ar=cells(i).divisionTimes-cells(i).Obj(1).image+1;
-    val1b=val1(ar);
-    val2b=val2(ar);
-    
-    plot(val2b,val1b,'Color','b','LineStyle','.','Marker','o','lineWidth',2); hold on;
-    end
+%     % indicate position of bud times in case it's known
+%     if numel(cells(i).budTimes)~=0
+%     ar=cells(i).budTimes-cells(i).Obj(1).image+1;
+%     val1b=val1(ar);
+%     val2b=val2(ar);
+%     
+%     plot(val2b,val1b,'Color','k','LineStyle','.','Marker','o','lineWidth',2); hold on;
+%     end
+%     
+%      % indicate position of division times in case it's known
+%     if numel(cells(i).divisionTimes)~=0
+%     ar=cells(i).divisionTimes-cells(i).Obj(1).image+1;
+%     val1b=val1(ar);
+%     val2b=val2(ar);
+%     
+%     plot(val2b,val1b,'Color','b','LineStyle','.','Marker','o','lineWidth',2); hold on;
+%     end
     
     % adjust number of character on the legend
     strncell=num2str(cells(i).N);
