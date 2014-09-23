@@ -22,7 +22,7 @@ img=mat2gray(img);
 
 %returns thresh containing N threshold values using Otsu's method
 if thresh==0
-level = graythresh(img);
+level = graythresh(img)
 else
 level=thresh;    
 end
@@ -157,6 +157,10 @@ for i=1:numel(stat)
    end
 end
 
+% fuse cells that are oversegmented
+phy_Objects=removeFusedCells(phy_Objects,30,npoints,imgstore);
+
+%a=[phy_Objects.fluoMean]
 %toc;
 
 
@@ -253,4 +257,204 @@ for i=1:length(old)
          M(i,j)=d;
         
     end
+end
+
+
+function cellsout=removeFusedCells(cellsin,cellcelldistance,npoints,img)
+
+% remove "fused" cells
+
+mx=[cellsin.ox];
+mx=repmat(mx',[1 size(mx,2)]);
+mx=mx-mx';
+
+my=[cellsin.oy];
+my=repmat(my',[1 size(my,2)]);
+my=my-my';
+
+d=sqrt(mx.^2+my.^2);
+pix=d<3*cellcelldistance;
+pix=pix & tril(ones(size(d)),-1);
+
+[row,col] = find(pix);
+
+n=length(row);
+
+fuse=[];
+
+
+%row,col
+% find min distances between cells
+for i=1:n
+    
+    x1=cellsin(row(i)).x;
+    x2=cellsin(col(i)).x;
+    y1=cellsin(row(i)).y;
+    y2=cellsin(col(i)).y;
+    
+    %row(i)
+   % line(cellsin(row(i)).x,cellsin(row(i)).y,'Color','r','Marker','o');
+    
+    x1p=repmat(x1',[1 size(x1,2)]);
+    x2p=repmat(x2',[1 size(x2,2)]);
+    x=x1p-x2p';
+    
+    y1p=repmat(y1',[1 size(y1,2)]);
+    y2p=repmat(y2',[1 size(y2,2)]);
+    y=y1p-y2p';
+    
+    d=sqrt(x.^2+y.^2);
+    pix=d<5; % distance 5
+    pix=pix & ~diag(ones(1,size(d,1))) ;%tril(ones(size(d)),-1);
+    
+
+    
+    pix=find(pix);
+    
+    if numel(pix)>0.3*npoints
+        
+        [r c]=ind2sub(size(d),pix);
+        
+        x1=x1'; x2=x2'; y1=y1'; y2=y2';
+        
+        perim1=sum(sqrt((circshift(x1,1)-x1).^2+(circshift(y1,1)-y1).^2));
+        perim2=sum(sqrt((circshift(x2,1)-x2).^2+(circshift(y2,1)-y2).^2));
+        
+        r=unique(r);
+        c=unique(c);
+        
+        subperim1=0;
+        for j=1:length(r)
+        subperim1=max(subperim1,sqrt((x1(r(end))-x1(r(1))).^2+(y1(r(end))-y1(r(1))).^2));
+        r=circshift(r,1);
+        end
+        
+        subperim2=0;
+        for j=1:length(c)
+        subperim2=max(subperim2,sqrt((x2(c(end))-x2(c(1))).^2+(y2(c(end))-y2(c(1))).^2));
+        c=circshift(c,1);
+        end
+        
+        % xcol=[ cellsin(row(i)).x(r) ; cellsin(col(i)).x(c)]
+        % ycol=[ cellsin(row(i)).y(r) ; cellsin(col(i)).y(c)]
+        
+        %row(i),col(i)
+        a=subperim2/perim2;
+        b=subperim1/perim1;
+        
+        if (a>0.2 && b>0.2)  || (a>0.4 || b>0.4)
+        fuse=[fuse i];
+        end
+        
+       % d(pix)
+    end
+    
+end
+
+row=row(fuse);
+col=col(fuse);
+
+newcol=col;
+newrow=row;
+
+c=[];
+c.c=[];
+cc=0;
+i=1;
+
+incluster=[];
+
+% identify clusters
+for i=1:length(newcol)
+    
+    %i,c(:).c
+    %pause
+    
+    curr=[];
+    for j=1:numel(c)
+          curr=find(c(j).c==newcol(i));
+           if numel(curr)~=0
+            c(j).c=[c(j).c  newrow(i)];
+            incluster=[incluster newrow(i)];
+            break;
+           end
+    end
+    
+    if numel(curr)==0
+    cc=cc+1; 
+    c(cc).c=[newcol(i)  newrow(i)];
+     incluster=[incluster newcol(i) newrow(i)];
+    end
+    
+    
+    
+end
+
+
+cid=1:1:length(cellsin);
+
+dif=setdiff(cid,incluster);
+
+for i=1:length(dif)
+        
+        xnew=cellsin(dif(i)).x;
+        ynew=cellsin(dif(i)).y;
+        
+        area=cellsin(dif(i)).area;
+        inte=cellsin(dif(i)).fluoMean(1);
+        
+        xnew=1.00*(xnew-mean(xnew))+mean(xnew);
+        ynew=1.00*(ynew-mean(ynew))+mean(ynew);
+    
+    
+        cellsout(i) = phy_Object(i, xnew, ynew,0,area,mean(xnew),mean(ynew),0);
+        cellsout(i).fluoMean(1)=inte;
+        %cellsout(i).ox = mean(xnew);
+        %cellsout(i).oy = mean(ynew);
+end 
+
+%return;
+cc=length(dif)+1;
+
+
+for i=1:numel(c)
+   
+    list=c(i).c;
+    
+    if numel(list)==0
+        continue;
+    end
+    
+    x=[]; y=[]; f=[];
+    
+    for j=list
+        x=[x cellsin(j).x];
+        y=[y cellsin(j).y];
+        f=[f cellsin(j).fluoMean(1)];
+    end
+    
+    %warning off all;
+    %dt = DelaunayTri(x',y');
+    %warning on all;
+    
+   % k = convexHull(dt);
+%    x,y
+    k= convhull(x,y);
+    
+    x=x(k);
+    y=y(k);
+    
+    [xnew ynew]=phy_changePointNumber(x,y,npoints);
+    
+     xnew=1.0*(xnew-mean(xnew))+mean(xnew);
+     ynew=1.0*(ynew-mean(ynew))+mean(ynew);
+        
+    cellsout(cc) = phy_Object(cc, xnew, ynew, 0,0,mean(xnew),mean(ynew),0);
+    
+    
+    cellsout(cc).fluoMean(1)=mean(f);
+    
+    %cellsout(cc).ox = mean(x);
+    %cellsout(cc).oy = mean(y);
+    cc=cc+1;
 end
