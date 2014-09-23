@@ -1,4 +1,5 @@
- % Argument: frameIndices
+
+% Argument: frameIndices
 %   Example: [] for all frames
 %   Example: 10:20 for frames 10 to 20
 %   Example: 20:-2:10 for even frames in reverse order from 20 to 10
@@ -258,13 +259,14 @@ end
 %             col=java.awt.Color.RED;
 %         end
         timestamp = sprintf('%d h %02d min', hours, minutes);
-%         tempstamp = sprintf('T = %d °C', T);
+%         tempstamp = sprintf('T = %d Â°C', T);
         drawRectangleWithBorder(jim, 10 * scale, 10 * scale, round(5 / pixelSize)* scale, 20 * scale, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
-        taillemin=max(0.05*w,20);
+        taillemin=min(max(0.05*w,20),40);
+        
         ymin=max(20 * scale+30,0.2*h);
         
-        drawText(jim, timestamp, [0.05*w ymin] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+        drawText(jim, timestamp, [0.05*w 500] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
 %         drawText(jim, tempstamp, [11*0.05*w ymin] , taillemin, col, java.awt.Color.BLACK);
         
         
