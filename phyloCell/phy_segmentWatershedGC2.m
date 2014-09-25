@@ -2,7 +2,7 @@ function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,thresh,display,
 
 global segmentation
 
-%display=1;
+display=0;
 
  %img=segmentation.realImage(:,:,1);
  %tic;
@@ -20,9 +20,23 @@ global segmentation
 
 img=mat2gray(img);
 
+if display
+figure, imshow(img,[]);
+figure, imshow(img,[]);
+end
+
+%img=imtophat(img,strel('disk',5));
+%img = KuwaharaFast(img, 1);
+
+%[img,Xpad] = kuwahara(img);
+
+if display
+figure, imshow(img,[]);
+end
+
 %returns thresh containing N threshold values using Otsu's method
 if thresh==0
-level = graythresh(img)
+level = graythresh(img);
 else
 level=thresh;    
 end
@@ -33,30 +47,39 @@ if display
 figure, imshow(BW2,[]);
 end
 
+
 for j=1:1 % currently, only one loop is necessary 
    % l=0.005-0.001*(j); % for log filter
-    l=thresh-0.02*(j-1);
+    l=level-0.02*(j-1);
     
-%BW=edge(img,'canny',l); % try other edge detection filters ? 
-BW = im2bw(img,level);
+BW=edge(img,'canny',l); % try other edge detection filters ? 
+%BW = im2bw(img,level);
 
-BW = bwareaopen(BW, 20);
+
+BW = bwareaopen(BW, 10);
 
 %BW = im2bw(img,l);
 %BW=BW3;
 
 if display
 figure,imshow(BW,[]);
-
 end
+
+%BW=imopen(BW,strel('disk',2));
+
+%if display
+%figure,imshow(BW,[]);
+%end
 
 if nargin==6
     BW=BW | mask;
-end
-
-if display
+    
+    if display
 figure,imshow(BW,[]);
 end
+end
+
+
 
 
 imdist=bwdist(BW);
@@ -67,7 +90,7 @@ if display
 figure,imshow(imdist,[0 30]); colormap jet
 end
 
-sous=BW - imdist;
+sous=BW- imdist;
 
 if nargin==6
    BW2=BW2 | mask; 
@@ -158,7 +181,7 @@ for i=1:numel(stat)
 end
 
 % fuse cells that are oversegmented
-phy_Objects=removeFusedCells(phy_Objects,30,npoints,imgstore);
+%phy_Objects=removeFusedCells(phy_Objects,30,npoints,imgstore);
 
 %a=[phy_Objects.fluoMean]
 %toc;
