@@ -2,7 +2,7 @@ function phy_Objects=phy_segmentWatershedGC2(img,minSize,maxSize,thresh,display,
 
 global segmentation
 
-display=0;
+%display=1;
 
  %img=segmentation.realImage(:,:,1);
  %tic;
@@ -22,13 +22,63 @@ img=mat2gray(img);
 
 if display
 figure, imshow(img,[]);
-figure, imshow(img,[]);
+%figure, imshow(img,[]);
 end
+
+%h = fspecial('disk',3);
+%blurred = imfilter(I,H,'replicate');
+%h = fspecial('unsharp', 0.1)
+%h = fspecial('motion', 50, 45);
+
+
+% 
+ %img = imfilter(img, h);
+
+%if display
+%figure, imshow(img,[]);
+%figure, imshow(img,[]);
+%end
+% 
+%  I=1-img;
+% % %figure, imshow(I,[]);
+%  se=strel('Disk',10);
+%  Ie = imerode(I, se);
+%  Iobr = imreconstruct(Ie, I);
+% 
+% 
+% %figure,hist(Iobr(:),0.7:0.001:1);
+% 
+% %figure, imshow(1-Iobr), title('Opening-by-reconstruction (Iobr)')
+% 
+% se=strel('Disk',2);
+% Iobrd = imdilate(Iobr, se);
+% Iobrcbr = imreconstruct(imcomplement(Iobrd), imcomplement(Iobr));
+% Iobrcbr = imcomplement(Iobrcbr);
+% figure, imshow(Iobrcbr), title('Opening-closing by reconstruction (Iobrcbr)');
+% 
+% if display
+
+% end
+
+
+%fgm = imregionalmax(1-Iobr);
+%figure, imshow(fgm,[]);
+
+%img=1-Iobrcbr;
+%img=1-Iobr;
+% figure, imshow(Iobr,[]);
+
+img2=img;
+
+img = rangefilt(img); 
+%[img ~]=imgradient(img);
+%figure, imshow(img,[]);
 
 %img=imtophat(img,strel('disk',5));
 %img = KuwaharaFast(img, 1);
 
-%[img,Xpad] = kuwahara(img);
+%[img,Xpad] = kuwahara(1-Iobrcbr);
+%figure, imshow(img,[]);
 
 if display
 figure, imshow(img,[]);
@@ -41,7 +91,10 @@ else
 level=thresh;    
 end
 
-BW2 = im2bw(img,level+0.05);
+level2=graythresh(img2);
+
+BW2 = im2bw(img2,level2+0.05);
+
 
 if display
 figure, imshow(BW2,[]);
@@ -54,10 +107,11 @@ for j=1:1 % currently, only one loop is necessary
     
 BW=edge(img,'canny',l); % try other edge detection filters ? 
 %BW = im2bw(img,level);
-
+BW = BW | BW2;
 
 BW = bwareaopen(BW, 10);
 
+%BW=fgm;
 %BW = im2bw(img,l);
 %BW=BW3;
 
