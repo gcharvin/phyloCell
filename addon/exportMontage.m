@@ -784,7 +784,8 @@ end
         
         for channel = channels
             positionName = [project '-pos' num2str(position)];
-            channelName = [positionName '-ch' num2str(channel) '-' timeLapse.list(1,channel).ID];
+            channelName = strcat(positionName, '-ch', num2str(channel), '-' ,timeLapse.list(1,channel).ID);
+            channelName=channelName{1};
             files = dir(fullfile(base, positionName, channelName));
             channelImageFiles = files(arrayfun(@(file) ~isempty(strfind(file.name, '.jpg')), files));
             channelImageFiles = arrayfun(@(imageFile) fullfile(base, positionName, channelName, imageFile.name), channelImageFiles, 'UniformOutput', false);
