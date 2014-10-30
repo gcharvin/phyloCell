@@ -352,7 +352,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             
             im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
             
-            budnecktemp=phy_segmentFoci(im,parametres{2,2},parametres{3,2},parametres{1,2},parametres{5,2},parametres{4,2},parametres{6,2},segmentation.frame1);
+            budnecktemp=phy_segmentFoci(im,parametres{2,2},parametres{3,2},parametres{1,2},parametres{5,2},parametres{4,2});
 
             
             
@@ -3530,7 +3530,6 @@ if strcmp(eventdata.Key,'o') || strcmp(eventdata.Key,'p')
             
             cc=cc+1;
         end
-        
         
         if ~isempty(segmentation.selectedTObj)  %if exist a selected tobject then delesect it
             segmentation.selectedTObj.deselect();
