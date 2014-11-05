@@ -266,7 +266,7 @@ end
         
         ymin=max(20 * scale+30,0.2*h);
         
-        drawText(jim, timestamp, [0.05*w 500] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+        drawText(jim, timestamp, [100 50] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
 %         drawText(jim, tempstamp, [11*0.05*w ymin] , taillemin, col, java.awt.Color.BLACK);
         
         
