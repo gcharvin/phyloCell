@@ -10,10 +10,10 @@ function [budneck]=phy_segmentFoci4(img,minSize,maxSize,thrfiltre,siz)
 budneck=phy_Object;%initialize
 
 % Camille enleve cette ligne si tu travaille avec des images 500x500
-%img=imresize(img,0.5);
+img=imresize(img,0.5);
 %%%%
 
-display=1;
+display=0;
 imgor=img;
 
 
@@ -129,15 +129,11 @@ budneck(k).fluoMean(2)=mean(imgor(pix));
 
 % Camille enlever le '2' si tu travailles avec des images
 % 500x500
-% budneck(k).x=2*boundary(:,2);  %x contur
-% budneck(k).y=2*boundary(:,1);   % y contur
-% budneck(k).ox=2*mean(c); %x center
-% budneck(k).oy=2*mean(r);  %y center
+budneck(k).x=2*boundary(:,2);  %x contur
+budneck(k).y=2*boundary(:,1);   % y contur
+budneck(k).ox=2*mean(c); %x center
+budneck(k).oy=2*mean(r);  %y center
 
-budneck(k).x=boundary(:,2);  %x contur
-budneck(k).y=boundary(:,1);   % y contur
-budneck(k).ox=mean(c); %x center
-budneck(k).oy=mean(r);  %y center
 
 %             budneck(k).x=boundary(:,2);  %x contur
 %             budneck(k).y=boundary(:,1);   % y contur
