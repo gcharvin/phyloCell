@@ -192,7 +192,7 @@ end
  %newlabels=uint16(newlabels);
 
  if display
-figure; imshow(img,[]); hold on;
+figure; imshow(img2,[]); hold on;
  end
 
 % tic;
@@ -225,7 +225,7 @@ for i=1:numel(stat)
    phy_Objects(cc).fluoVar(1)=std(double(stat(i).PixelValues));
    
    if display
-       line( phy_Objects(cc).x,phy_Objects(cc).y,'Color','r','LineWidth',1);
+       line( phy_Objects(cc).x,phy_Objects(cc).y,'Color','r','LineWidth',2);
       % text(phy_Objects(cc).ox,phy_Objects(cc).oy,num2str(phy_Objects(cc).n),'Color','r','FontSize',24);
    end
    

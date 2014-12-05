@@ -11,6 +11,7 @@ global segList segmentation
 
 i=1;
 
+varargin
 
 index=[];
 cellindex=[];
@@ -79,6 +80,7 @@ while i<=numel(varargin)
     end
 end
 
+
 switch mode
     case 0
         col=[0.3 0.3 0.3; 0.3 0.3 0.9; 1 0.3 0.3];
@@ -106,16 +108,15 @@ list=[];
 if numel(cellindex)~=0
     list=cellindex;
 else
-    nomoth=[seg.(['t' featname]).mother]
-    pix=find(nomoth==0)
+    nomoth=[seg.(['t' featname]).mother];
+    pix=find(nomoth==0);
     
     n=[seg.(['t' featname]).N];
-    pix2=find(n~=0)
+    pix2=find(n~=0);
     
     ff=[seg.(['t' featname]).detectionFrame];
     pix3=find(ff==find(seg.([featname 'Mapped'])==1,1,'first'));
    
-    
     list=intersect(pix,pix2);
     list=intersect(list,pix3);
 end
@@ -147,7 +148,6 @@ end
 %return;
 
 res=sortrows(res,2); % sorted cells
-
 
 % plot cell traj
 

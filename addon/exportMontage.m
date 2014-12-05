@@ -1,4 +1,7 @@
 
+% generate avi movie with ooverlay of channels, contours, and specific ROI
+% using Java javitools
+
 % Argument: frameIndices
 %   Example: [] for all frames
 %   Example: 10:20 for frames 10 to 20

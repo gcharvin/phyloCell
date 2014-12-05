@@ -352,7 +352,7 @@ if isfield(timeLapse,'numberOfFrames')
             %set(handles.edit_TCell_Properties,'string',[]);
         else
             
-            phy_mouseSelectObject(hselected(1), 1, handles)
+      %      phy_mouseSelectObject(hselected(1), 1, handles)
             %mouseSelectObject(hselected(1), 1, handles); % weird behavior
             % with toolbar sometimes
         end
