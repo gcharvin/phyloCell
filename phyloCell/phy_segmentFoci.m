@@ -1,5 +1,5 @@
 %segment budneck function
-function [budneck]=phy_segmentFoci4(img,minSize,maxSize,channel,thrfiltre,siz,incells,frame)
+function [budneck]=phy_segmentFoci4(img,minSize,maxSize,thrfiltre,siz)
 
 % new function based on 1.	Kimori, Y., Baba, N. & Morone, N. Extended
 % morphological processing: a practical method for automatic spot detection
@@ -12,7 +12,6 @@ budneck=phy_Object;%initialize
 % Camille enleve cette ligne si tu travaille avec des images 500x500
 img=imresize(img,0.5);
 %%%%
-
 
 display=0;
 imgor=img;
@@ -134,6 +133,7 @@ budneck(k).x=2*boundary(:,2);  %x contur
 budneck(k).y=2*boundary(:,1);   % y contur
 budneck(k).ox=2*mean(c); %x center
 budneck(k).oy=2*mean(r);  %y center
+
 
 %             budneck(k).x=boundary(:,2);  %x contur
 %             budneck(k).y=boundary(:,1);   % y contur
