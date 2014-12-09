@@ -1,4 +1,4 @@
-function phy_plotPedigree(varargin)
+function [hf ha hc]=phy_plotPedigree(varargin)
 
 % plot the pedigree of the position of interest
 % cell index to specify the founder cells to plot
@@ -6,12 +6,9 @@ function phy_plotPedigree(varargin)
 % mode : 1 : display budding and division
 % mode : 2 : display fluorescence values
 
-global segList segmentation
-
+global segList segmentation timeLapse
 
 i=1;
-
-varargin
 
 index=[];
 cellindex=[];
@@ -63,7 +60,7 @@ while i<=numel(varargin)
         end
     end
     
-    if ischar(varargin{i}) && strcmpi(varargin{i},'Object')
+    if ischar(varargin{i}) && strcmpi(varargin{i},'object')
         featname=varargin{i+1};
         i=i+2;
         if i>numel(varargin)
@@ -71,6 +68,16 @@ while i<=numel(varargin)
         end
     else
        featname='cells1'; 
+    end
+    
+     if ischar(varargin{i}) && strcmpi(varargin{i},'feature')
+        feature=varargin{i+1};
+        i=i+2;
+        if i>numel(varargin)
+            break
+        end
+    else
+       feature='fluoMean'; 
     end
     
     
@@ -95,7 +102,7 @@ switch mode
 end
 
 
-h=figure;
+hf=figure('Color','w');
 
 if numel(index)
     seg=segList(index).s;
@@ -129,6 +136,7 @@ listcells=pix2;
 
 tcells=seg.(['t' featname]);
 xpos=zeros(1,numel(tcells));
+ypos=zeros(1,numel(tcells));
 
 for i=1:length(list)
     xpos(list(i))=i;
@@ -206,7 +214,7 @@ for k=1:numel(res(:,1));
             
         case 2 % fluorescence plotting
             
-            
+   
             cindex=ones(1,length(tcells.Obj));
             
             ccc=1;
@@ -220,16 +228,19 @@ for k=1:numel(res(:,1));
                 rec(ccc,1)=frame;
                 rec(ccc,2)=frame+1;
                 
+
                 
                 if fluo(3)>=1
-                    if numel(tcells.Obj(l).fluoMean)>=fluo(3)
+                    
+                    if numel(tcells.Obj(l).(feature))>=fluo(3)
                         warning off all;
                         
                         %a=tcells.Obj(l).fluoMean(fluo(3))
                         %fluo(3)
                         
-                        t=uint8(round(255*(tcells.Obj(l).fluoMean(fluo(3))-fluo(1))/(fluo(2)-fluo(1))));
+                        t=uint8(round(255*(log10(max(0,tcells.Obj(l).(feature)(fluo(3))))-fluo(1))/(fluo(2)-fluo(1))));
                         warning on all;
+
                         cindex(ccc)=max(1,t);
                     else
                         cindex(ccc)=257;
@@ -258,20 +269,24 @@ for k=1:numel(res(:,1));
     %startX=tcells.detectionFrame;
     
     startX=1;
-    startY=(6*cellwidth)*(cc-1);
+    startY=(6*cellwidth)*(cc-1)+50;
+    
+    line([0 0],[0 0],'Color','w');
     ytick=[ytick startY];
+    
+    %ypos(j)=startY;
     
     res(k,3)=startY;
     
     yticklabel{cc}=[num2str(j)];
     
     if ~orientation
-        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],h,'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9]);
+        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],hf,'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9]);
     else
         temp=startX;
         startX=startY;
         startY=temp;
-        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],h,'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'orientation','vertical');
+        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],hf,'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'orientation','vertical');
     end
     
     if tcells.mother~=0
@@ -281,30 +296,38 @@ for k=1:numel(res(:,1));
         %   [motherY startY]
         
         if ~orientation
-            Traj(-[motherY+2.5*cellwidth startY+2.5*cellwidth],'Color',[0.1 0.1 0.1],h,'width',1,'startX',rec(1,1)+1,'startY',0,'sepwidth',0,'orientation','vertical','gradientwidth',0);
+            Traj(-[motherY+2.5*cellwidth startY+2.5*cellwidth],'Color',[0.1 0.1 0.1],hf,'width',1,'startX',rec(1,1)+1,'startY',0,'sepwidth',0,'orientation','vertical','gradientwidth',0);
         else
-       
-           
-            Traj([motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],h,'width',1,'startX',0,'startY',-rec(1,1)+1,'sepwidth',0,'gradientwidth',0); 
+            Traj([motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],hf,'width',1,'startX',0,'startY',-rec(1,1)+1,'sepwidth',0,'gradientwidth',0); 
         end
         
+       
+ 
+        
     end
+    
+    
     
     cc=cc+1;
     
 end
 
+%plotDivTimeHS(res,cellwidth);
+    
+
 if mode==2
     arr=fluo(1):round((fluo(2)-fluo(1)))/10:fluo(2);
     arr=num2cell(arr);
-    colorbar('YTickLabel',arr);
+    hc=colorbar('YTickLabel',arr);
+else
+   hc=0; 
 end
 
 if ~orientation
 xlabel('time (frames) ','FontSize',10);
 set(gca,'YTick',ytick);
 
-set(gca,'YTickLabel',yticklabel,'FontSize',10,'Color',[0.8 0.8 0.8]);
+set(gca,'YTickLabel',yticklabel,'FontSize',10);
 
 else
     
@@ -318,12 +341,48 @@ set(gca,'YTickLabel',k(:,2:end));
 
 set(gca,'XTick',ytick);
 
-set(gca,'XTickLabel',yticklabel,'FontSize',10,'Color',[0.8 0.8 0.8]);  
+set(gca,'XTickLabel',yticklabel,'FontSize',10);  
 end
 
 axis tight;
 title(['Pedigree of ' featname]);
 
+ha=gca;
+
+function plotDivTimeHS(res,cellwidth)
+global segmentation
+
+for k=1:numel(res(:,1));
+    
+    if res(k,2)==0
+        continue;
+    end
+    
+    j=res(k,1);
+    
+    tcells=segmentation.tcells1(j);
+    td=tcells.divisionTimes;
+    tb=tcells.budTimes;
+    
+    startY=res(k,3);
+        
+    for j=1:numel(td)
+        
+        pix=find(td(j)-tb>0,1,'last');
+        bud=tcells.daughterList(pix);
+        
+        bud=find(res(:,1)==bud);
+        
+        budY=res(bud,3);
+
+        %line([td(j) td(j)],[startY-3*cellwidth startY+3*cellwidth],'Color',[0 0 0],'LineWidth',3);
+        line([td(j) td(j)],[startY+3*cellwidth budY-3*cellwidth],'Color',[0.8 0.8 0.8],'LineWidth',3);
+ %pause
+    end
+    
+end
+%line([td(i) td(i)],[startY startY+4*cellwidth],'Color',[0.5 0.5 0.5],'LineWidth',3);
+  
 
 function xpos=buildNode(tcells,xpos,i,posmin,posmax)
 %get the list of cells xpositinon in pedigree
