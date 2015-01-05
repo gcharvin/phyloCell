@@ -81,15 +81,14 @@ end
 
 % update contours table 
 
-if ~isfield(segmentation,'contour')
-    
-segmentation.contour(1:5,1)={false false false false false};
 
-if numel(segmentation.cells1>1), segmentation.contour{1,1}=true; end
-if numel(segmentation.budnecks>1), segmentation.contour{2,1}=true; end
-if numel(segmentation.foci>1), segmentation.contour{3,1}=true; end
-if numel(segmentation.mito>1), segmentation.contour{4,1}=true; end
-if numel(segmentation.nucleus>1), segmentation.contour{5,1}=true; end
+if ~isfield(segmentation,'contour')
+segmentation.contour(1:5,1)={false false false false false};
+segmentation.contour{1,1}=true;
+segmentation.contour{2,1}=true;
+segmentation.contour{3,1}=true;
+segmentation.contour{4,1}=true;
+segmentation.contour{5,1}=true;
 
 segmentation.contour(1:5,2)={'cells1','budnecks','foci','mito','nucleus'};
 
@@ -97,7 +96,6 @@ segmentation.contour(1:5,3)={num2str([1 0 0]),num2str([0 0 1]),num2str([1 1 0]),
 segmentation.contour(1:5,4)={'ok','ok','ok','ok','ok'};
 
 end
-
 set(handles.contour_table,'Data',segmentation.contour);
 
 % update GUI

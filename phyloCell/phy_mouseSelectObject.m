@@ -81,7 +81,7 @@ s=sprintf(s);
 
 
 set(handles.object_table,'Data',dat);
-
+set(handles.object_type,'String',segmentation.selectedType);
 
 
 %select the tobject coresponding to the object
@@ -170,6 +170,7 @@ if ~isempty(segmentation.selectedTObj)
     set(handles.tobject_table,'Data',dat);
 else
     set(handles.tobject_table,'Data',{}); 
+    set(handles.object_type,'String','Object name');
     set(handles.setSelectedCellBudTime,'State','off');
     set(handles.setSelectedCellDivisionTime,'State','off');
 end
