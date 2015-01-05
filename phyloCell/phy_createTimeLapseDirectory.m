@@ -1,6 +1,4 @@
-function phy_createTimeLapseDirectory()
-global timeLapse;
-global position;
+function [timeLapse,position]=phy_createTimeLapseDirectory(timeLapse,position)
 
 warning off all
 

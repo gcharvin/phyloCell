@@ -54,8 +54,10 @@ end
 
 if isfield(timeLapse,'numberOfFrames')
     if segmentation.frame1~=timeLapse.currentFrame
-       
-        status('Displaying ...',handles);
+        
+        try
+        statusbar(handles.figure1,'Displaying...');
+        catch,end
         
         segmentation.myHandles.showCells=[];
         segmentation.myHandles.showCellsText=[];
@@ -68,130 +70,142 @@ if isfield(timeLapse,'numberOfFrames')
         segmentation.myHandles.showMito=[];
         segmentation.myHandles.showMitoText=[];
         segmentation.myHandles.showPedigree1=[];
-         segmentation.myHandles.showPedigree2=[];
+        segmentation.myHandles.showPedigree2=[];
         
         timeLapse.currentFrame=segmentation.frame1;
         nch=length(timeLapse.pathList.channels(1,:));
         %n chanels
         
         %%%%%%
-       if ~isfield(segmentation,'realImage')
-         img=uint16(phy_loadTimeLapseImage(segmentation.position,segmentation.frame1,segmentation.channels(1),'non retreat'));
-         segmentation.realImage(:,:,1)=img;
-         segmentation.sizeImageMax=size(img);
-         segmentation.v_axe1=[1 size(img,1) 1 size(img,2)];
-       end
-       %%%%%%%
-       
-       segmentation.segmentationImage=zeros(size(segmentation.realImage),class(segmentation.realImage));
+        if ~isfield(segmentation,'realImage')
+            img=uint16(phy_loadTimeLapseImage(segmentation.position,segmentation.frame1,segmentation.channels(1),'non retreat'));
+            segmentation.realImage(:,:,1)=img;
+            segmentation.sizeImageMax=size(img);
+            segmentation.v_axe1=[1 size(img,1) 1 size(img,2)];
+        end
+        %%%%%%%
+        
+        segmentation.segmentationImage=zeros(size(segmentation.realImage),class(segmentation.realImage));
         
         % ifnot displaying all the cells, then zoom on the tracked cells
-        %if ~get(handles.showAllCells,'Value')
         
-          cellsind=str2num(get(handles.showSpecificCells,'String'));
-          
-          if nargin==3
-          cellsind=dispCells;    
-          end
-          
-          if numel(cellsind)~=0
+        cellsind=[];
+        
+        if segmentation.ROItable{4,1}==true
+            obj=segmentation.ROItable{4,2};
+            cellsind=str2num(segmentation.ROItable{4,3});
+        end
             
-            if numel(segmentation.tcells1)>=max(cellsind)
+        if nargin==3
+            obj='cells1';
+            cellsind=dispCells;
+        end
+        
+              
+    %    try
+            
+        if numel(cellsind)~=0
+            
+            if numel(segmentation.(['t' obj]))>=max(cellsind)
                 if numel(cellsind)>0
-                    if segmentation.tcells1(cellsind(1)).N~=0
+                    if segmentation.(['t' obj])(cellsind(1)).N~=0
                         
                         mox=[];
                         moy=[];
                         mx=[];
                         my=[];
                         
-                      %  cellsind
+                        %  cellsind
                         for kl=1:length(cellsind)
-                       %     cellsind(kl)
-                        arr=[segmentation.tcells1(cellsind(kl)).Obj.image];
-                        
-                        ind=find(arr==segmentation.frame1);
-                        
-                        if numel(ind) %& numel(segmentation.tcells1(cellsind(kl)).Obj(ind).x)~=0
-                        mox=[mox segmentation.tcells1(cellsind(kl)).Obj(ind).ox];
-                        moy=[moy segmentation.tcells1(cellsind(kl)).Obj(ind).oy];
-                        
-                        x1=segmentation.tcells1(cellsind(kl)).Obj(ind).x;
-                        y1=segmentation.tcells1(cellsind(kl)).Obj(ind).y;
-                        
-                        
-                        if size(x1,1)~=1
-                x1=x1';
-            end
-            
-          
-            if size(y1,1)~=1
-                y1=y1';
-            end
-            
-           
-            
-                        mx=[mx x1];
-                        my=[my y1];
+                            %     cellsind(kl)
+                            arr=[segmentation.(['t' obj])(cellsind(kl)).Obj.image];
+                            
+                            ind=find(arr==segmentation.frame1);
+                            
+                            if numel(ind) %& numel(segmentation.tcells1(cellsind(kl)).Obj(ind).x)~=0
+                                mox=[mox segmentation.(['t' obj])(cellsind(kl)).Obj(ind).ox];
+                                moy=[moy segmentation.(['t' obj])(cellsind(kl)).Obj(ind).oy];
+                                
+                                x1=segmentation.(['t' obj])(cellsind(kl)).Obj(ind).x;
+                                y1=segmentation.(['t' obj])(cellsind(kl)).Obj(ind).y;
+                                
+                                
+                                if size(x1,1)~=1
+                                    x1=x1';
+                                end
+                                
+                                
+                                if size(y1,1)~=1
+                                    y1=y1';
+                                end
+                                
+                                
+                                
+                                mx=[mx x1];
+                                my=[my y1];
+                            end
+                            
                         end
                         
-                        end
                         
-                        
-                         warning off all
+                        warning off all
                         ox=round(mean(mox));
                         oy=round(mean(moy));
                         warning on all
                         
+                        
                         if ~isnan(ox)
                             
-                        mxmot=max(mx)-min(mx);
-                        mymot=max(my)-min(my);
-                        mmot=max(mxmot,mymot);
-                        
-                        siz=max(240,mmot+100);
-                        siz=siz+mod(siz,2);
-                        %siz
-                        
-                        if (ox-0.5*siz<1)
-                            ax(1)=1;
-                            ax(2)=siz;
-                        else
-                            ax(1)=ox-0.5*siz;
-                            ax(2)=ox+0.5*siz;
-                        end
-                        
-                        if ox+0.5*siz>size(segmentation.realImage,2)
-                            ax(1)=size(segmentation.realImage,2)-siz;
-                            ax(2)=size(segmentation.realImage,2);
-                        else
-                            ax(1)=ox-0.5*siz;
-                            ax(2)=ox+0.5*siz;
-                        end
-                        
-                        if (oy-0.5*siz<1)
-                            ax(3)=1;
-                            ax(4)=siz;
-                        else
-                            ax(3)=oy-0.5*siz;
-                            ax(4)=oy+0.5*siz;
-                        end
-                        
-                        if oy+0.5*siz>size(segmentation.realImage,1)
-                            ax(3)=size(segmentation.realImage,1)-siz;
-                            ax(4)=size(segmentation.realImage,1);
-                        else
-                            ax(3)=oy-0.5*siz;
-                            ax(4)=oy+0.5*siz;
-                        end
-                        
-                        % ax
-                        segmentation.v_axe1=ax;
+                            mxmot=max(mx)-min(mx);
+                            mymot=max(my)-min(my);
+                            mmot=max(mxmot,mymot);
+                            
+                            siz=max(240,mmot+100);
+                            siz=siz+mod(siz,2);
+                            %siz
+                            
+                            if (ox-0.5*siz<1)
+                                ax(1)=1;
+                                ax(2)=siz;
+                            else
+                                ax(1)=ox-0.5*siz;
+                                ax(2)=ox+0.5*siz;
+                            end
+                            
+                            if ox+0.5*siz>size(segmentation.realImage,2)
+                                ax(1)=size(segmentation.realImage,2)-siz;
+                                ax(2)=size(segmentation.realImage,2);
+                            else
+                                ax(1)=ox-0.5*siz;
+                                ax(2)=ox+0.5*siz;
+                            end
+                            
+                            if (oy-0.5*siz<1)
+                                ax(3)=1;
+                                ax(4)=siz;
+                            else
+                                ax(3)=oy-0.5*siz;
+                                ax(4)=oy+0.5*siz;
+                            end
+                            
+                            if oy+0.5*siz>size(segmentation.realImage,1)
+                                ax(3)=size(segmentation.realImage,1)-siz;
+                                ax(4)=size(segmentation.realImage,1);
+                            else
+                                ax(3)=oy-0.5*siz;
+                                ax(4)=oy+0.5*siz;
+                            end
+                            
+                            % ax
+                            %ax
+                            segmentation.v_axe1=ax;
                         end
                     end
                 end
             end
         end
+        %catch
+        %end
         
         if get(handles.splitChannels,'Value')==1
             %crop images according to zoom and pan if montage
@@ -209,11 +223,12 @@ if isfield(timeLapse,'numberOfFrames')
         end
         
         imgRGBsum=uint16(zeros([sx sy 3]));
-        imgRGBlist=uint16(zeros([sx sy 3 length(segmentation.channels)]));
+        imgRGBlist=uint16(zeros([sx sy 3 size(segmentation.channel,1)]));
         
         
         for i=1:nch
-            if length(segmentation.channels)>=i %for displayed images load the image
+                     
+            if segmentation.channel{i,1} %check if channel is selected
                 
                 if segmentation.discardImage(segmentation.frame1)==0 % frame is good
                     segmentation.frameToDisplay=segmentation.frame1;
@@ -222,58 +237,50 @@ if isfield(timeLapse,'numberOfFrames')
                     segmentation.frameToDisplay=max(find(temp==0));
                 end
                 
-                img=uint16(phy_loadTimeLapseImage(segmentation.position,segmentation.frameToDisplay,segmentation.channels(i),'non retreat'));
+                img=uint16(phy_loadTimeLapseImage(segmentation.position,segmentation.frameToDisplay,i,'non retreat'));
+                
                 if numel(img)==0
                     return;
                 end
                 
                 warning off all
-               % segmentation.sizeImageMax=size(img);%%%
+                % segmentation.sizeImageMax=size(img);%%%
                 
                 img=imresize(img,segmentation.sizeImageMax);
                 warning on all
                 
-                segmentation.realImage(:,:,segmentation.channels(i))=img;
-                if segmentation.colorData(segmentation.channels(i),4)>=segmentation.colorData(segmentation.channels(i),5)
-                    segmentation.colorData(segmentation.channels(i),5)=segmentation.colorData(segmentation.channels(i),4)+0.001;
-                end
-                img=imadjust(img,segmentation.colorData(segmentation.channels(i),[4 5]),[]);
+                segmentation.realImage(:,:,i)=img;
                 
-                if get(handles.checkbox_Use_Display_Image,'value')
-                    
-                    I2=img;
+                minmax=str2num(segmentation.channel{i,4});
+                
+                if segmentation.channel{i,5}==1
+                minmax = round(2^16*stretchlim(uint16(img), [0.01 0.9999]));
+                segmentation.channel{i,4}=num2str(minmax);
+                end
+                
+                if minmax(2)<=minmax(1)
+                  minmax(2)=minmax(1)+1;  
+                end
+             
+                
+                img=imadjust(img,[minmax(1)/2^16 minmax(2)/2^16],[]);
+                
+                %if get(handles.checkbox_Use_Display_Image,'value')
+                %    I2=img;
                     %I2=segmentation.realImage(:,:,segmentation.channels(i))
-                else
-                    I2=segmentation.realImage(:,:,segmentation.channels(i));
+                %else
+                    I2=segmentation.realImage(:,:,i);
                     %img=imadjust(img,segmentation.colorData(segmentation.channels(i),[4 5]),[]);
-                end
+                %end
                 
-                if i==1 && get(handles.checkbox_Use_Cropped_Image,'value') %crop
-                    ax=floor(segmentation.v_axe1); %the axes
-                    s1=size(img,1);
-                    s2=size(img,2);
-                    
-                    
-                    I2=imcrop(I2, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
-                    
-                    segmentation.segmentationImage=zeros([size(I2,1), size(I2,2) ,nch],class(segmentation.segmentationImage));
-               %segmentation.segmentationImage=zeros([size(I2,1), size(I2,2) ,nch],class(img));
-                    
-                    % size(segmentation.segmentationImage),size(I2)
+              
                     segmentation.segmentationImage(:,:,segmentation.channels(i))=I2;
-                elseif get(handles.checkbox_Use_Cropped_Image,'value')
-                    I2=imcrop(I2, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
-                    
-                    segmentation.segmentationImage(:,:,segmentation.channels(i))=I2;
-                else
-                    segmentation.segmentationImage(:,:,segmentation.channels(i))=I2;
-                end
                 
                 %create rgb image
                 
                 
-                RGB=segmentation.colorData(segmentation.channels(i),[1 2 3]);
-                rat=segmentation.colorData(segmentation.channels(i),6);
+                RGB=str2num(segmentation.channel{i,3});
+                rat=1;
                 warning off all;
                 
                 if get(handles.splitChannels,'Value')==1
@@ -326,18 +333,18 @@ if isfield(timeLapse,'numberOfFrames')
         end
         
         
-        handles=checkbox_Show_Pedigree_Callback(handles.checkbox_Show_Pedigree, [], handles);
+        checkbox_Show_Pedigree_Callback(handles);
         
         
-        handles=checkbox_ShowCells_Callback(handles.checkbox_ShowCells, [], handles);%if the case is checked then show the segmentation.cells1 by first segmentation
+        checkbox_ShowCells_Callback(handles);%if the case is checked then show the segmentation.cells1 by first segmentation
         
-        handles=checkbox_ShowBudneck_Callback(handles.checkbox_ShowBudneck, [], handles); %if the case is checked then show the budnecks
+        checkbox_ShowBudneck_Callback(handles); %if the case is checked then show the budnecks
         
-        handles=checkbox_ShowFoci_Callback(handles.checkbox_ShowFoci, [], handles); %if the case is checked then show the budnecks
+        checkbox_ShowFoci_Callback(handles); %if the case is checked then show the budnecks
         
-        handles=checkbox_ShowNucleus_Callback(handles.checkbox_ShowNucleus, [], handles); %if the case is checked then show the budnecks
+        checkbox_ShowNucleus_Callback(handles); %if the case is checked then show the budnecks
         
-        handles=checkbox_ShowMito_Callback(handles.checkbox_ShowMito, [], handles); %if the case is checked then show the budnecks
+        checkbox_ShowMito_Callback(handles); %if the case is checked then show the budnecks
         
         
         segmentation.selectedObj={};
@@ -346,28 +353,19 @@ if isfield(timeLapse,'numberOfFrames')
         hselected=findobj('Selected','on');
         
         if isempty(hselected)
-            set(handles.edit_Cell_Properties,'string',[]);
+            set(handles.object_table,'Data',{});
             set(handles.setSelectedCellBudTime,'State','off');
             set(handles.setSelectedCellDivisionTime,'State','off');
             %set(handles.edit_TCell_Properties,'string',[]);
         else
             
-      %      phy_mouseSelectObject(hselected(1), 1, handles)
+                  phy_mouseSelectObject(hselected(1), 1, handles)
             %mouseSelectObject(hselected(1), 1, handles); % weird behavior
             % with toolbar sometimes
         end
         
-        handles=checkbox_Show_Fluo_Analysis_Callback(handles.checkbox_Show_Fluo_Analysis, [], handles);
+        checkbox_Show_Fluo_Analysis_Callback(handles.checkbox_Show_Fluo_Analysis, [], handles);
         
-        if get(handles.showScale,'Value')
-            % show 5 microns scale bar
-            
-            axreal=floor(axis(handles.axes1));
-            sx=size(segmentation.realImage,1);
-            
-            %hrec=rectangle('Position',[axreal(1)+10,axreal(3)+10,5*(sx)/(78),0.5*(sx)/(78)],'FaceColor','w');
-            hrec=rectangle('Position',[axreal(2)-80,axreal(3)+15,5*(sx)/(78),0.5*(sx)/(78)],'FaceColor','w');
-        end
         
         if get(handles.showTime,'Value')
             ax=floor(axis(handles.axes1));
@@ -380,7 +378,7 @@ if isfield(timeLapse,'numberOfFrames')
             hrec=text(ax(1)+10,ax(3)+40,str,'FontSize',strsize,'Color',[1 1 1]);
         end
         
-        status('Idle',handles);
+        
     end
     
     if isfield(segmentation.myHandles,'inset')
@@ -389,24 +387,6 @@ if isfield(timeLapse,'numberOfFrames')
         end
     end
     
-    if get(handles.show_Environment_Variable,'Value')
-        % plotting additional axes on the main figure
-        if ~isfield(segmentation,'environment')
-            segmentation.environment='temperatureCommand';
-        end
-        
-        strenv=segmentation.environment;
-        h=plotEnvironmentVariables(strenv,'minutes','phylo',segmentation.frame1);
-        inset_fig = findobj(h,'Type','axes');
-        
-        
-        segmentation.myHandles.inset = copyobj(inset_fig,handles.figure1);
-        ax=get(handles.axes1,'Position');
-        
-        inset_size=0.1;
-        set(segmentation.myHandles.inset,'Position', [ax(1)+0.12 ax(2)+0.05 0.38 inset_size]);
-        close(h);
-    end
     
     if segmentation.discardImage(segmentation.frame1)==1 % warning in case an image has been discarded
         axreal=floor(axis(handles.axes1));
@@ -418,16 +398,13 @@ if isfield(timeLapse,'numberOfFrames')
     end
 end
 
+try
+statusbar;
+catch, end
 %handles
 uicontrol(handles.pushbutton_Next1); %give focus to buton next (key pres when slider has focux)
 
 
-
-%change the status text
-function status(str,handles)
-% set status
-set(handles.text_status,'String',str);
-pause(0.01);
 
 % ------------------------------------------------------------------------
 function mouseAxesImage(hObject, eventdata, handles)
@@ -446,12 +423,13 @@ parametres=parametres{1,1};
 
 if ~isempty(segmentation.selectedObj)
     %segmentation.selectedObj.selected=false;
-   
+    
     if ishandle(segmentation.selectedObj.hcontour)
         set(segmentation.selectedObj.hcontour,'Marker','none');
         set(segmentation.selectedObj.hcontour,'Selected','off');
     end
-    set(handles.edit_Cell_Properties,'string',[]);
+    set(handles.object_table,'Data',{});
+    set(handles.tobject_table,'Data',{});
     segmentation.selectedObj={};
     
 end
@@ -461,7 +439,7 @@ if strcmp(butonType,'open')
         segmentation.selectedTObj.deselect();
     end
     
-    set(handles.edit_TCell_Properties,'string',[]);
+    set(handles.tobject_table,'Data',{});
     segmentation.selectedTObj={};
 end
 
@@ -486,7 +464,7 @@ if strcmp(get(handles.annotate,'State'),'on')
         else
             lowthr=0;
         end
-            
+        
         [x y]=phy_segmentSingleCellFromCenter(ox,oy,segmentation.segmentationImage(:,:,parametres{1,2}),parametres,lowthr);
         if get(handles.checkbox_Use_Cropped_Image,'Value')
             x=x+ax(1)-1;
@@ -500,112 +478,112 @@ if strcmp(get(handles.annotate,'State'),'on')
     
     
     if strcmp(segmentation.annotateMode,'cell')
-    
-    added=false;
-    
-    if size(segmentation.cells1,1)>=segmentation.frame1
-        for i=1:length(segmentation.cells1(segmentation.frame1,:))
-            if segmentation.cells1(segmentation.frame1,i).ox==0
-                n=i;
-                added=true;
-                break;
-            end
-        end
-    else
-        added=true;
-    end
-    
-    if ~added
-        n= length(segmentation.cells1(segmentation.frame1,:))+1;
-    end
-    
-    
-    cellule=phy_Object(n,x,y,segmentation.frame1,0,0,0,0);
-    cellule.ox=mean(x);
-    cellule.oy=mean(y);
-    cellule.image=segmentation.frame1;
-    cellule.area=polyarea(x,y);
-    cellule.move=1;
-%    cellule.phase=1;
-    
-    if ~added
-        segmentation.cells1(segmentation.frame1,end+1)=cellule;
-    else
-        segmentation.cells1(segmentation.frame1,n)=cellule;
-    end
-    
-    
-    if n~=0 && ~isempty(segmentation.selectedTObj)
-        if n>length(segmentation.tcells1)
-            segmentation.tcells1(n)=phy_Tobject;
-        end
-        segmentation.tcells1(n).addObject(cellule);
-    end
-    
-    phy_change_Disp1('refresh',handles);
-    
-    segmentation.cells1Segmented(segmentation.frame1)=1;
-    segmentation.frameChanged(segmentation.frame1)=1;
-    segmentation.cells1Mapped(segmentation.frame1)=0;
-    
-    else % copy mode 
         
-    
-if ~isempty(segmentation.copyedObj)
-    obj= segmentation.(segmentation.copyedType);
-    if size(obj,1)>=segmentation.frame1
         added=false;
-        for i=1:length(obj(segmentation.frame1,:))
-            if obj(segmentation.frame1,i).ox==0
-                
-                added=true;
-                break;
+        
+        if size(segmentation.cells1,1)>=segmentation.frame1
+            for i=1:length(segmentation.cells1(segmentation.frame1,:))
+                if segmentation.cells1(segmentation.frame1,i).ox==0
+                    n=i;
+                    added=true;
+                    break;
+                end
             end
+        else
+            added=true;
         end
+        
         if ~added
-            i=length(obj(segmentation.frame1,:))+1;
+            n= length(segmentation.cells1(segmentation.frame1,:))+1;
         end
-    else i=1;
+        
+        
+        cellule=phy_Object(n,x,y,segmentation.frame1,0,0,0,0);
+        cellule.ox=mean(x);
+        cellule.oy=mean(y);
+        cellule.image=segmentation.frame1;
+        cellule.area=polyarea(x,y);
+        cellule.move=1;
+        %    cellule.phase=1;
+        
+        if ~added
+            segmentation.cells1(segmentation.frame1,end+1)=cellule;
+        else
+            segmentation.cells1(segmentation.frame1,n)=cellule;
+        end
+        
+        
+        if n~=0 && ~isempty(segmentation.selectedTObj)
+            if n>length(segmentation.tcells1)
+                segmentation.tcells1(n)=phy_Tobject;
+            end
+            segmentation.tcells1(n).addObject(cellule);
+        end
+        
+        phy_change_Disp1('refresh',handles);
+        
+        segmentation.cells1Segmented(segmentation.frame1)=1;
+        segmentation.frameChanged(segmentation.frame1)=1;
+        segmentation.cells1Mapped(segmentation.frame1)=0;
+        
+    else % copy mode
+        
+        
+        if ~isempty(segmentation.copyedObj)
+            obj= segmentation.(segmentation.copyedType);
+            if size(obj,1)>=segmentation.frame1
+                added=false;
+                for i=1:length(obj(segmentation.frame1,:))
+                    if obj(segmentation.frame1,i).ox==0
+                        
+                        added=true;
+                        break;
+                    end
+                end
+                if ~added
+                    i=length(obj(segmentation.frame1,:))+1;
+                end
+            else i=1;
+            end
+            obj(segmentation.frame1,i)=phy_Object;
+            names = fieldnames(segmentation.copyedObj);
+            for j=1:length(names)
+                obj(segmentation.frame1,i).(names{j})=segmentation.copyedObj.(names{j});
+            end;
+            obj(segmentation.frame1,i).move=1;
+            obj(segmentation.frame1,i).image=segmentation.frame1;
+            obj(segmentation.frame1,i).selected=0;
+            obj(segmentation.frame1,i).x=x;
+            obj(segmentation.frame1,i).y=y;
+            obj(segmentation.frame1,i).ox=mean(x);
+            obj(segmentation.frame1,i).oy=mean(y);
+            obj(segmentation.frame1,i).area=polyarea(x,y);
+            
+            segmentation.([segmentation.copyedType,'Segmented'])(segmentation.frame1)=1;
+            segmentation.frameChanged(segmentation.frame1)=1;
+            segmentation.(segmentation.copyedType)=obj;
+            
+            
+            %n=[segmentation.(['t',segmentation.copyedType]).N];
+            %pix=find(n==obj(segmentation.frame1,i).n);
+            
+            if segmentation.([segmentation.copyedType 'Mapped'])(segmentation.frame1)
+                n=obj(segmentation.frame1,i).n;
+                
+                tobj=segmentation.(['t',segmentation.copyedType]);
+                
+                tobj(n).addObject(obj(segmentation.frame1,i));
+                
+                tobj(n).lastFrame=max(tobj(n).lastFrame,segmentation.frame1);
+                
+                segmentation.(['t',segmentation.selectedType])=tobj;
+            end
+            
+            
+            phy_change_Disp1('refresh',handles);
+        end
+        
     end
-    obj(segmentation.frame1,i)=phy_Object;
-    names = fieldnames(segmentation.copyedObj);
-    for j=1:length(names)
-        obj(segmentation.frame1,i).(names{j})=segmentation.copyedObj.(names{j});
-    end;
-    obj(segmentation.frame1,i).move=1;
-    obj(segmentation.frame1,i).image=segmentation.frame1;
-    obj(segmentation.frame1,i).selected=0;
-    obj(segmentation.frame1,i).x=x;
-    obj(segmentation.frame1,i).y=y;
-    obj(segmentation.frame1,i).ox=mean(x);
-    obj(segmentation.frame1,i).oy=mean(y);
-    obj(segmentation.frame1,i).area=polyarea(x,y);
-    
-    segmentation.([segmentation.copyedType,'Segmented'])(segmentation.frame1)=1;
-    segmentation.frameChanged(segmentation.frame1)=1;
-    segmentation.(segmentation.copyedType)=obj;
-    
-    
-    %n=[segmentation.(['t',segmentation.copyedType]).N];
-    %pix=find(n==obj(segmentation.frame1,i).n);
-    
-    if segmentation.([segmentation.copyedType 'Mapped'])(segmentation.frame1)
-        n=obj(segmentation.frame1,i).n;
-        
-        tobj=segmentation.(['t',segmentation.copyedType]);
-        
-        tobj(n).addObject(obj(segmentation.frame1,i));
-        
-        tobj(n).lastFrame=max(tobj(n).lastFrame,segmentation.frame1);
-        
-        segmentation.(['t',segmentation.selectedType])=tobj;
-    end
-    
-    
-    phy_change_Disp1('refresh',handles);
-end
-    
-end
 end
 
 handles=checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles);
@@ -614,50 +592,46 @@ handles=checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles);
 
 
 
-function handles=checkbox_Show_Pedigree_Callback(hObject, eventdata, handles)
+function checkbox_Show_Pedigree_Callback(handles)
 
 global segmentation
 
 %handles
-if get(handles.checkbox_ShowCells,'Value')
-if size(segmentation.cells1,1)>=segmentation.frameToDisplay %test if the image already segmented
-    if get(hObject,'Value') %if checked
-
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        segmentation.myHandles.showPedigree1=phy_showPedigree(handles.axes1,segmentation.cells1(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree1,'r','on',siz,segmentation.v_axe1);
-    else
-        segmentation.myHandles.showPedigree1=phy_showPedigree(handles.axes1,segmentation.cells1(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree1,'r','off');
+%if get(handles.checkbox_ShowCells,'Value')
+    if size(segmentation.cells1,1)>=segmentation.frameToDisplay %test if the image already segmented
+        %if get(hObject,'Value') %if checked
+            
+            if get(handles.splitChannels,'Value')
+                siz=size(segmentation.realImage);
+            else
+                siz=[];
+            end
+            segmentation.myHandles.showPedigree1=phy_showPedigree(handles.axes1,segmentation.cells1(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree1,'r','on',siz,segmentation.v_axe1);
+       
     end
-end
-end
-if get(handles.checkbox_ShowNucleus,'Value')
+%end
+%if get(handles.checkbox_ShowNucleus,'Value')
     
-if size(segmentation.nucleus,1)>=segmentation.frameToDisplay %test if the image already segmented
-    if get(hObject,'Value') %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        segmentation.myHandles.showPedigree2=phy_showPedigree(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree2,'c','on',siz,segmentation.v_axe1);
-    else
-        segmentation.myHandles.showPedigree2=phy_showPedigree(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree2,'c','off');
+    if size(segmentation.nucleus,1)>=segmentation.frameToDisplay %test if the image already segmented
+       
+            if get(handles.splitChannels,'Value')
+                siz=size(segmentation.realImage);
+            else
+                siz=[];
+            end
+            segmentation.myHandles.showPedigree2=phy_showPedigree(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree2,'c','on',siz,segmentation.v_axe1);
+       
     end
-end
-
-end
-
+    
+%end
 
 
-function handles=checkbox_ShowBudneck_Callback(hObject, eventdata, handles)
+
+function checkbox_ShowBudneck_Callback(handles)
 global segmentation
 
 if size(segmentation.budnecks,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if get(hObject,'Value') %if checked
+    if segmentation.contour{2,1}==true %if checked
         if get(handles.splitChannels,'Value')
             siz=size(segmentation.realImage);
         else
@@ -672,13 +646,13 @@ if size(segmentation.budnecks,1)>=segmentation.frameToDisplay %check if the imag
             =phy_showObject(handles.axes1,segmentation.budnecks(segmentation.frameToDisplay,:),'b','budnecks',segmentation.myHandles.showBudnecks,segmentation.myHandles.showBudnecksText,'off');
     end
 end
-guidata(hObject, handles);% Save the structure
+%guidata(hObject, handles);% Save the structure
 
-function handles=checkbox_ShowFoci_Callback(hObject, eventdata, handles)
+function checkbox_ShowFoci_Callback(handles)
 global segmentation
 
 if size(segmentation.foci,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if get(hObject,'Value') %if checked
+   if segmentation.contour{3,1}==true %if checked
         if get(handles.splitChannels,'Value')
             siz=size(segmentation.realImage);
         else
@@ -693,13 +667,13 @@ if size(segmentation.foci,1)>=segmentation.frameToDisplay %check if the image wa
             =phy_showObject(handles.axes1,segmentation.foci(segmentation.frameToDisplay,:),'y','foci',segmentation.myHandles.showFoci,segmentation.myHandles.showFociText,'off');
     end
 end
-guidata(hObject, handles);% Save the structure
+%guidata(hObject, handles);% Save the structure
 
-function handles=checkbox_ShowMito_Callback(hObject, eventdata, handles)
+function checkbox_ShowMito_Callback(handles)
 global segmentation
 
 if size(segmentation.mito,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if get(hObject,'Value') %if checked
+    if segmentation.contour{4,1}==true %if checked
         if get(handles.splitChannels,'Value')
             siz=size(segmentation.realImage);
         else
@@ -709,19 +683,19 @@ if size(segmentation.mito,1)>=segmentation.frameToDisplay %check if the image wa
             =phy_showObject(handles.axes1,segmentation.mito(segmentation.frameToDisplay,:),'m','mito',segmentation.myHandles.showMito,segmentation.myHandles.showMitoText,'on',siz,segmentation.v_axe1);
         set(segmentation.myHandles.showMito(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
         set(segmentation.myHandles.showMito(:),'UIContextMenu',handles.Context_Objects);
-       
+        
     else %if not checked
         [segmentation.myHandles.showMito segmentation.myHandles.showMitoText]...
             =phy_showObject(handles.axes1,segmentation.mito(segmentation.frameToDisplay,:),'m','mito',segmentation.myHandles.showMito,segmentation.myHandles.showMitoText,'off');
     end
 end
-guidata(hObject, handles);% Save the structure
+%guidata(hObject, handles);% Save the structure
 
-function handles=checkbox_ShowNucleus_Callback(hObject, eventdata, handles)
+function checkbox_ShowNucleus_Callback(handles)
 global segmentation
 
 if size(segmentation.nucleus,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if get(hObject,'Value') %if checked
+   if segmentation.contour{5,1}==true %if checked
         if get(handles.splitChannels,'Value')
             siz=size(segmentation.realImage);
         else
@@ -736,21 +710,21 @@ if size(segmentation.nucleus,1)>=segmentation.frameToDisplay %check if the image
             =phy_showObject(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),'c','nucleus',segmentation.myHandles.showNucleus,segmentation.myHandles.showNucleusText,'off');
     end
 end
-guidata(hObject, handles);% Save the structure
+%guidata(hObject, handles);% Save the structure
 
 
-function handles=checkbox_ShowCells_Callback(hObject, eventdata, handles)
+function checkbox_ShowCells_Callback(handles)
 %show the cells1 by first segmentation on the first display
 global segmentation
 
 
 %AppData=getappdata(handles.figure1);
 if size(segmentation.cells1,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if get(hObject,'Value') %if checked
-        
+    if segmentation.contour{1,1}==true %if checked
+
         tempcells=phy_Object();
-        if ~get(handles.showAllCells,'Value')
-            cellsind=str2num(get(handles.showSpecificCells,'String'));
+        if segmentation.ROItable{4,1}==true & strcmp(segmentation.ROItable{4,2},'cells1')
+            cellsind=str2num(segmentation.ROItable{4,3});
             
             cont=1;
             
@@ -759,20 +733,14 @@ if size(segmentation.cells1,1)>=segmentation.frameToDisplay %check if the image 
             
             tempcells=segmentation.cells1(segmentation.frameToDisplay,ia);
             
-%             for i=1:numel(segmentation.cells1(segmentation.frameToDisplay,:))
-%                 if numel(find(segmentation.cells1(segmentation.frameToDisplay,i).n==cellsind))~=0
-%                     tempcells(cont)=segmentation.cells1(segmentation.frameToDisplay,i);
-%                     cont=cont+1;
-%                 end
-%             end
         else
             %cellsind=str2num(get(handles.showSpecificCells,'String'));
             
             %if numel(cellsind)==0
             tempcells=segmentation.cells1(segmentation.frameToDisplay,:);
-           % else
-            %  tempcells=segmentation.cells1(segmentation.frameToDisplay,:);  
-           % end
+            % else
+            %  tempcells=segmentation.cells1(segmentation.frameToDisplay,:);
+            % end
         end
         
         %tempcells
@@ -795,9 +763,9 @@ if size(segmentation.cells1,1)>=segmentation.frameToDisplay %check if the image 
     end
 end
 %setappdata(handles.figure1,'AppData',AppData);
-guidata(hObject, handles); % Save the structure
+%guidata(hObject, handles); % Save the structure
 
-function handles=checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles)
+function checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles)
 % hObject    handle to checkbox_Show_Fluo_Analysis (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -924,7 +892,7 @@ if get(handles.checkbox_Show_Fluo_Analysis,'Value')
         end
     end
     
-    guidata(hObject, handles);% Save the structure
+   % guidata(hObject, handles);% Save the structure
     
 else
     if isfield(segmentation,'plot')

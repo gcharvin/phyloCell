@@ -1,6 +1,8 @@
-%Main graphical user interface;
-%Bild the main figure and all the grafics on that figure;
-%Call all the algorithms.
+% License to use and modify this code is granted freely to all interested, as long as the original author is
+% referenced and attributed as such. The original author maintains the right to be solely associated with this work.
+
+% Programmed and Copyright by Gilles Charvin: charvin(at)igbmc.fr
+% 2010-2014
 
 function varargout = phyloCell_mainGUI(varargin)
 
@@ -32,10 +34,7 @@ function phyloCell_mainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to phyloCell_mainGUI (see VARARGIN)
 
-%global segmentation timeLapse segList
-
-%Open projects is empty when a new widow is oppen
-handles.openedProjects={};
+global segmentation
 
 %The folder of export is set to current folder
 handles.exportDir=pwd;
@@ -51,19 +50,8 @@ cla(handles.axes1);
 %[pathstr, name, ext, versn] = fileparts(spath);
 %cd(pathstr);
 
-% Gilles edit : remove watershed compiling
-% %copy watershed mayer function to curent directory
-% if exist('watershed_meyer','file')~=3
-%     watPath=fullfile(matlabroot, 'toolbox/images/images/private/watershed_meyer.*');
-%     copyfile(watPath,pwd,'f');
-% end
-%
-% addpath CppFiles
-% if exist('phy_WatershedForme','file')~=3
-%     %    mex('CppFiles/phy_WatershedForme.cpp')
-% end
-%for the same zoom and pan in the next images;
-
+% Load javitools in oder to generate .avi files using Java
+% WARNING : this function erases all workspace variables
 
 if ~exist('javitools.AVITools', 'class')
     p = mfilename('fullpath');
@@ -72,32 +60,23 @@ if ~exist('javitools.AVITools', 'class')
    javaaddpath([p '/../addon/javitools.jar']); 
 end
 
-global segmentation
 
+% initialize zoom and pan
 handles.Zoom = zoom;
 set(handles.Zoom,'ActionPostCallback',{@mouseFcn,handles});
-
 handles.Pan = pan;
 set(handles.Pan,'ActionPostCallback',{@mouseFcn,handles});
-
 zoom reset;
-% Choose default command line output for phyloCell_mainGUI
 
 
 handles.output = hObject;
 
-
 phy_updatePhylocellDisplay(handles);
-
-
-%currentDirectory = fileparts(mfilename('fullpath'));
-%eval(['javaaddpath ''' fullfile(currentDirectory, '..', 'addon', 'ag', 'YTracker.jar''')]);
 
 guidata(hObject, handles);
 
-status('Idle',handles);
-
-
+% 
+%status('Idle',handles);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -697,13 +676,14 @@ global segList segmentation timeLapse
 cur=find([segList.selected]==1);
 segList(cur).s=segmentation;
 segList(cur).t=timeLapse;
+statusbar;
 
 for i=1:numel(segList)
     
     %   if i>2
     %      break;
     %  end
-    status(['Saving project ' num2str(i) ' - Be patient !'],handles);
+    statusbar(handles.figure1,['Saving project ' num2str(i) ' - Be patient !']);
     segmentation=segList(i).s;
     timeLapse=segList(i).t;
     
@@ -727,7 +707,7 @@ end
 
 segmentation=segList(cur).s;
 timeLapse=segList(cur).t;
-status('Idle',handles);
+statusbar;
 
 % --------------------------------------------------------------------
 function Save_current_analysis_Callback(hObject, eventdata, handles)
@@ -1313,7 +1293,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function slider1_Callback(hObject, eventdata, handles)
-newVal = get(hObject, 'Value');
+newVal = get(hObject, 'Value')
 Change_Disp1(newVal,handles);
 
 
@@ -1434,36 +1414,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes during object creation, after setting all properties.
-function edit_TCell_Properties_CreateFcn(hObject, eventdata, handles)
 
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-% --- Executes during object creation, after setting all properties.
-function edit_Cell_Properties_CreateFcn(hObject, eventdata, handles)
-
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-function edit_Channel_Poperties_Callback(hObject, eventdata, handles)
-% allow to change the color and the saturation on the selected channel
-global segmentation timeLapse
-
-chval=get(handles.listbox_Channels,'Value');
-newdata=str2num(get(hObject,'String'));
-segmentation.colorData(chval,:)=newdata;
-timeLapse.list(chval).setLowLevel=newdata(4)*2^16;
-timeLapse.list(chval).setHighLevel=newdata(5)*2^16;
-Change_Disp1('refresh',handles);
-
-% --- Executes during object creation, after setting all properties.
-function edit_Channel_Poperties_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 % --- Executes during object creation, after setting all properties.
 function edit_Find_Nucleus_CreateFcn(hObject, eventdata, handles)
@@ -1520,19 +1471,86 @@ function File_Callback(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function File_Open_TimeLapse_Project_Callback(hObject, eventdata, handles)
-global timeLapse
 
-if ~isempty(handles.openedProjects)
-    
-    set(handles.show_Environment_Variable,'Value',0);
-    Change_Disp1('refresh',handles);
-end
-handles.openedProjects=1;
 OpenProject_ClickedCallback(hObject, eventdata, handles);
 
+
 % --------------------------------------------------------------------
-function Create_Project_From_Images_Callback(hObject, eventdata, handles)
-phy_createTimeLapseProjectGui();
+function File_ND2_to_phyloCell_Callback(hObject, eventdata, handles)
+% hObject    handle to File_ND2_to_phyloCell (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global timeLapse
+
+statusbar;
+statusbar(handles.figure1,'Converting nd2 file into PhyloCell project...');
+
+[out path filen]=nd2ToPhyloCellProject;
+
+if out==0
+    statusbar;
+    disp('Unsucessuful nd2 conversion !');
+    return;
+end
+
+% update segList before deselecting
+for i=1:numel(segList)
+        if segList(i).selected==1
+            segList(i).s=segmentation;
+            segList(i).t=timeLapse;
+    segList(i).selected=0;
+        end
+end
+
+load(strcat(path,filen));
+timeLapse.realPath=path;
+
+phy_openSegmentationProject(1,[]);
+phy_addProjectToSegList;
+phy_updatePhylocellDisplay(handles);
+statusbar;
+
+guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function File_New_Project_Callback(hObject, eventdata, handles)
+% hObject    handle to File_New_Project (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global timeLapse
+
+statusbar;
+statusbar(handles.figure1,'Creating new PhyloCell project...');
+
+[out path filen]=phy_createTimeLapseProject('newproject');
+
+if out==0
+    statusbar;
+    disp('Unsucessuful image loading !');
+    return;
+end
+
+% update segList before deselecting
+for i=1:numel(segList)
+        if segList(i).selected==1
+            segList(i).s=segmentation;
+            segList(i).t=timeLapse;
+    segList(i).selected=0;
+        end
+end
+
+load(strcat(path,filen));
+timeLapse.realPath=path;
+
+phy_openSegmentationProject(1,[]);
+phy_addProjectToSegList;
+phy_updatePhylocellDisplay(handles);
+statusbar;
+
+guidata(hObject, handles);
+
+
 
 % --------------------------------------------------------------------
 function File_loadImageList_Callback(hObject, eventdata, handles)
@@ -1540,118 +1558,36 @@ function File_loadImageList_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global timeLapse segmentation segList
-
 % load images into a new segmentation project
+global timeLapse
 
-timeLapse=[];
-segmentation=[];
-segmentation.shorcutKeys=cell(1,2);
+statusbar;
+statusbar(handles.figure1,'Loading Images into PhyloCell');
+[out path filen]=phy_createTimeLapseProject;
 
-%dir=handles.exportDir;
-dire=pwd;
-projectName='myProject';
-[name,dire] = uiputfile({'*.mat'},'Select project output directory and name',projectName);
-if name==0
+if out==0
+    statusbar;
+    disp('Unsucessuful image loading !');
     return;
-else
-    [pathstr, name, ext] = fileparts(name);
-  projectName=name;  
 end
 
-handles.exportDir=dire;
-
-select=1; channelcount=1;
-
-tempProject=[];
-tempProject.imageList=[];
-tempProject.pathList=[];
-tempProject.position=1;
-tempProject.position=1;
-tempProject.phaseChannel=1;
-tempProject.retreat=0;
-tempProject.segment=0;
-tempProject.path=dire;
-tempProject.makemovie=0;
-tempProject.budsegment=0;
-tempProject.budChannel=0;
-tempProject.filename=projectName;
-
-
-while select
-[FileName,PathName,FilterIndex] = uigetfile({'*.jpg;*.tif;*.png;*.gif;*.tiff;*.bmp','All Image Files';'*.*','All Files'},['Select all images for channel ' num2str(channelcount)],[],'MultiSelect','on');
-
-
-if numel(FileName)==0
-    select=0;
-    if channelcount==1
-    return;  
-    end
-    break;
+% update segList before deselecting
+for i=1:numel(segList)
+        if segList(i).selected==1
+            segList(i).s=segmentation;
+            segList(i).t=timeLapse;
+    segList(i).selected=0;
+        end
 end
+    
 
-if isa(FileName,'double')
-    select=0;
-    if channelcount==1
-    return;  
-    end
-    break;
-end
-
-    tempName{channelcount}=FileName;
-    tempPath{channelcount}=PathName;
-    disp([num2str(numel(FileName)) ' files selected for channel ' num2str(channelcount)]);
-    FileName=[];
-    channelcount=channelcount+1;
-end
-
-tempProject.channel=channelcount-1;
-
-
-for i=1:channelcount-1
-
-FileName=tempName{i};
-PathName=tempPath{i};
-
-tempProject.imageList(i).data=FileName;
-tempProject.pathList(i).data=PathName;
-end
-
-status('generating temp project....',handles);
-pause(0.1);
-
-phy_createTimeLapseProject(tempProject);
-timeLapse.realPath=timeLapse.path;
-
-segmentation.position=1;
-
-timeLapsepath=timeLapse.realPath;
-timeLapsefile=[timeLapse.filename '-project.mat'];
-
-status('loading timeLapse project',handles);
+load(strcat(path,filen));
+timeLapse.realPath=path;
 
 phy_openSegmentationProject(1,[]);
-
-% add the project in the segList variable
-
-l=numel(segList);
-segList(l+1).s=segmentation;
-segList(l+1).position=segmentation.position;
-segList(l+1).filename=timeLapse.filename;
-segList(l+1).t=timeLapse;
-segList(l+1).line=1:1:length(segmentation.tcells1);
-
-for k=1:numel(segList)
-    segList(k).selected=0;
-end
-
-segList(l+1).selected=1;
-
+phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles);
-
-%guidata(hObject, handles);
-status('Idle',handles);
-%end
+statusbar;
 
 guidata(hObject, handles);
 
@@ -1660,13 +1596,23 @@ guidata(hObject, handles);
 function OpenProject_ClickedCallback(hObject, eventdata, handles)
 global timeLapse segmentation segList
 
+statusbar;
+statusbar(handles.figure1,'loading timeLapse project');
 
-[timeLapsefile, timeLapsepath] = uigetfile({'*.mat';'*.*'},'Get timelapse file');
+[timeLapsefile, timeLapsepath] = uigetfile({'*.mat';'*.*'},'Get timelapse project file');
 if timeLapsefile==0 %if the user not press cancel
+    statusbar
     return
 end
 
-status('loading timeLapse project',handles);
+% update segList before deselecting
+for i=1:numel(segList)
+        if segList(i).selected==1
+            segList(i).s=segmentation;
+            segList(i).t=timeLapse;
+    segList(i).selected=0;
+        end
+end
 
 load(strcat(timeLapsepath,timeLapsefile));
 timeLapse.realPath=timeLapsepath;
@@ -1675,29 +1621,14 @@ out=phy_openSegmentationProject([],[]);
 
 if out==0
     errordlg('Could not open segmentation project');
+    statusbar
     return;
 end
 % add the project in the segList variable
 
-l=numel(segList);
-segList(l+1).s=segmentation;
-segList(l+1).position=segmentation.position;
-segList(l+1).filename=timeLapse.filename;
-segList(l+1).t=timeLapse;
-segList(l+1).line=1:1:length(segmentation.tcells1);
-
-for k=1:numel(segList)
-    segList(k).selected=0;
-end
-
-segList(l+1).selected=1;
-
+phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles);
-
-%guidata(hObject, handles);
-status('Idle',handles);
-%end
-
+statusbar;
 
 
 % --------------------------------------------------------------------
@@ -1707,46 +1638,41 @@ global segmentation
 global segList
 
 if numel( segmentation)==0
-    h = errordlg('No project open yet !');
+    h = errordlg('No project open yet; Open a timeLapse project first !');
     return;
 end
 
+statusbar;
+statusbar(handles.figure1,'Loading timeLapse project');
 
 timeLapsepath=timeLapse.realPath;
 timeLapsefile=[timeLapse.filename '-project.mat'];
 
 %strPath=strcat(timeLapse.realPath,timeLapse.filename,'-project.mat');
 
-status('loading timeLapse project',handles);
+a=segmentation.channel;
 
-a=segmentation.colorData;
+% update segList before deselecting
+for i=1:numel(segList)
+        if segList(i).selected==1
+            segList(i).s=segmentation;
+            segList(i).t=timeLapse;
+    segList(i).selected=0;
+        end
+end
 
 out=phy_openSegmentationProject([],[]);
 if out==0
+    statusbar
     return;
 end
 
-segmentation.colorData=a;
+segmentation.channel=a;
 % add the project in the segList variable
 
-l=numel(segList);
-segList(l+1).s=segmentation;
-segList(l+1).position=segmentation.position;
-segList(l+1).filename=timeLapse.filename;
-segList(l+1).t=timeLapse;
-segList(l+1).line=1:1:length(segmentation.tcells1);
-
-for k=1:numel(segList)
-    segList(k).selected=0;
-end
-
-segList(l+1).selected=1;
-
+phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles);
-
-%guidata(hObject, handles);
-status('Idle',handles);
-%end
+statusbar;
 
 %============= SEGMENTATION ==============================================
 
@@ -2257,202 +2183,6 @@ if strcmpi(button,'Yes')
     end
 end
 
-
-%================= VIEW ==================================================
-
-% --------------------------------------------------------------------
-function View_Callback(hObject, eventdata, handles)
-
-
-% --------------------------------------------------------------------
-function View_Edit_Cell_Properties_Callback(hObject, eventdata, handles)
-%edit the fields that can be viewed in "Cell Properties"
-
-global segmentation
-%build the proprietes for inputdlg
-%title
-dlg_title = 'Show propreties';
-%prompt string
-names = fieldnames(phy_Object);
-s='Available propreties options: \n';
-for i=1:length(names)
-    if mod(i,4)==0
-        s=[s,names{i},'\n'];
-    else
-        s=[s,names{i},'\t'];
-    end
-end
-s=sprintf(s);
-prompt={s};
-
-%default value of the string (the last value)
-default='';
-for i=1:length(segmentation.showFieldsObj)
-    default=[default,segmentation.showFieldsObj{i},' '];
-end
-num_lines = 2;
-def = {default};
-
-%options
-options.Resize='on';
-
-%dialog figure
-answer = inputdlg(prompt,dlg_title,num_lines,def,options);
-if isempty(answer)
-    return
-end
-%save the result
-C=textscan(answer{1},'%s');
-segmentation.showFieldsObj=C{1};
-
-
-% --------------------------------------------------------------------
-function View_Edit_TCell_Properties_Callback(hObject, eventdata, handles)
-%edit the fields that can be viewed in "TCell Properties"
-
-global segmentation
-
-%build the proprietes for inputdlg
-%title
-dlg_title = 'Show propreties';
-%prompt string
-names = fieldnames(phy_Object);
-s='Available propreties options: \n';
-for i=1:length(names)
-    if mod(i,4)==0
-        s=[s,names{i},'\n'];
-    else
-        s=[s,names{i},'\t'];
-    end
-end
-s=sprintf(s);
-prompt={s};
-
-%default value of the string (the last value)
-default='';
-for i=1:length(segmentation.showFieldsTObj)
-    default=[default,segmentation.showFieldsTObj{i},' '];
-end
-num_lines = 2;
-def = {default};
-
-%options
-options.Resize='on';
-
-%dialog figure
-answer = inputdlg(prompt,dlg_title,num_lines,def,options);
-if isempty(answer)
-    return
-end
-%save the result
-C=textscan(answer{1},'%s');
-segmentation.showFieldsTObj=C{1};
-
-
-% --------------------------------------------------------------------
-function View_Set_Channels_Colors_Callback(hObject, eventdata, handles)
-% call the GUI to set the cannels colors
-global segmentation
-global timeLapse;
-
-set(handles.checkbox_Use_Display_Image,'value',0);
-Change_Disp1('refresh',handles);
-
-segmentation.colorData=phy_setColorsGui(segmentation.colorData,segmentation.realImage);
-pause(0.1);
-%status('Saving to file',handles);
-%save(fullfile(timeLapse.path,timeLapse.pathList.position{segmentation.position},'segmentation.mat'),'segmentation','-append');
-Change_Disp1('refresh',handles);
-
-
-% --------------------------------------------------------------------
-function View_Adjust_Axes_Callback(hObject, eventdata, handles)
-% hObject    handle to View_Adjust_Axes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-global segmentation;
-
-
-ax=xlim(handles.axes1);
-ay=ylim(handles.axes1);
-
-prompt = {'Xmin',...
-    'Width', ...
-    'Ymin',...
-    'Height'
-    };
-dlg_title = 'Check export parametres';
-num_lines = 1;
-
-
-def = {num2str(ax(1)),num2str(ax(2)-ax(1)),num2str(ay(1)),num2str(ay(2)-ay(1))};
-
-
-answer = inputdlg(prompt,dlg_title,num_lines,def);
-if isempty(answer)
-    return
-end
-
-zoom reset;
-
-ax(1)=str2num(answer{1});
-ax(2)=str2num(answer{2});
-ay(1)=str2num(answer{3});
-ay(2)=str2num(answer{4});
-
-segmentation.v_axe1=[ax(1) ax(1)+ax(2) ay(1) ay(1)+ay(2)];
-
-if get(handles.splitChannels,'Value')==0
-    xlim(handles.axes1,[ax(1) ax(1)+ax(2)]);
-    ylim(handles.axes1,[ay(1) ay(1)+ay(2)]);
-end
-
-set(handles.checkbox_Use_Cropped_Image,'Value',0);
-Change_Disp1('refresh',handles)
-
-
-
-
-
-% --------------------------------------------------------------------
-function resetAxes_Callback(hObject, eventdata, handles)
-% hObject    handle to resetAxes (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-global segmentation;
-
-
-zoom reset;
-
-%if get(handles.splitChannels,'Value')==0
-widt=size(segmentation.realImage(:,:,1),1);
-heig=size(segmentation.realImage(:,:,1),2);
-segmentation.v_axe1=[0 widt 0 heig];
-
-%else
-%ch=segmentation.channels;
-
-%if length(ch)<4
-%    widt=length(ch)*size(segmentation.realImage(:,:,1),1);
-%    heig=size(segmentation.realImage(:,:,1),2);
-%    segmentation.v_axe1=[0 widt 0 heig];
-
-%else
-%    widt=2*size(segmentation.realImage(:,:,1),1);
-%    heig=2*size(segmentation.realImage(:,:,1),2);
-%    segmentation.v_axe1=[0 widt 0 heig];
-%end
-%end
-
-if get(handles.splitChannels,'Value')==0
-    xlim(handles.axes1,[0 widt]);
-    ylim(handles.axes1,[0 heig]);
-end
-
-set(handles.checkbox_Use_Cropped_Image,'Value',0);
-Change_Disp1('refresh',handles)
 
 
 %===================== CHECK ============================================
@@ -3217,12 +2947,18 @@ function mouseFcn(hObject, eventdata, handles)
 %change all the values on the frame panel
 global segmentation
 
-newVal = get(handles.slider1, 'Value');
+%newVal = get(handles.slider1, 'Value');
 
 segmentation.v_axe1=axis(handles.axes1);
 
-Change_Disp1(newVal,handles);
-set(handles.checkbox_Use_Cropped_Image,'value',0);
+temp=[segmentation.v_axe1(1) segmentation.v_axe1(3) segmentation.v_axe1(2)-segmentation.v_axe1(1)+1 segmentation.v_axe1(4)-segmentation.v_axe1(3)+1];
+segmentation.ROItable{2,3}=num2str(round(temp));
+segmentation.ROItable{2,1}=true;
+segmentation.ROItable{1,1}=false;
+segmentation.ROItable{4,1}=false;
+
+phy_updatePhylocellDisplay(handles);
+%Change_Disp1(newVal,handles);
 
 
 % ------------------------------------------------------------------------
@@ -4412,14 +4148,6 @@ if ~isempty(segmentation.copyedObj)
 end
 
 
-% --- Executes on button press in checkbox_Use_Display_Image.
-function checkbox_Use_Display_Image_Callback(hObject, eventdata, handles)
-Change_Disp1('refresh',handles);
-
-
-% --- Executes on button press in checkbox_Use_Cropped_Image.
-function checkbox_Use_Cropped_Image_Callback(hObject, eventdata, handles)
-Change_Disp1('refresh',handles);
 
 
 % --------------------------------------------------------------------
@@ -4578,52 +4306,6 @@ for i=segmentedFrames
                 %sorted
                 %return;
                 
-                
-                %    i,j  ,a=  cells1(i,j).budneck
-                %                 if cells1(i,j).budneck~=0
-                %                     for kl=1:length(cells1(i,j).budneck)
-                %
-                %
-                %                         ind=cells1(i,j).budneck(kl);
-                %                         fr=i-(budnecks(ind).Obj(1).image-1);
-                %
-                %                         if fr<=0 || fr>length(budnecks(ind).Obj)
-                %                             continue
-                %                         end
-                %
-                %                    %     budmask=poly2mask(budnecks(ind).Obj(fr).x,budnecks(ind).Obj(fr).y,segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
-                %                    %     budmasksum= budmask | budmasksum;
-                %
-                %                     %    budnecks(ind).Obj(fr).fluoMean(l)=mean(img(budmasksum));
-                %                     %    budnecks(ind).Obj(fr).fluoVar(l)=var(double(img(budmasksum)));
-                %                     %    budnecks(ind).Obj(fr).fluoMin(l)=0;
-                %                     %    budnecks(ind).Obj(fr).fluoMax(l)=0;
-                %
-                %                     %    cells1(i,j).fluoNuclMean(l)=mean(img(budmasksum));
-                %                     %    cells1(i,j).fluoNuclVar(l)=var(double(img(budmasksum)));
-                %                         cells1(i,j).fluoNuclMin(l)=0;
-                %                         cells1(i,j).fluoNuclMax(l)=0;
-                %
-                %
-                %                     end
-                %
-                %
-                %
-                %                     cytomask= budmask | mask;
-                %                     pix= find(budmask);
-                %
-                %                     cytomask(pix)=0;
-                %
-                %                     % if j==4
-                %                     % figure(h); imshow(cytomask,[0 1]); title(['frame' num2str(i) 'cell' num2str(j) ]);
-                %                     %return;
-                %                     % end
-                %
-                %                     cells1(i,j).fluoCytoMean(l)=mean(img(cytomask));
-                %                     cells1(i,j).fluoCytoVar(l)=var(double(img(cytomask)));
-                %                     cells1(i,j).fluoCytoMin(l)=0;
-                %                     cells1(i,j).fluoCytoMax(l)=0;
-                %                 else
                 
                 cells1(i,j).fluoNuclMean(l)=cells1(i,j).fluoMean(l);
                 cells1(i,j).fluoNuclVar(l)=cells1(i,j).fluoVar(l);
@@ -4841,67 +4523,6 @@ subplot(3,1,2);
 plot(im);
 
 
-
-%%%%%%%%%%%%%%%%%
-% recently implemented functions
-%%%%%%%%%%%%%%%%%
-
-% --- Executes on button press in showAllCells.
-function showAllCells_Callback(hObject, eventdata, handles)
-% hObject    handle to showAllCells (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of showAllCells
-
-Change_Disp1('refresh',handles);
-
-function showSpecificCells_Callback(hObject, eventdata, handles)
-% hObject    handle to showSpecificCells (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of showSpecificCells as text
-%        str2double(get(hObject,'String')) returns contents of showSpecificCells as a double
-
-st=str2num(get(handles.showSpecificCells,'String'));
-
-if numel(st)==0
-    resetAxes_Callback(hObject, eventdata, handles);
-else
-    Change_Disp1('refresh',handles);
-end
-
-% --- Executes during object creation, after setting all properties.
-function showSpecificCells_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to showSpecificCells (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in checkbox_overlay.
-function checkbox_overlay_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_overlay (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox_overlay
-
-
-% --- Executes on button press in showScale.
-function showScale_Callback(hObject, eventdata, handles)
-% hObject    handle to showScale (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of showScale
-Change_Disp1('refresh',handles);
 
 
 % --- Executes on button press in showTime.
@@ -5289,42 +4910,6 @@ ylabel('Y position (pixels)');
 
 title('Blood vessel trajectories');
 
-% --- Executes on selection change in info.
-function info_Callback(hObject, eventdata, handles)
-% hObject    handle to info (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns info contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from info
-
-global segList timeLapse segmentation
-
-% add the project in the segList variable
-
-if numel(segList)~=0
-    val=get(hObject,'Value');
-    
-    if val==0
-        return;
-    end
-    
-    for k=1:numel(segList)
-        if segList(k).selected==1
-            segList(k).s=segmentation;
-            segList(k).t=timeLapse;
-            segList(k).selected=0;
-        end
-    end
-    
-    segList(val).selected=1;
-    segmentation=segList(val).s;
-    timeLapse=segList(val).t;
-    
-    set(handles.slider1,'Max',max(2,timeLapse.numberOfFrames));
-    
-    Change_Disp1('refresh',handles);
-end
 
 
 % --------------------------------------------------------------------
@@ -5338,39 +4923,33 @@ global segList timeLapse segmentation
 % add the project in the segList variable
 
 if numel(segList)>1
-    val=get(handles.info,'Value');
+    
+    for i=1:numel(segList)
+        if segList(i).selected==1
+            val=i;
+            break
+        end
+    end
+    
     
     segList(val:end-1)=segList(val+1:end);
     segList=segList(1:end-1);
     
-    val=min(val,numel(segList))
+    val=min(val,numel(segList));
     
     segList(val).selected=1;
     segmentation=segList(val).s;
     timeLapse=segList(val).t;
-    
-    str='';
-    for k=1:numel(segList)
-        str{k}= [num2str(k) ' - ' segList(k).filename '- Position ' num2str(segList(k).position)];
-    end
-    
-    set(handles.info,'String',str);
-    set(handles.info,'Value',val);
-    
-    
     
 else
     segList=[];
     segmentation=[];
     segmentation.frame1=1;
     timeLapse=[];
-
-    
-    set(handles.info,'String','-');
-    set(handles.info,'Value',1);
     
 end
-Change_Disp1('refresh',handles);
+
+phy_updatePhylocellDisplay(handles);
 
 
 % --- Executes on button press in checkbox_ShowFoci.
@@ -5600,9 +5179,199 @@ function celltraj_Callback(hObject, eventdata, handles)
 global segmentation celltrajsel
 
 
-set(handles.showSpecificCells,'String',num2str(celltrajsel));
-
 segmentation.(['t' 'cells1'])(celltrajsel).select(); %select the new cell
 segmentation.selectedTObj=segmentation.(['t' 'cells1'])(celltrajsel); % copy it
         
 Change_Disp1(segmentation.(['t' 'cells1'])(celltrajsel).lastFrame,handles);
+
+
+% --- Executes when selected cell(s) is changed in seg_table.
+function seg_table_CellEditCallback(hObject, eventdata, handles)
+
+% --- Executes when selected cell(s) is changed in seg_table.
+function seg_table_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to seg_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+global segList segmentation timeLapse
+
+ if numel(eventdata.Indices)==0
+ return;
+ end
+
+if eventdata.Indices(2)==1
+   
+    sel=eventdata.Indices(1);
+    segData=get(hObject,'Data');
+    
+    
+    for i=1:numel(segList)
+        if segList(i).selected==1
+            segList(i).s=segmentation;
+            segList(i).t=timeLapse;
+    segList(i).selected=0;
+    segData{i,1}=false;
+        end
+    end
+    
+    segList(sel).selected=1;
+    segData{sel,1}=true;
+    
+    set(hObject,'Data',segData);
+    
+    segmentation=segList(sel).s;
+    timeLapse=segList(sel).t;
+    
+    phy_updatePhylocellDisplay(handles);
+end
+
+if eventdata.Indices(2)==4
+    sel=eventdata.Indices(1);
+
+    segData=get(hObject,'Data');
+    
+     [~,~,~]=phy_propertiesGUI(0,segList(sel).t,'Segmentation variable properties');
+    
+end
+
+
+% --- Executes when entered data in editable cell(s) in channel_table.
+function channel_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to channel_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+ global segmentation
+% 
+ if numel(eventdata.Indices)==0
+ return;
+ end
+
+  segmentation.channel=get(hObject,'Data');
+  
+
+if eventdata.Indices(2)==5 % autoscale intensity
+   
+     sel=eventdata.Indices(1);
+
+     if eventdata.NewData==1
+     img=segmentation.realImage(:,:,sel);
+     %figure, imshow(img,[]);
+   
+     lohi = stretchlim(uint16(img), [0.01 0.9999]);
+     
+     segmentation.channel{sel,4}=num2str(round(2^16*lohi));
+     end
+     
+end
+
+if eventdata.Indices(2)==4 % remove autoscale if editing manually
+    sel=eventdata.Indices(1);
+    segmentation.channel{sel,5}=false;
+end
+
+    phy_updatePhylocellDisplay(handles);
+
+
+% --- Executes when entered data in editable cell(s) in roi_table.
+function roi_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to roi_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+global segList segmentation timeLapse
+
+ if numel(eventdata.Indices)==0
+ return;
+ end
+
+ %'ok'
+ 
+ 
+ segmentation.ROItable=get(hObject,'Data');
+     
+for i=1:size(segmentation.ROItable,1)           
+           segmentation.ROItable{i,1}=false;
+end
+segmentation.ROItable{eventdata.Indices(1),1}=true;
+
+    
+
+if eventdata.Indices(2)==3 && eventdata.Indices(1)==1 
+         segmentation.ROItable{1,3}=eventdata.PreviousData;
+end
+
+%segmentation.ROItable{4,2}=mat2cell('ok')
+
+if eventdata.Indices(2)==2% && eventdata.Indices(1)<=3
+ segmentation.ROItable{1,2}='fullframe';
+ segmentation.ROItable{2,2}='crop';
+ segmentation.ROItable{3,2}='cavity';
+
+end
+ phy_updatePhylocellDisplay(handles);
+ 
+
+% --- Executes on button press in pushbutton_process.
+function pushbutton_process_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_process (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function Untitled_1_Callback(hObject, eventdata, handles)
+% hObject    handle to Untitled_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function phylocell_help_Callback(hObject, eventdata, handles)
+% hObject    handle to phylocell_help (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+p = mfilename('fullpath');
+p=p(1:end-24);
+open([p 'help/html/index.html']);
+
+% --------------------------------------------------------------------
+function display_shortKeys_Callback(hObject, eventdata, handles)
+% hObject    handle to display_shortKeys (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when entered data in editable cell(s) in contour_table.
+function contour_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to contour_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+
+global segmentation
+
+ if numel(eventdata.Indices)==0
+ return;
+ end
+
+segmentation.contour=get(hObject,'Data');
+
+ phy_updatePhylocellDisplay(handles);

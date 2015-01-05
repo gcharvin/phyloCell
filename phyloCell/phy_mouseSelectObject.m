@@ -62,18 +62,25 @@ end
 
 %show the fields of the object in the cell properties
 s='';
+
+dat=cell(length(segmentation.showFieldsObj),2);
+
 for i=1:length(segmentation.showFieldsObj)
     if isnumeric(segmentation.selectedObj.(segmentation.showFieldsObj{i}))
         sprop=segmentation.selectedObj.(segmentation.showFieldsObj{i});
         if size(sprop,1)>size(sprop,2)
             sprop=sprop';
         end
+        
+        dat{i,1}=segmentation.showFieldsObj{i};
+        dat{i,2}=num2str(sprop);
         s=[s,segmentation.showFieldsObj{i},': ',num2str(sprop),'\n'];
     end
 end
 s=sprintf(s);
-set(handles.edit_Cell_Properties,'string',s);
 
+
+set(handles.object_table,'Data',dat);
 
 
 
@@ -146,17 +153,23 @@ if strcmp(butonType,'open')&&~isempty(segmentation.selectedTObj)
 end
 
 %modify the string coresponding to the tcell properties edit box
+
+dat=cell(length(segmentation.showFieldsTObj),2);
+
 if ~isempty(segmentation.selectedTObj)
     s='';
     for i=1:length(segmentation.showFieldsTObj)
         if strcmp(class(segmentation.selectedTObj.(segmentation.showFieldsTObj{i})),'double')
             s=[s,segmentation.showFieldsTObj{i},': ',num2str(segmentation.selectedTObj.(segmentation.showFieldsTObj{i})),'\n'];
+        
+        dat{i,1}=segmentation.showFieldsTObj{i};
+        dat{i,2}=num2str(segmentation.selectedTObj.(segmentation.showFieldsTObj{i}));
         end
     end
     s=sprintf(s);
-    set(handles.edit_TCell_Properties,'string',s);
+    set(handles.tobject_table,'Data',dat);
 else
-    set(handles.edit_TCell_Properties,'string',[]);
+    set(handles.tobject_table,'Data',{}); 
     set(handles.setSelectedCellBudTime,'State','off');
     set(handles.setSelectedCellDivisionTime,'State','off');
 end

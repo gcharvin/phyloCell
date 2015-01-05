@@ -14,6 +14,7 @@ global segmentation timeLapse
 
 % 'ROI', [lef top width height]
 
+
 % 'contours',
 %contours is a struct with fields :
 % contours.object='nucleus'
@@ -24,6 +25,9 @@ global segmentation timeLapse
 % cells need to be displayed
 
 % 'tracking', cellnumber : if tracking cell is requested
+
+% 'timestamp' : display timestap
+% 'scale' : display scalebar
 
 % outputs hf : handle of figure ; h : handle of axis
 
@@ -87,7 +91,10 @@ for i=frames
         
         
     end
+    
+    warning off all
     imshow(imgRGBsum);
+    warning on all
     
     if numel(contours)
         drawContours(contours,ROI,tracking,i,refheight,refwidth) ;
@@ -140,14 +147,14 @@ if ROI(2)<1
     ROI(2)=1;
 end
 if ROI(2)+ROI(4)>refwidth
-    ROI(2)=refwidth-ROI(4);
+    ROI(2)=refwidth-ROI(4)+1;
 end
 if ROI(1)<1
     %delta=1-ROI(2);
     ROI(1)=1;
 end
 if ROI(1)+ROI(3)>refheight
-    ROI(1)=refheight-ROI(3);
+    ROI(1)=refheight-ROI(3)+1;
 end
 
 ROIout=ROI;
@@ -205,7 +212,7 @@ for ik=1:length(contours)
             end
             
             if ok==1
-                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth+1);
             else
                 line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             end
@@ -265,6 +272,27 @@ end
 
 
 function drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
+global timeLapse
+% draw time stamp
+%t = double((i -frameIndices(1) ) * secondsPerFrame);
+%t = double((i) * timeLapse.interval);
+t = double((i) * timeLapse.interval/60);
+hours = floor(t / 3600);
+minutes = mod(floor(t / 60), 60);
+
+if numel(ROI)
+    xpos=0.1*ROI(3);
+    ypos=0.1*ROI(4);
+else
+    xpos=0.1*refwidth;
+    ypos=0.1*refheight;
+end
+
+%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+
+text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+
+function drawScaleBar(ROI,refwidth,refheight,timestamp,i)
 global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);

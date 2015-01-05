@@ -61,6 +61,9 @@ for i=1:nch
     maxe2=max(maxe2,size(img,2));
 end
 
+
+
+
 segmentation.realImage=zeros([maxe maxe2 nch]);
 segmentation.segmentationImage=zeros([maxe maxe2 nch]);
 segmentation.sizeImageMax=[maxe maxe2];
@@ -68,31 +71,22 @@ segmentation.v_axe1=[1 maxe 1 maxe2];
 
 segmentation.colorData(:,6)=1;
 
-%a=segmentation.colorData
+segmentation.v_axe1=[0    maxe   0    maxe2];
 
-% %segmentation settings
-% segmentation.parametres.budneck_diameter=20;
-% segmentation.parametres.cell_diameter=40;
-% segmentation.parametres.segmentation=3;
-% segmentation.parametres.numberPixelsWat=50; %number of pixel to add in watershed before doing an ellipse aproximation
-% segmentation.parametres.budneckRefine=95; %refine budneck segmentation [-1,1]
-% segmentation.parametres.display=0;
-% segmentation.parametres.gradient=0;
-% segmentation.parametres.mapping=3;
-% segmentation.parametres.minCellSize=500;
-% segmentation.parametres.maxCellSize=12000;
-% 
-% segmentation.parametres.cellRefine=100;
-% segmentation.parametres.mappingPersistence=1;
-% 
-% segmentation.parametres.budneckTimeLow=15;
-% segmentation.parametres.budneckTimeHigh=20;
-% 
-% segmentation.parametres.homo.type= 'Cerevisiae';
-% segmentation.parametres.homo.iterations= 70;
-% segmentation.parametres.homo.strength=0.04;
-% segmentation.parametres.homo.restore=0.6;
-% segmentation.parametres.homo.speed=4;
+segmentation.myHandles.showBudnecks=[];
+segmentation.myHandles.showBudnecksText=[];
+segmentation.myHandles.showCells=[];
+segmentation.myHandles.showCellsText=[];
+segmentation.myHandles.showFoci=[];
+segmentation.myHandles.showFociText=[];
+segmentation.myHandles.showMito=[];
+segmentation.myHandles.showMitoText=[];
+segmentation.myHandles.showNucleus=[];
+segmentation.myHandles.showNucleusText=[];
+segmentation.myHandles.showPedigree1=[];
+segmentation.selectedTObj={};
+segmentation.selectedObj={};
+segmentation.copyedObj={};
 
 
 segmentation.pedigree.firstMCell=[];
@@ -108,26 +102,18 @@ segmentation.pedigree.minmax=[500 1200];
 segmentation.pedigree.orientation=0;
 segmentation.pedigree.cellindex=[];
 
-% %check settings default values
-% segmentation.check.budneckTimeLow=5;
-% segmentation.check.budneckTimeHigh=20;
-
-segmentation.parametres.fluoSegmentation=1;
 
 
 %%%%%%%%% new variables for processing
 
 segmentation=phy_createProcessingVariable(segmentation);
-                                   
-                                 
-%%%%%%%%%
 
 
 segmentation.frame1=1;
 
 segmentation.frameChanged=zeros(1,timeLapse.numberOfFrames);
 
-segmentation.showFieldsObj={'n','area','ox','oy','image','mother','selected','dependentData'};
-segmentation.showFieldsTObj={'N','detectionFrame','birthFrame','lastFrame','mother','daughterList','divisionTimes','budTimes','selected'};
+segmentation.showFieldsObj={'n','area','ox','oy','image','fluoMean','fluoVar','Nrpoints'};
+segmentation.showFieldsTObj={'N','detectionFrame','birthFrame','lastFrame','mother','daughterList','divisionTimes','budTimes'};
 
 

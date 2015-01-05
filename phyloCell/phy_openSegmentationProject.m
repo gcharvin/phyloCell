@@ -45,7 +45,7 @@ end
 if numel(varname)~=0
     filen=varname;
 else
-    
+    disp('Choose approriate segmentation variable (.mat file)');
     lifi=dir([timeLapse.realPath timeLapse.pathList.position{position}]);
     
     count=1; cc={};
@@ -66,7 +66,7 @@ else
     
     filen=cc{sel};
     else
-    filen='segmentation-batch.mat';    
+    filen='segmentation.mat';    
     end
 end
 
@@ -82,6 +82,8 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
         status('loading saved file segmentation',handles);
         pause(0.2);
     end
+    
+    disp('Loading saved segmentation file');
     
     load(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen))
     
@@ -113,6 +115,8 @@ else
     if nargin==3
         status('creating the segmentation file',handles);
     end
+    
+    disp('Creating new segmentation file');
     
     nch=length(timeLapse.pathList.channels(1,:));
     %dialog box for entering the position
