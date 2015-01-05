@@ -5344,7 +5344,7 @@ function phylocell_help_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 p = mfilename('fullpath');
-p=p(1:end-24);
+p=p(1:end-27)
 open([p 'help/html/index.html']);
 
 % --------------------------------------------------------------------

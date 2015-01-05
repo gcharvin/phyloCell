@@ -586,7 +586,7 @@ if strcmp(get(handles.annotate,'State'),'on')
     end
 end
 
-handles=checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles);
+checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles);
 
 
 
