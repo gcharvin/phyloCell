@@ -10,6 +10,8 @@
 
 
 %% Help Table of Contents
+% <install.html phyloCell installation>
+%
 % <io.html Importing images and generating segmentation projects>
 %
 % <openP.html Opening projects / segmentation files>

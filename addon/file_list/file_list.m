@@ -145,7 +145,7 @@ for cur=1:size(temp_file_list)
         % If the file is not a directory.
     elseif ~temp_isdir
         % Explode the file name.
-        [p, n, x, v] = fileparts(temp_name);
+        [p, n, x] = fileparts(temp_name);
         % If a filename match isn't specified, just try to match the
         % extension
         name_match=(~isempty(findstr(n,filename_search))||isempty(filename_search));

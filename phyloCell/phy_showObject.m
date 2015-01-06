@@ -48,6 +48,8 @@ if (strcmpi(option, 'on'))&((isempty(hplotin))|(~ishandle(hplotin))) % if option
                     end
                     
                     %  if ~strcmp(name,'budnecks')
+                
+                    
                     ht=text(object(l).ox-xshift,object(l).oy-yshift,num2str(object(l).n),'Color',color,'FontSize',10);
                     set(ht,'Parent',haxe);
                     htext(l)= ht;

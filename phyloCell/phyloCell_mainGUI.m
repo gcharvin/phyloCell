@@ -57,7 +57,7 @@ if ~exist('javitools.AVITools', 'class')
     p = mfilename('fullpath');
     [p f e]=fileparts(p);
     p2=[p '/./addon/ag/javitools.jar'];
-   javaaddpath([p '/../addon/javitools.jar']); 
+    javaaddpath([p '/../addon/javitools.jar']);
 end
 
 
@@ -71,11 +71,11 @@ zoom reset;
 
 handles.output = hObject;
 
-phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles,1);
 
 guidata(hObject, handles);
 
-% 
+%
 %status('Idle',handles);
 
 
@@ -156,12 +156,10 @@ function pushbutton_segImg_Callback(hObject, eventdata, handles)
 
 global segmentation segList
 
-
 if get(handles.splitChannels,'Value')
     set(handles.splitChannels,'Value',0);
     Change_Disp1('refresh',handles)
 end
-
 
 feat=segmentation.processing.selectedFeature;
 proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
@@ -332,7 +330,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
             
             budnecktemp=phy_segmentFoci(im,parametres{2,2},parametres{3,2},parametres{5,2},parametres{4,2});
-
+            
             
             
             i=1;
@@ -348,10 +346,10 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             for j=1:length(budneck)
                 budneck(j).image=segmentation.frame1;
                 %if get(handles.checkbox_Use_Cropped_Image,'value')
-                  budneck(j).x=budneck(j).x+ax(1)-0;
-                  budneck(j).y=budneck(j).y+ax(3)-0;
-                 budneck(j).ox=budneck(j).ox+ax(1)-0;
-                 budneck(j).oy=budneck(j).oy+ax(3)-0;
+                budneck(j).x=budneck(j).x+ax(1)-0;
+                budneck(j).y=budneck(j).y+ax(3)-0;
+                budneck(j).ox=budneck(j).ox+ax(1)-0;
+                budneck(j).oy=budneck(j).oy+ax(3)-0;
                 %end
                 myObject(segmentation.frame1,j)=budneck(j);
             end
@@ -474,16 +472,16 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
             for j=1:length(budneck)
                 budneck(j).image=segmentation.frame1;
                 %if get(handles.checkbox_Use_Cropped_Image,'value')
-                    budneck(j).x=budneck(j).x+ax(1)-1;
-                    budneck(j).y=budneck(j).y+ax(3)-1;
-                    budneck(j).ox=budneck(j).ox+ax(1)-1;
-                    budneck(j).oy=budneck(j).oy+ax(3)-1;
-               %end
+                budneck(j).x=budneck(j).x+ax(1)-1;
+                budneck(j).y=budneck(j).y+ax(3)-1;
+                budneck(j).ox=budneck(j).ox+ax(1)-1;
+                budneck(j).oy=budneck(j).oy+ax(3)-1;
+                %end
                 myObject(segmentation.frame1,j)=budneck(j);
             end
             
-          case 16
-              
+        case 16
+            
             parametres=parametres{1,1};
             im=segmentation.segmentationImage(:,:,parametres{1,2});
             
@@ -515,7 +513,7 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
                 tmp(i).oy = tmp(i).oy + ax(3) - 1;
                 tmp(i).image=segmentation.frame1;
                 myObject(segmentation.frame1, i) = tmp(i);
-            end   
+            end
             
     end
     
@@ -599,62 +597,13 @@ if ~(~(get(hObject,'Value'))&&(segmentation.([featname 'Segmented'])(segmentatio
     cur=find([segList.selected]==1);
     segList(cur).s=segmentation;
     %
-   Change_Disp1('refresh',handles); 
+    Change_Disp1('refresh',handles);
 end
 
 status('Idle',handles);
 guidata(hObject, handles);
 %
 
-% % --- Executes on button press in pushbutton_segAll.
-function pushbutton_segAll_Callback(hObject, eventdata, handles)
-%
-global segmentation
-global timeLapse
-%
-if ~segmentation.play
-    %          dialog box
-    prompt = {'Enter first frame:','Enter last frame:'};
-    dlg_title = 'Segment frames';
-    num_lines = 1;
-    def = {num2str(segmentation.frame1),num2str(timeLapse.numberOfFrames)};
-    %def = {num2str(bSeg(1)),num2str(bSeg(end))};
-    answer = inputdlg(prompt,dlg_title,num_lines,def);
-    if isempty(answer)
-        segmentation.play=false;
-        set(hObject,'String','Segment All');
-        status('Idle',handles);
-        return
-    end
-    startFrame=str2double(answer(1));
-    endFrame=str2double(answer(2));
-    %-----------------------
-    segmentation.play=true;
-    set(hObject,'String','Pause');
-    
-    
-    
-    for i=startFrame:endFrame
-        Change_Disp1(i,handles);
-        
-        % segmentation.frame1
-        timeStart=tic;
-        pushbutton_segImg_Callback(handles.pushbutton_segImg, eventdata, handles)
-        toc(timeStart)
-        pause(0.2);
-        if ~segmentation.play
-            break
-        end
-    end
-else
-    segmentation.play=false;
-    set(hObject,'String','Segment All');
-end
-
-
-segmentation.play=false;
-set(hObject,'String','Segment All');
-status('Idle',handles);
 
 
 % --------------------------------------------------------------------
@@ -688,21 +637,21 @@ for i=1:numel(segList)
     timeLapse=segList(i).t;
     
     localpath=userpath;
-   localpath=localpath(1:end-1);
-
-%save([localpath '/segmentation-autotrack.mat'],'segmentation');
-%copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
-
-if isunix
-save([localpath '/segmentation-autotrack.mat'],'segmentation');
-eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},filename)]);
-
-else
-
-%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
-save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
-end
-
+    localpath=localpath(1:end-1);
+    
+    %save([localpath '/segmentation-autotrack.mat'],'segmentation');
+    %copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
+    
+    if isunix
+        save([localpath '/segmentation-autotrack.mat'],'segmentation');
+        eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},filename)]);
+        
+    else
+        
+        %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
+        save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+    end
+    
 end
 
 segmentation=segList(cur).s;
@@ -741,16 +690,16 @@ localpath=localpath(1:end-1);
 %copyfile([localpath '/timeLapse.mat'],fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']));
 
 if isunix
-save([localpath '/segmentation-autotrack.mat'],'segmentation');
-eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename)]);
-%save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
-
-save([localpath '/timeLapse.mat'],'timeLapse');
-eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[timeLapse.filename '-project.mat'])]);
-
+    save([localpath '/segmentation-autotrack.mat'],'segmentation');
+    eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename)]);
+    %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
+    
+    save([localpath '/timeLapse.mat'],'timeLapse');
+    eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[timeLapse.filename '-project.mat'])]);
+    
 else
-save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
-save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
+    save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
+    save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
 end
 
 toc
@@ -921,9 +870,9 @@ global segmentation
 % segmentation.selectedObj.oy=0;
 % segmentation.selectedObj.n=0;
 
-if isempty(segmentation.selectedObj)   
+if isempty(segmentation.selectedObj)
     errordlg('First select a cell');
-return;
+    return;
 end
 
 if get(handles.radiobutton_Image,'Value')
@@ -984,7 +933,7 @@ end
 
 
 % --- Executes on button press in pushbutton_Edit_Contour.
-function pushbutton_Edit_Contour_Callback(hObject, eventdata, handles)
+function pushbutton_Edit_Contour_Callback(handles)
 global segmentation
 
 set(segmentation.selectedObj.htext,'visible','off');
@@ -1016,178 +965,7 @@ function pushbutton_Annotate_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of pushbutton_Annotate
 
-% --- Executes on button press in pushbutton_Create_Object.
-function pushbutton_Create_Object_Callback(hObject, eventdata, handles)
-global segmentation
 
-% create the dialog box
-dim = [3 3]; %number of objects in dialog box
-Title = 'Create object';
-
-Prompt = cell(1,2);
-Prompt{1,1} = 'Chose the type and the number of the new object';
-Formats(1,1).type = 'text';
-for k = 2:dim(2) % span the static text across the entire dialog
-    Formats(1,k).type = 'none';
-    Formats(1,k).limits = [0 1]; % extend from left
-end
-
-Prompt(2,:) = {'Choose type of objects','type'};
-Formats(2,1).type = 'list';
-Formats(2,1).style = 'radiobutton';
-Formats(2,1).items = {'Budnecks','Cells1','Foci','Mito','Nucleus'};
-for k = 2:dim(2) % span the static text across the entire dialog
-    Formats(2,k).type = 'none';
-    Formats(2,k).limits = [0 1]; % extend from left
-end
-
-Prompt(3,:) = {'Budneck Number','budneck_number'};
-Formats(3,1).type = 'edit';
-Formats(3,1).format = 'integer';
-Formats(3,1).limits = [0 9999]; % 4-digits (positive #)
-Formats(3,1).size = 50;
-
-Prompt(4,:) = {'Cell Number1','cell_number1'};
-Formats(3,2).type = 'edit';
-Formats(3,2).format = 'integer';
-Formats(3,2).limits = [0 9999]; % 4-digits (positive #)
-Formats(3,2).size = 50;
-%
-% Prompt(5,:) = {'Cell Number2','cell_number2'};
-% Formats(3,3).type = 'edit';
-% Formats(3,3).format = 'integer';
-% Formats(3,3).limits = [0 9999]; % 4-digits (positive #)
-% Formats(3,3).size = 50;
-
-DefAns.type = 2;
-if ~isempty(segmentation.tbudnecks)
-    DefAns.budneck_number = length(segmentation.tbudnecks)+1;
-else
-    DefAns.budneck_number=0;
-end
-if ~isempty(segmentation.tcells1)
-    DefAns.cell_number1 = length(segmentation.tcells1)+1;
-else
-    DefAns.cell_number1=0;
-end
-% if ~isempty(segmentation.tcells2)
-%     DefAns.cell_number2=length(segmentation.tcells2)+1;
-% else
-%     DefAns.cell_number2=0;
-% end
-
-
-
-
-[Answer,Cancelled] = phy_inputsdlg(Prompt,Title,Formats);%,DefAns);%Options);
-
-% create the points
-if ~Cancelled
-    %     [x,y] = getline(handles.axes1,'closed');
-    %     hold(handles.axes1,'on');
-    %     plot(handles.axes1,x,y);
-    %     hold(handles.axes1,'off');
-    %hellipse=imellipse(handles.axes1);
-    [bw x y]=roipolyold;
-    x
-    y
-    [x,y]=phy_changePointNumber(x,y,50);
-    %vertices=wait(hellipse);
-    %x=vertices(:,1);
-    %y=vertices(:,2);
-    %hellipse.delete;
-    ox=mean(x);
-    oy=mean(y);
-    
-    added=false;
-    switch Answer.type
-        case 1
-            n=Answer.budneck_number;
-            budn=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
-            budn.ox=ox;
-            budn.oy=oy;
-            budn.image=segmentation.frame1;
-            budn.area=polyarea(x,y);
-            
-            if size(segmentation.budnecks,1)<segmentation.frame1
-                for i=size(segmentation.budnecks,1)+1:segmentation.frame1
-                    segmentation.budnecks(i,1)=phy_Object;
-                end
-            end
-            
-            for i=1:length(segmentation.budnecks(segmentation.frame1,:))
-                if segmentation.budnecks(segmentation.frame1,i).ox==0
-                    segmentation.budnecks(segmentation.frame1,i)=budn;
-                    added=true;
-                    break;
-                end
-            end
-            if ~added
-                segmentation.budnecks(segmentation.frame1,end+1)=budn;
-            end
-            if n~=0 && ~isempty(segmentation.selectedTObj)
-                if n>length(segmentation.tbudnecks)
-                    segmentation.tbudnecks(n)=phy_Tobject;
-                end
-                segmentation.tbudnecks(n).addObject(budn);
-            end
-        case 2
-            n=Answer.cell_number1;
-            cellule=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
-            cellule.ox=ox;
-            cellule.oy=oy;
-            cellule.image=segmentation.frame1;
-            cellule.area=polyarea(x,y);
-            
-            if size(segmentation.cells1,1)<segmentation.frame1
-                for i=size(segmentation.cells1,1)+1:segmentation.frame1
-                    segmentation.cells1(i,1)=phy_Object;
-                end
-            end
-            
-            for i=1:length(segmentation.cells1(segmentation.frame1,:))
-                if segmentation.cells1(segmentation.frame1,i).ox==0
-                    segmentation.cells1(segmentation.frame1,i)=cellule;
-                    added=true;
-                    break;
-                end
-            end
-            if ~added
-                segmentation.cells1(segmentation.frame1,end+1)=cellule;
-            end
-            if n~=0 && ~isempty(segmentation.selectedTObj)
-                if n>length(segmentation.tcells1)
-                    segmentation.tcells1(n)=phy_Tobject;
-                end
-                segmentation.tcells1(n).addObject(cellule);
-            end
-            %         case 3
-            %             n=Answer.cell_number2;
-            %             cellule=phy_Object(n,x,y);
-            %             cellule.ox=ox;
-            %             cellule.oy=oy;
-            %             cellule.image=segmentation.frame1;
-            %             cellule.area=polyarea(x,y);
-            %             for i=1:length(segmentation.cells2(segmentation.frame1,:))
-            %                 if segmentation.cells2(segmentation.frame1,i).ox==0
-            %                     segmentation.cells2(segmentation.frame1,i)=cellule;
-            %                     added=true;
-            %                     break;
-            %                 end
-            %             end
-            %             if ~added
-            %                 segmentation.cells2(segmentation.frame1,end+1)=cellule;
-            %             end
-            %             if n~=0 && ~isempty(segmentation.selectedTObj)
-            %                 if n>length(segmentation.tcells1)
-            %                     segmentation.tcells2(n)=phy_Tobject;
-            %                 end
-            %                 segmentation.tcells2(n).addObject(cellule);
-            %             end
-    end
-    Change_Disp1('refresh',handles);
-    segmentation.frameChanged(segmentation.frame1)=1;
-end
 
 % --- Executes on button press in pushbutton_Clear_Image.
 function pushbutton_Clear_Image_Callback(hObject, eventdata, handles)
@@ -1496,11 +1274,11 @@ end
 
 % update segList before deselecting
 for i=1:numel(segList)
-        if segList(i).selected==1
-            segList(i).s=segmentation;
-            segList(i).t=timeLapse;
-    segList(i).selected=0;
-        end
+    if segList(i).selected==1
+        segList(i).s=segmentation;
+        segList(i).t=timeLapse;
+        segList(i).selected=0;
+    end
 end
 
 load(strcat(path,filen));
@@ -1508,7 +1286,7 @@ timeLapse.realPath=path;
 
 phy_openSegmentationProject(1,[]);
 phy_addProjectToSegList;
-phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles,'ok');
 statusbar;
 
 guidata(hObject, handles);
@@ -1533,11 +1311,11 @@ end
 
 % update segList before deselecting
 for i=1:numel(segList)
-        if segList(i).selected==1
-            segList(i).s=segmentation;
-            segList(i).t=timeLapse;
-    segList(i).selected=0;
-        end
+    if segList(i).selected==1
+        segList(i).s=segmentation;
+        segList(i).t=timeLapse;
+        segList(i).selected=0;
+    end
 end
 
 load(strcat(path,filen));
@@ -1545,7 +1323,7 @@ timeLapse.realPath=path;
 
 phy_openSegmentationProject(1,[]);
 phy_addProjectToSegList;
-phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles,'ok');
 statusbar;
 
 guidata(hObject, handles);
@@ -1573,20 +1351,20 @@ end
 
 % update segList before deselecting
 for i=1:numel(segList)
-        if segList(i).selected==1
-            segList(i).s=segmentation;
-            segList(i).t=timeLapse;
-    segList(i).selected=0;
-        end
+    if segList(i).selected==1
+        segList(i).s=segmentation;
+        segList(i).t=timeLapse;
+        segList(i).selected=0;
+    end
 end
-    
+
 
 load(strcat(path,filen));
 timeLapse.realPath=path;
 
 phy_openSegmentationProject(1,[]);
 phy_addProjectToSegList;
-phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles,'ok');
 statusbar;
 
 guidata(hObject, handles);
@@ -1607,11 +1385,11 @@ end
 
 % update segList before deselecting
 for i=1:numel(segList)
-        if segList(i).selected==1
-            segList(i).s=segmentation;
-            segList(i).t=timeLapse;
-    segList(i).selected=0;
-        end
+    if segList(i).selected==1
+        segList(i).s=segmentation;
+        segList(i).t=timeLapse;
+        segList(i).selected=0;
+    end
 end
 
 load(strcat(timeLapsepath,timeLapsefile));
@@ -1627,7 +1405,7 @@ end
 % add the project in the segList variable
 
 phy_addProjectToSegList;
-phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles,'ok');
 statusbar;
 
 
@@ -1654,11 +1432,11 @@ a=segmentation.channel;
 
 % update segList before deselecting
 for i=1:numel(segList)
-        if segList(i).selected==1
-            segList(i).s=segmentation;
-            segList(i).t=timeLapse;
-    segList(i).selected=0;
-        end
+    if segList(i).selected==1
+        segList(i).s=segmentation;
+        segList(i).t=timeLapse;
+        segList(i).selected=0;
+    end
 end
 
 out=phy_openSegmentationProject([],[]);
@@ -1671,13 +1449,10 @@ segmentation.channel=a;
 % add the project in the segList variable
 
 phy_addProjectToSegList;
-phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles,'ok');
 statusbar;
 
 %============= SEGMENTATION ==============================================
-
-% --------------------------------------------------------------------
-function Segmentation_Callback(hObject, eventdata, handles)
 
 
 
@@ -1895,64 +1670,6 @@ segList(cur).s=segmentation;
 status('Idle',handles);
 
 
-
-% --------------------------------------------------------------------
-function Segmentation_MapBudneck_Callback(hObject, eventdata, handles)
-
-global segmentation
-bSeg=find(segmentation.budnecksSegmented);
-
-%---------------------
-%dialog box
-prompt = {'Enter first frame:','Enter last frame:'};
-dlg_title = 'Map all the segmented frames';
-num_lines = 1;
-%def = {'1',num2str(timeLapse.numberOfFrames)};
-def = {num2str(bSeg(1)),num2str(bSeg(end))};
-answer = inputdlg(prompt,dlg_title,num_lines,def);
-if isempty(answer)
-    return
-end
-%-----------------------
-
-startFrame=str2double(answer(1));
-endFrame=str2double(answer(2));
-status('Map budnecks',handles);
-tic
-
-param=2*segmentation.parametres.budneck_diameter;
-c=0;
-for i=1:length(bSeg)%get(handles.slider1,'Max')
-    %x=startFrame+i; %image to start mapping
-    if bSeg(i)>=startFrame && bSeg(i)<=endFrame
-        x=bSeg(i)
-        c=c+1;
-        if c==1
-            segmentation.budnecks(x,:)=phy_mapObjects(param,segmentation.budnecks(x,:));
-        elseif c==2
-            segmentation.budnecks(x,:)=phy_mapObjects(param,segmentation.budnecks(x,:),segmentation.budnecks(bSeg(i-1),:));
-        elseif c>2
-            
-            segmentation.budnecks(x,:)=phy_mapObjects(param,segmentation.budnecks(x,:),segmentation.budnecks(bSeg(i-1),:),segmentation.budnecks(bSeg(i-2),:));
-        end
-        segmentation.budnecksMapped(x)=1;
-        segmentation.frameChanged(x)=1;
-    end
-end
-toc
-
-Check_Budnecks_Callback([], [], handles)
-% status('refresh tbudnecks',handles);
-% tic
-% [segmentation.tbudnecks fchange]=phy_makeTObject(segmentation.budnecks,segmentation.tbudnecks);
-% segmentation.frameChanged(fchange)=1;
-% toc
-status('Idle',handles);
-
-% --------------------------------------------------------------------
-function Segmentation_Setings_Callback(hObject, eventdata, handles)
-
-phy_processSettingsGUI;
 
 
 
@@ -2195,7 +1912,7 @@ function Check_Cells_Callback(hObject, eventdata, handles)
 global segmentation
 
 phy_checkAndDisp_cells(hObject,eventdata,handles);
-   
+
 
 
 % --------------------------------------------------------------------
@@ -2815,77 +2532,6 @@ guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-function handles=checkbox_ShowCells_Callback(hObject, eventdata, handles)
-%show the cells1 by first segmentation on the first display
-global segmentation
-
-
-%AppData=getappdata(handles.figure1);
-if size(segmentation.cells1,1)>=segmentation.frame1 %check if the image was segmented
-    if get(hObject,'Value') %if checked
-        
-        tempcells=phy_Object();
-        if ~get(handles.showAllCells,'Value')
-            cellsind=str2num(get(handles.showSpecificCells,'String'));
-            
-            cont=1;
-            for i=1:numel(segmentation.cells1(segmentation.frame1,:))
-                if numel(find(segmentation.cells1(segmentation.frame1,i).n==cellsind))~=0
-                    tempcells(cont)=segmentation.cells1(segmentation.frame1,i);
-                    cont=cont+1;
-                end
-            end
-        else
-            tempcells=segmentation.cells1(segmentation.frame1,:);
-        end
-        
-        %tempcells
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        
-        
-        [segmentation.myHandles.showCells segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,tempcells,'r','cells1',[],[],'on',siz,segmentation.v_axe1);
-        
-        set(segmentation.myHandles.showCells(:),'ButtonDownFcn',{@mouseSelectObject,handles});
-        set(segmentation.myHandles.showCells(:),'UIContextMenu',handles.Context_Objects);
-        
-        
-        %set(segmentation.myHandles.showCells(:),'userdata',segmentation.cells1(segmentation.frame1,:));
-    else %if not checked
-        [segmentation.myHandles.showCells segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,segmentation.cells1(segmentation.frame1,:),'r','cells1',segmentation.myHandles.showCells,segmentation.myHandles.showCellsText,'off');
-    end
-end
-%setappdata(handles.figure1,'AppData',AppData);
-guidata(hObject, handles); % Save the structure
-
-
-
-function handles=checkbox_ShowBudneck_Callback(hObject, eventdata, handles)
-global segmentation
-
-if size(segmentation.budnecks,1)>=segmentation.frame1 %check if the image was segmented
-    if get(hObject,'Value') %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showBudnecks segmentation.myHandles.showBudnecksText]...
-            =phy_showObject(handles.axes1,segmentation.budnecks(segmentation.frame1,:),'b','budnecks',segmentation.myHandles.showBudnecks,segmentation.myHandles.showBudnecksText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showBudnecks(:),'ButtonDownFcn',{@mouseSelectObject,handles});
-        set(segmentation.myHandles.showBudnecks(:),'UIContextMenu',handles.Context_Objects);
-    else %if not checked
-        [segmentation.myHandles.showBudnecks segmentation.myHandles.showBudnecksText]...
-            =phy_showObject(handles.axes1,segmentation.budnecks(segmentation.frame1,:),'b','budnecks',segmentation.myHandles.showBudnecks,segmentation.myHandles.showBudnecksText,'off');
-    end
-end
-guidata(hObject, handles);% Save the structure
-
-
 % --- Executes on button press in checkbox_Show_Pedigree.
 function handles=checkbox_Show_Pedigree_Callback(hObject, eventdata, handles)
 
@@ -2933,12 +2579,22 @@ function Change_Disp1(pos,handles,dispCells)
 
 %global timeLapse;
 %global segmentation;
+
+        try
+            
+        sb=statusbar(handles.figure1,'Displaying...');
+        catch,end
+        
 if nargin==2
     phy_change_Disp1(pos,handles);
 else
     phy_change_Disp1(pos,handles,dispCells);
 end
 
+try 
+    statusbar
+catch
+end
 
 % ------------------------------------------------------------------------
 function mouseFcn(hObject, eventdata, handles)
@@ -2959,23 +2615,6 @@ segmentation.ROItable{4,1}=false;
 
 phy_updatePhylocellDisplay(handles);
 %Change_Disp1(newVal,handles);
-
-
-% ------------------------------------------------------------------------
-function checkBoxChannel_first(hObject, eventdata, handles)
-global timeLapse
-global segmentation;
-timeLapse.currentFrame=0;
-Change_Disp1(segmentation.frame1,handles);
-
-% ------------------------------------------------------------------------
-function editChannel_first(hObject, eventdata, handles)
-global timeLapse
-global segmentation;
-timeLapse.currentFrame=0;
-Change_Disp1(segmentation.frame1,handles);
-
-
 
 
 
@@ -3019,8 +2658,8 @@ segmentation.myHandles.oldPoint=pt;
 %change the status text
 function status(str,handles)
 % set status
-set(handles.text_status,'String',str);
-pause(0.01);
+%set(handles.text_status,'String',str);
+%pause(0.01);
 
 % --- Executes on key press with focus on figure1 or any of its controls.
 function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
@@ -3083,7 +2722,7 @@ if strcmp(eventdata.Key,'d')
 end
 
 if strcmp(eventdata.Key,'e')
-    pushbutton_Edit_Contour_Callback(handles.pushbutton_Edit_Contour, [], handles);
+    pushbutton_Edit_Contour_Callback(handles);
 end
 
 % h & j are used
@@ -3679,7 +3318,7 @@ end
 
 % --------------------------------------------------------------------
 function Context_Objects_Edit_Contour_Callback(hObject, eventdata, handles)
-pushbutton_Edit_Contour_Callback(handles.pushbutton_Edit_Contour, eventdata, handles)
+pushbutton_Edit_Contour_Callback(handles)
 
 % --------------------------------------------------------------------
 function Context_Objects_Callback(hObject, eventdata, handles)
@@ -3812,9 +3451,9 @@ selObj=get(gco,'userdata');
 %segmentation.copyedObj=selObj;
 %segmentation.copyedType=segmentation.selectedType;
 
-if isempty(segmentation.selectedObj)   
+if isempty(segmentation.selectedObj)
     errordlg('First select a cell');
-return;
+    return;
 end
 
 status('Swapping...',handles);
@@ -3932,9 +3571,9 @@ else
             segmentation.selectedTObj.deleteObject(objectMoved1(i),'only from tobject');
         end
         'ok2'
-          tobj(n2).mother
-         tobj(n1).mother
-         
+        tobj(n2).mother
+        tobj(n1).mother
+        
         %collect n2 cells and delete from n2 tobject
         c=0;
         objectMoved2=phy_Object;
@@ -3951,18 +3590,18 @@ else
             end
         end
         
-           'ok2b'
-          tobj(n2).mother
-         tobj(n1).mother
-         
+        'ok2b'
+        tobj(n2).mother
+        tobj(n1).mother
+        
         for i=1:c
             tobj(n2).deleteObject(objectMoved2(i),'only from tobject');
         end
         
-           'ok3'
-          tobj(n2).mother
-         tobj(n1).mother
-         
+        'ok3'
+        tobj(n2).mother
+        tobj(n1).mother
+        
         tobj(n2).addObject(objectMoved1);
         segmentation.selectedTObj.addObject(objectMoved2);
         
@@ -3985,16 +3624,16 @@ else
         %             segmentation.selectedTObj.lastFrame=minFrame;
         
         
-           'ok4'
-          tobj(n2).mother
-         tobj(n1).mother
-         
+        'ok4'
+        tobj(n2).mother
+        tobj(n1).mother
+        
         segmentation.(['t',segmentation.selectedType])=tobj;
         % segmentation.frameChanged(segmentation.frame1:tobj(n).lastFrame)=1;
         
-           'ok5'
-          tobj(n2).mother
-         tobj(n1).mother
+        'ok5'
+        tobj(n2).mother
+        tobj(n1).mother
     end
     
     
@@ -4148,7 +3787,182 @@ if ~isempty(segmentation.copyedObj)
 end
 
 
+% --------------------------------------------------------------------
+function Context_Create_Object_Callback(hObject, eventdata, handles)
+% hObject    handle to Context_Create_Object (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
+global segmentation
+
+% create the dialog box
+dim = [3 3]; %number of objects in dialog box
+Title = 'Create object';
+
+Prompt = cell(1,2);
+Prompt{1,1} = 'Chose the type and the number of the new object';
+Formats(1,1).type = 'text';
+for k = 2:dim(2) % span the static text across the entire dialog
+    Formats(1,k).type = 'none';
+    Formats(1,k).limits = [0 1]; % extend from left
+end
+
+Prompt(2,:) = {'Choose type of objects','type'};
+Formats(2,1).type = 'list';
+Formats(2,1).style = 'radiobutton';
+Formats(2,1).items = {'Budnecks','Cells1','Foci','Mito','Nucleus'};
+for k = 2:dim(2) % span the static text across the entire dialog
+    Formats(2,k).type = 'none';
+    Formats(2,k).limits = [0 1]; % extend from left
+end
+
+Prompt(3,:) = {'Budneck Number','budneck_number'};
+Formats(3,1).type = 'edit';
+Formats(3,1).format = 'integer';
+Formats(3,1).limits = [0 9999]; % 4-digits (positive #)
+Formats(3,1).size = 50;
+
+Prompt(4,:) = {'Cell Number1','cell_number1'};
+Formats(3,2).type = 'edit';
+Formats(3,2).format = 'integer';
+Formats(3,2).limits = [0 9999]; % 4-digits (positive #)
+Formats(3,2).size = 50;
+%
+% Prompt(5,:) = {'Cell Number2','cell_number2'};
+% Formats(3,3).type = 'edit';
+% Formats(3,3).format = 'integer';
+% Formats(3,3).limits = [0 9999]; % 4-digits (positive #)
+% Formats(3,3).size = 50;
+
+DefAns.type = 2;
+if ~isempty(segmentation.tbudnecks)
+    DefAns.budneck_number = length(segmentation.tbudnecks)+1;
+else
+    DefAns.budneck_number=0;
+end
+if ~isempty(segmentation.tcells1)
+    DefAns.cell_number1 = length(segmentation.tcells1)+1;
+else
+    DefAns.cell_number1=0;
+end
+% if ~isempty(segmentation.tcells2)
+%     DefAns.cell_number2=length(segmentation.tcells2)+1;
+% else
+%     DefAns.cell_number2=0;
+% end
+
+
+
+
+[Answer,Cancelled] = phy_inputsdlg(Prompt,Title,Formats);%,DefAns);%Options);
+
+% create the points
+if ~Cancelled
+    %     [x,y] = getline(handles.axes1,'closed');
+    %     hold(handles.axes1,'on');
+    %     plot(handles.axes1,x,y);
+    %     hold(handles.axes1,'off');
+    %hellipse=imellipse(handles.axes1);
+    [bw x y]=roipolyold;
+    x
+    y
+    [x,y]=phy_changePointNumber(x,y,50);
+    %vertices=wait(hellipse);
+    %x=vertices(:,1);
+    %y=vertices(:,2);
+    %hellipse.delete;
+    ox=mean(x);
+    oy=mean(y);
+    
+    added=false;
+    switch Answer.type
+        case 1
+            n=Answer.budneck_number;
+            budn=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
+            budn.ox=ox;
+            budn.oy=oy;
+            budn.image=segmentation.frame1;
+            budn.area=polyarea(x,y);
+            
+            if size(segmentation.budnecks,1)<segmentation.frame1
+                for i=size(segmentation.budnecks,1)+1:segmentation.frame1
+                    segmentation.budnecks(i,1)=phy_Object;
+                end
+            end
+            
+            for i=1:length(segmentation.budnecks(segmentation.frame1,:))
+                if segmentation.budnecks(segmentation.frame1,i).ox==0
+                    segmentation.budnecks(segmentation.frame1,i)=budn;
+                    added=true;
+                    break;
+                end
+            end
+            if ~added
+                segmentation.budnecks(segmentation.frame1,end+1)=budn;
+            end
+            if n~=0 && ~isempty(segmentation.selectedTObj)
+                if n>length(segmentation.tbudnecks)
+                    segmentation.tbudnecks(n)=phy_Tobject;
+                end
+                segmentation.tbudnecks(n).addObject(budn);
+            end
+        case 2
+            n=Answer.cell_number1;
+            cellule=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
+            cellule.ox=ox;
+            cellule.oy=oy;
+            cellule.image=segmentation.frame1;
+            cellule.area=polyarea(x,y);
+            
+            if size(segmentation.cells1,1)<segmentation.frame1
+                for i=size(segmentation.cells1,1)+1:segmentation.frame1
+                    segmentation.cells1(i,1)=phy_Object;
+                end
+            end
+            
+            for i=1:length(segmentation.cells1(segmentation.frame1,:))
+                if segmentation.cells1(segmentation.frame1,i).ox==0
+                    segmentation.cells1(segmentation.frame1,i)=cellule;
+                    added=true;
+                    break;
+                end
+            end
+            if ~added
+                segmentation.cells1(segmentation.frame1,end+1)=cellule;
+            end
+            if n~=0 && ~isempty(segmentation.selectedTObj)
+                if n>length(segmentation.tcells1)
+                    segmentation.tcells1(n)=phy_Tobject;
+                end
+                segmentation.tcells1(n).addObject(cellule);
+            end
+            %         case 3
+            %             n=Answer.cell_number2;
+            %             cellule=phy_Object(n,x,y);
+            %             cellule.ox=ox;
+            %             cellule.oy=oy;
+            %             cellule.image=segmentation.frame1;
+            %             cellule.area=polyarea(x,y);
+            %             for i=1:length(segmentation.cells2(segmentation.frame1,:))
+            %                 if segmentation.cells2(segmentation.frame1,i).ox==0
+            %                     segmentation.cells2(segmentation.frame1,i)=cellule;
+            %                     added=true;
+            %                     break;
+            %                 end
+            %             end
+            %             if ~added
+            %                 segmentation.cells2(segmentation.frame1,end+1)=cellule;
+            %             end
+            %             if n~=0 && ~isempty(segmentation.selectedTObj)
+            %                 if n>length(segmentation.tcells1)
+            %                     segmentation.tcells2(n)=phy_Tobject;
+            %                 end
+            %                 segmentation.tcells2(n).addObject(cellule);
+            %             end
+    end
+    Change_Disp1('refresh',handles);
+    segmentation.frameChanged(segmentation.frame1)=1;
+end
 
 % --------------------------------------------------------------------
 function Analyse_Callback(hObject, eventdata, handles)
@@ -4245,16 +4059,16 @@ for i=segmentedFrames
             mask = poly2mask(cells1(i,j).x,cells1(i,j).y,segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
             masktotal(mask)=1;
             
-           % size(cells1(i,j).x)
+            % size(cells1(i,j).x)
             %xtot=[xtot cells1(i,j).x];
             %ytot=[ytot cells1(i,j).y];
         end
     end
     % figure, imshow(masktotal,[]);
-%    khull = convhull(xtot,ytot);
- %   maskcyto = poly2mask(xtot(khull),ytot(khull),segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
-%    maskcyto=imdilate(maskcyto,strel('disk',50));
-%    maskcyto(masktotal==1)=0;
+    %    khull = convhull(xtot,ytot);
+    %   maskcyto = poly2mask(xtot(khull),ytot(khull),segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
+    %    maskcyto=imdilate(maskcyto,strel('disk',50));
+    %    maskcyto(masktotal==1)=0;
     
     %figure, imshow(maskcyto,[]);
     %return;
@@ -4275,10 +4089,10 @@ for i=segmentedFrames
             
             for l=1:size(segmentation.colorData,1)
                 % l
-                     
+                
                 img=imgarr(:,:,l);
                 valpix=img(mask);
-%                valcyto=img(maskcyto);
+                %                valcyto=img(maskcyto);
                 
                 %if l==2
                 %i,j
@@ -4595,20 +4409,6 @@ str=get(hObject,'String');
 segmentation.environment=str;
 Change_Disp1('refresh',handles);
 
-% --- Executes on selection change in popupmenu_Environment_Variables.
-function popupmenu_Environment_Variables_Callback(hObject, eventdata, handles)
-global segmentation
-
-val=get(hObject,'Value');
-str=get(hObject,'String');
-segmentation.environment=str{val};
-Change_Disp1('refresh',handles);
-
-% --- Executes during object creation, after setting all properties.
-function set_Environement_Variable_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 % --------------------------------------------------------------------
@@ -4952,90 +4752,6 @@ end
 phy_updatePhylocellDisplay(handles);
 
 
-% --- Executes on button press in checkbox_ShowFoci.
-function checkbox_ShowFoci_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_ShowFoci (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox_ShowFoci
-
-global segmentation
-
-if size(segmentation.foci,1)>=segmentation.frame1 %check if the image was segmented
-    if get(hObject,'Value') %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showFoci segmentation.myHandles.showFociText]...
-            =phy_showObject(handles.axes1,segmentation.foci(segmentation.frame1,:),'y','budnecks',segmentation.myHandles.showFoci,segmentation.myHandles.showFociText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showFoci(:),'ButtonDownFcn',{@mouseSelectObject,handles});
-        set(segmentation.myHandles.showFoci(:),'UIContextMenu',handles.Context_Objects);
-    else %if not checked
-        [segmentation.myHandles.showFoci segmentation.myHandles.showFociText]...
-            =phy_showObject(handles.axes1,segmentation.foci(segmentation.frame1,:),'y','budnecks',segmentation.myHandles.showFoci,segmentation.myHandles.showFociText,'off');
-    end
-end
-guidata(hObject, handles);% Save the structure
-
-
-% --- Executes on button press in checkbox_ShowNucleus.
-function checkbox_ShowNucleus_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_ShowNucleus (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox_ShowNucleus
-global segmentation
-
-if size(segmentation.nucleus,1)>=segmentation.frame1 %check if the image was segmented
-    if get(hObject,'Value') %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showNucleus segmentation.myHandles.showNucleusText]...
-            =phy_showObject(handles.axes1,segmentation.nucleus(segmentation.frame1,:),'c','nucleus',segmentation.myHandles.showNucleus,segmentation.myHandles.showNucleusText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showNucleus(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showNucleus(:),'UIContextMenu',handles.Context_Objects);
-    else %if not checked
-        [segmentation.myHandles.showNucleus segmentation.myHandles.showNucleusText]...
-            =phy_showObject(handles.axes1,segmentation.nucleus(segmentation.frame1,:),'c','nucleus',segmentation.myHandles.showNucleus,segmentation.myHandles.showNucleusText,'off');
-    end
-end
-guidata(hObject, handles);% Save the structure
-
-% --- Executes on button press in checkbox_ShowMito.
-function checkbox_ShowMito_Callback(hObject, eventdata, handles)
-% hObject    handle to checkbox_ShowMito (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox_ShowMito
-
-global segmentation
-
-if size(segmentation.mito,1)>=segmentation.frame1 %check if the image was segmented
-    if get(hObject,'Value') %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showMito segmentation.myHandles.showMitoText]...
-            =phy_showObject(handles.axes1,segmentation.mito(segmentation.frame1,:),'m','mito',segmentation.myHandles.showMito,segmentation.myHandles.showMitoText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showMito(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showMito(:),'UIContextMenu',handles.Context_Objects);
-        
-    else %if not checked
-        [segmentation.myHandles.showMito segmentation.myHandles.showMitoText]...
-            =phy_showObject(handles.axes1,segmentation.mito(segmentation.frame1,:),'m','mito',segmentation.myHandles.showMito,segmentation.myHandles.showMitoText,'off');
-    end
-end
-guidata(hObject, handles);% Save the structure
 
 
 
@@ -5181,7 +4897,7 @@ global segmentation celltrajsel
 
 segmentation.(['t' 'cells1'])(celltrajsel).select(); %select the new cell
 segmentation.selectedTObj=segmentation.(['t' 'cells1'])(celltrajsel); % copy it
-        
+
 Change_Disp1(segmentation.(['t' 'cells1'])(celltrajsel).lastFrame,handles);
 
 
@@ -5196,12 +4912,12 @@ function seg_table_CellSelectionCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global segList segmentation timeLapse
 
- if numel(eventdata.Indices)==0
- return;
- end
+if numel(eventdata.Indices)==0
+    return;
+end
 
 if eventdata.Indices(2)==1
-   
+    
     sel=eventdata.Indices(1);
     segData=get(hObject,'Data');
     
@@ -5210,8 +4926,8 @@ if eventdata.Indices(2)==1
         if segList(i).selected==1
             segList(i).s=segmentation;
             segList(i).t=timeLapse;
-    segList(i).selected=0;
-    segData{i,1}=false;
+            segList(i).selected=0;
+            segData{i,1}=false;
         end
     end
     
@@ -5228,10 +4944,10 @@ end
 
 if eventdata.Indices(2)==4
     sel=eventdata.Indices(1);
-
+    
     segData=get(hObject,'Data');
     
-     [~,~,~]=phy_propertiesGUI(0,segList(sel).t,'Segmentation variable properties');
+    [~,~,~]=phy_propertiesGUI(0,segList(sel).t,'Segmentation variable properties');
     
 end
 
@@ -5247,28 +4963,28 @@ function channel_table_CellEditCallback(hObject, eventdata, handles)
 %	Error: error string when failed to convert EditData to appropriate value for Data
 % handles    structure with handles and user data (see GUIDATA)
 
- global segmentation
-% 
- if numel(eventdata.Indices)==0
- return;
- end
+global segmentation
+%
+if numel(eventdata.Indices)==0
+    return;
+end
 
-  segmentation.channel=get(hObject,'Data');
-  
+segmentation.channel=get(hObject,'Data');
+
 
 if eventdata.Indices(2)==5 % autoscale intensity
-   
-     sel=eventdata.Indices(1);
-
-     if eventdata.NewData==1
-     img=segmentation.realImage(:,:,sel);
-     %figure, imshow(img,[]);
-   
-     lohi = stretchlim(uint16(img), [0.01 0.9999]);
-     
-     segmentation.channel{sel,4}=num2str(round(2^16*lohi));
-     end
-     
+    
+    sel=eventdata.Indices(1);
+    
+    if eventdata.NewData==1
+        img=segmentation.realImage(:,:,sel);
+        %figure, imshow(img,[]);
+        
+        lohi = stretchlim(uint16(img), [0.01 0.9999]);
+        
+        segmentation.channel{sel,4}=num2str(round(2^16*lohi));
+    end
+    
 end
 
 if eventdata.Indices(2)==4 % remove autoscale if editing manually
@@ -5276,7 +4992,7 @@ if eventdata.Indices(2)==4 % remove autoscale if editing manually
     segmentation.channel{sel,5}=false;
 end
 
-    phy_updatePhylocellDisplay(handles);
+phy_updatePhylocellDisplay(handles);
 
 
 % --- Executes when entered data in editable cell(s) in roi_table.
@@ -5292,36 +5008,36 @@ function roi_table_CellEditCallback(hObject, eventdata, handles)
 
 global segList segmentation timeLapse
 
- if numel(eventdata.Indices)==0
- return;
- end
+if numel(eventdata.Indices)==0
+    return;
+end
 
- %'ok'
- 
- 
- segmentation.ROItable=get(hObject,'Data');
-     
-for i=1:size(segmentation.ROItable,1)           
-           segmentation.ROItable{i,1}=false;
+%'ok'
+
+
+segmentation.ROItable=get(hObject,'Data');
+
+for i=1:size(segmentation.ROItable,1)
+    segmentation.ROItable{i,1}=false;
 end
 segmentation.ROItable{eventdata.Indices(1),1}=true;
 
-    
 
-if eventdata.Indices(2)==3 && eventdata.Indices(1)==1 
-         segmentation.ROItable{1,3}=eventdata.PreviousData;
+
+if eventdata.Indices(2)==3 && eventdata.Indices(1)==1
+    segmentation.ROItable{1,3}=eventdata.PreviousData;
 end
 
 %segmentation.ROItable{4,2}=mat2cell('ok')
 
 if eventdata.Indices(2)==2% && eventdata.Indices(1)<=3
- segmentation.ROItable{1,2}='fullframe';
- segmentation.ROItable{2,2}='crop';
- segmentation.ROItable{3,2}='cavity';
-
+    segmentation.ROItable{1,2}='fullframe';
+    segmentation.ROItable{2,2}='crop';
+    segmentation.ROItable{3,2}='cavity';
+    
 end
- phy_updatePhylocellDisplay(handles);
- 
+phy_updatePhylocellDisplay(handles);
+
 
 % --- Executes on button press in pushbutton_process.
 function pushbutton_process_Callback(hObject, eventdata, handles)
@@ -5329,12 +5045,122 @@ function pushbutton_process_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+global segmentation
 
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+if strcmp(get(hObject,'String'),'Process all !')
+    
+    mine=inf;
+    maxe=0;
+    cont=[];
+    
+    for i=1:size(segmentation.contour,1) % loop on feature list
+        
+        if segmentation.contour{i,6}==false
+            continue;
+        end
+        if numel(segmentation.contour{i,4})==0
+            continue;
+        end
+        
+        frames=segmentation.contour{i,10};
+        if numel(frames)==0
+            continue
+        end
+        
+        frames=str2num(frames);
+        if numel(frames)~=2
+            continue
+        end
+        
+        cont=[cont i];
+        mine=min(mine,frames(1));
+        maxe=max(maxe,frames(2));
+    end
+    
+    if maxe==0
+        return;
+    end
+    
+    framestot=mine:maxe;
+    
+    set(hObject,'String','Stop !');
+    pause(0.2);
+    segmentation.play=true;
+    
+    cc=0;
+    tot=length(framestot)*length(cont);
+    
+        sb = statusbar(handles.figure1,'Processing ...');
+    warning off all
+      set(sb.CornerGrip, 'visible','off');
+      set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
+     set(sb.ProgressBar, 'Visible','on');
+     set(sb, 'Background',java.awt.Color.white);
+     warning on all   
+      
+     set(handles.contour_table,'Enable','off');
+     
+    for i=framestot
+       
+        phy_change_Disp1(i,handles);
+        
+        for j=1:numel(cont) % loop on feature list
+            
+            frames=segmentation.contour{cont(j),10};
+            frames=str2num(frames);
+            
+            cc=cc+1;
+                        
+            if ~(i>=frames(1) && i<=frames(2))
+                continue
+            end
+            
+            % update statusbar
+            az=round(100*cc/tot);
+            warning off all
+            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
+            featname=segmentation.contour{cont(j),2};
+            
+            sb.setText(['Processing ' featname ' for frame ' num2str(segmentation.frame1) '...'])
+            warning on all
+            pause(0.05);
+            
+            
+            try
+               process_segmentation(handles,cont(j));
+               pause(0.05);
+                
+            catch
+                segmentation.play=false;
+                set(hObject,'String','Process all !');
+                set(handles.contour_table,'Enable','on');
+            end
+            
+ 
+        end
+        
+        if segmentation.play==false;
+            set(handles.contour_table,'Enable','on');
+            break
+        end
+       
+    end
+    warning off all
+     set(sb.ProgressBar, 'Visible','off');
+     warning on all
+     
+    
+else
+    segmentation.play=false;
+    
+end
+
+set(hObject,'String','Process all !');
+set(handles.contour_table,'Enable','on');
+statusbar;
+
+
+
 
 
 % --------------------------------------------------------------------
@@ -5368,10 +5194,220 @@ function contour_table_CellEditCallback(hObject, eventdata, handles)
 
 global segmentation
 
- if numel(eventdata.Indices)==0
- return;
- end
+if numel(eventdata.Indices)==0
+    return;
+end
 
 segmentation.contour=get(hObject,'Data');
 
- phy_updatePhylocellDisplay(handles);
+if eventdata.Indices(2)==4 % select segmentation method
+    sel=eventdata.Indices(1);
+    segmentation.contour{sel,1}=true;
+    segmentation.contour{sel,6}=true;
+end
+
+
+if eventdata.Indices(2)==11 & eventdata.NewData==1 % test segmentation method
+    sel=eventdata.Indices(1);
+    segmentation.contour{sel,11}=false;
+    
+    curseg=segmentation.contour{sel,4};
+    
+    if ~strcmp(curseg,'');
+    featname=segmentation.contour{sel,2};
+    statusbar(handles.figure1,['Test segmentation for ' featname ' at frame ' num2str(segmentation.frame1) '...']);
+    end
+    
+    try 
+    set(handles.contour_table,'Enable','off');
+    pause(0.05);
+    process_segmentation(handles,sel);
+    catch
+        
+    end
+    set(handles.contour_table,'Enable','on');
+end
+
+
+if eventdata.Indices(2)==12 & eventdata.NewData==1 % clear current segmentation image
+    sel=eventdata.Indices(1);
+    curseg=segmentation.contour{sel,4};
+    segmentation.contour{sel,12}=false;
+    featname=segmentation.contour{sel,2};
+    lis={'Cells','Budnecks','Foci','Mito','Nucleus'};
+    str=lis{sel};
+    
+    clearcontour(handles,featname,str,segmentation.frame1)
+end
+
+if eventdata.Indices(2)==13 & eventdata.NewData==1 % clear current segmentation image
+    
+    
+    sel=eventdata.Indices(1);
+    curseg=segmentation.contour{sel,4};
+    segmentation.contour{sel,13}=false;
+    featname=segmentation.contour{sel,2};
+    lis={'Cells','Budnecks','Foci','Mito','Nucleus'};
+    str=lis{sel};
+    
+    statusbar(handles.figure1,['Clearing contours for ' featname]);
+    
+    segFrames=find(segmentation.([featname 'Segmented']));
+    def = {num2str(segFrames)};
+    
+    %---------------------------------------
+    prompt = {'Enter the frames to clear'};
+    dlg_title = 'Frames to clear';
+    num_lines = 10;
+    
+    answer = inputdlg(prompt,dlg_title,num_lines,def);
+    %-----------------------
+    if ~isempty(answer)&&~isempty(answer{1})
+        clearFrames=str2num(answer{1});
+        
+        for i=clearFrames
+            clearcontour(handles,featname,str,i)
+        end
+    end
+    
+end
+
+phy_updatePhylocellDisplay(handles);
+
+
+function process_segmentation(handles,featnumber)
+global segmentation
+
+sel=featnumber;
+curseg=segmentation.contour{sel,4};
+
+%segmentation.processing.param.segmentation
+
+if ~strcmp(curseg,'');
+    
+    featname=segmentation.contour{sel,2};
+    
+     % prepare param
+    
+    ax=floor(segmentation.v_axe1);
+    
+    myObject=segmentation.(featname);
+    myObject(segmentation.frame1,:)=phy_Object;
+    
+    
+    % process segmentation
+    curparam=segmentation.processing.param.(curseg)(sel);
+    im=segmentation.segmentationImage(:,:,curparam.channel);
+    im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
+    
+    
+    try
+        [tmp OK]=feval(curseg,im,curparam);
+    catch
+        tmp=[];
+        
+    end
+    
+    % undo cropping and update result
+    for i = 1:length(tmp)
+        tmp(i).x = tmp(i).x + ax(1) - 1;
+        tmp(i).y = tmp(i).y + ax(3) - 1;
+        tmp(i).ox = tmp(i).ox + ax(1) - 1;
+        tmp(i).oy = tmp(i).oy + ax(3) - 1;
+        tmp(i).image=segmentation.frame1;
+        myObject(segmentation.frame1, i) = tmp(i);
+    end
+    
+    segmentation.([featname 'Segmented'])(segmentation.frame1)=1;
+    segmentation.frameChanged(segmentation.frame1)=1;
+    segmentation.([featname 'Mapped'])(segmentation.frame1)=0;
+    segmentation.(featname)=myObject;
+    
+    lis={'Cells','Budnecks','Foci','Mito','Nucleus'};
+    str=lis{sel};
+    
+    if ishandle(segmentation.myHandles.(['show' str]));
+        delete(segmentation.myHandles.(['show' str]));
+        delete(segmentation.myHandles.(['show' str 'Text']));
+    end
+    
+    [segmentation.myHandles.(['show' str]) segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,myObject(segmentation.frame1,:),str2num(segmentation.contour{sel,3}),featname,segmentation.myHandles.(['show' str]),segmentation.myHandles.(['show' str 'Text']),'on',[],segmentation.v_axe1);
+    set(segmentation.myHandles.(['show' str])(:),'ButtonDownFcn',{@mouseSelectObject,handles});
+    set(segmentation.myHandles.(['show' str])(:),'UIContextMenu',handles.Context_Objects);
+    %
+    %
+end
+
+if get(handles.splitChannels,'Value')
+    set(handles.splitChannels,'Value',0);
+end
+
+
+
+function clearcontour(handles,featname,str,frame)
+global segmentation
+
+statusbar(handles.figure1,['Clearing contours for ' featname ' at frame ' num2str(frame) '...']);
+
+myObject=segmentation.(featname);
+
+if segmentation.([featname 'Mapped'])(frame)
+    for i=1:size(myObject,2)
+        if myObject(frame,i).n~=0
+            n=myObject(frame,i).n;
+            segmentation.(['t' featname])(n).deleteObject(myObject(frame,i))
+        end
+    end
+end
+
+segmentation.(featname)(frame,:)=phy_Object;
+segmentation.([featname 'Segmented'])(frame)=0;
+segmentation.([featname 'Mapped'])(frame)=0;
+segmentation.frameChanged(frame)=1;
+
+
+
+
+if ishandle(segmentation.myHandles.(['show' str]));
+    delete(segmentation.myHandles.(['show' str]));
+    delete(segmentation.myHandles.(['show' str 'Text']));
+end
+
+
+% --- Executes when selected cell(s) is changed in contour_table.
+function contour_table_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to contour_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+
+global segmentation
+
+
+if numel(eventdata.Indices)==0
+    return;
+end
+
+if eventdata.Indices(2)==5 % manages the loading of function parameters
+    sel=eventdata.Indices(1);
+    curseg=segmentation.contour{sel,4};
+    
+    %segmentation.processing.param.segmentation
+    
+    if ~strcmp(curseg,'');
+        curparam=segmentation.processing.param.(curseg)(sel);
+        
+        [curparam OK]=feval(curseg,curparam);
+        
+        mtable=hObject;
+        jUIScrollPane = findjobj(mtable);
+        jUITable = jUIScrollPane.getViewport.getView;
+        jUITable.setRowSelectionAllowed(0);
+        jUITable.setColumnSelectionAllowed(0);
+        jUITable.changeSelection(0,0, false, false);
+        
+        if OK==1
+            segmentation.processing.param.(curseg)(sel)=curparam;
+        end
+    end
+end

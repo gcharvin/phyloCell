@@ -1,4 +1,4 @@
-function [hPropsPane,parameters,OK] = phy_propertiesGUI(hParent, parameters,title)
+function [hPropsPane,parameters,OK] = phy_propertiesGUI(hParent, parameters,title,description)
 % propertiesGUI displays formatted editable list of properties
 %
 % Syntax:
@@ -154,8 +154,12 @@ oldWarn = warning('off','MATLAB:hg:JavaSetHGProperty');
 warning off MATLAB:hg:PossibleDeprecatedJavaSetHGProperty
 isEditable = true; %=nargin < 1;
 
+if nargin==4
+propsList = preparePropsList(parameters,isEditable,description);
+else
+propsList = preparePropsList(parameters,isEditable);  
+end
 
-propsList = preparePropsList(parameters, isEditable);
 %propsList = java.util.ArrayList();
 %a=struct('b',2);
 %propsList.add(newProperty(a.b, 'flag_prop_name',   'Flag value:',     isEditable, 'boolean',            'Turn this on if you want to make extra plots', @propUpdatedCallback));
@@ -224,7 +228,16 @@ end
 %drawnow; pause(0.05);
 
 pane = javaObjectEDT(com.jidesoft.grid.PropertyPane(grid));
-customizePropertyPane(pane);
+
+if nargin==4
+showDescription=true;
+else
+showDescription=false;   
+end
+
+customizePropertyPane(pane,showDescription);
+
+
 [jPropsPane, hPropsPane_] = javacomponent(pane, pos, hParent);
 setappdata(hParent, 'jPropsPane',jPropsPane);
 setappdata(hParent, 'propsList',propsList);
@@ -264,8 +277,8 @@ hasProps = ~isempty(object) && (isst || isjav || isobj || isco);
 end
 
 %% Customize the property-pane's appearance
-function customizePropertyPane(pane)
-pane.setShowDescription(false);  % YMA: we don't currently have textual descriptions of the parameters, so no use showing an empty box that just takes up GUI space...
+function customizePropertyPane(pane,flag)
+pane.setShowDescription(flag);  % YMA: we don't currently have textual descriptions of the parameters, so no use showing an empty box that just takes up GUI space...
 pane.setShowToolBar(false);
 pane.setOrder(2);  % uncategorized, unsorted - see http://undocumentedmatlab.com/blog/advanced-jide-property-grids/#comment-42057
 end
@@ -298,7 +311,7 @@ try parameters.class_object_property = matlab.desktop.editor.getActive; catch, e
 end  % demoParameters
 
 %% Prepare a list of properties
-function propsList = preparePropsList(parameters, isEditable)
+function propsList = preparePropsList(parameters, isEditable,description)
 propsList = java.util.ArrayList();
 %'ok'
 % Convert a class object into a struct
@@ -338,7 +351,14 @@ if isstruct(parameters) && ~isempty(parameters)
             field_label = strrep(field_name,'_',' ');
             field_label(1) = upper(field_label(1));
             %if numParameters > 1,  field_label = [field_label '(' num2str(parametersIdx) ')'];  end
-            field_description = '';  % TODO
+            
+            
+            if nargin==3
+            field_description = description{field_idx};  % TODO
+            else
+            field_description='';    
+            end
+            
             type = 'string';
             if isempty(value)
                 type = 'string';  % not really needed, but for consistency

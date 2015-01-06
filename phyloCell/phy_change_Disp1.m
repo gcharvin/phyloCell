@@ -55,9 +55,6 @@ end
 if isfield(timeLapse,'numberOfFrames')
     if segmentation.frame1~=timeLapse.currentFrame
         
-        try
-        statusbar(handles.figure1,'Displaying...');
-        catch,end
         
         segmentation.myHandles.showCells=[];
         segmentation.myHandles.showCellsText=[];
@@ -398,9 +395,7 @@ if isfield(timeLapse,'numberOfFrames')
     end
 end
 
-try
-statusbar;
-catch, end
+
 %handles
 uicontrol(handles.pushbutton_Next1); %give focus to buton next (key pres when slider has focux)
 
@@ -454,25 +449,12 @@ if strcmp(get(handles.annotate,'State'),'on')
         x=[ox-10 ox+25 ox+25 ox-10 ox-10];
         y=[oy-15 oy-15 oy+15 oy+15 oy-15];
     else
-        if get(handles.checkbox_Use_Cropped_Image,'Value')
-            ax=segmentation.v_axe1;
-            ox=ox-ax(1);
-            oy=oy-ax(3);
-        end
         
-        if strcmp(butonType,'extend')
-            lowthr=1;
-        else
-            lowthr=0;
-        end
+x=[ox-10 ox+25 ox+25 ox-10 ox-10];
+y=[oy-15 oy-15 oy+15 oy+15 oy-15];
         
-        [x y]=phy_segmentSingleCellFromCenter(ox,oy,segmentation.segmentationImage(:,:,parametres{1,2}),parametres,lowthr);
-        if get(handles.checkbox_Use_Cropped_Image,'Value')
-            x=x+ax(1)-1;
-            y=y+ax(3)-1;
-            ox=ox+ax(1)-1;
-            oy=oy+ax(3)-1;
-        end
+       % [x y]=phy_segmentSingleCellFromCenter(ox,oy,segmentation.segmentationImage(:,:,parametres{1,2}),parametres,lowthr);
+        
     end
     
     n=1;
