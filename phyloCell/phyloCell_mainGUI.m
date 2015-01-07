@@ -5415,9 +5415,11 @@ if eventdata.Indices(2)==5 % manages the loading of function parameters
     sel=eventdata.Indices(1);
     curseg=segmentation.contour{sel,4};
     
+    
+    
     %segmentation.processing.param.segmentation
     
-    if ~strcmp(curseg,'');
+    if ~strcmp(curseg,'') && ~strcmp(curseg,'New...') 
         curparam=segmentation.processing.param.(curseg)(sel);
         
         [curparam OK]=feval(curseg,curparam);
@@ -5437,13 +5439,12 @@ end
 
 if eventdata.Indices(2)==8 % manages the loading of tracking function parameters
     sel=eventdata.Indices(1);
-    curseg=segmentation.contour{sel,7}
+    curseg=segmentation.contour{sel,7};
     
     %segmentation.processing.param.segmentation
     
-    if ~(strcmp(curseg,'') || strcmp(curseg,'New...'))
+     if ~strcmp(curseg,'') && ~strcmp(curseg,'New...') 
         
-        curseg
         curparam=segmentation.processing.track.(curseg)(sel);
         
         [curparam OK]=feval(curseg,curparam);

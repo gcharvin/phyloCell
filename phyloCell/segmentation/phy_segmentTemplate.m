@@ -31,8 +31,11 @@ if nargin==0 % assigns default parameters and creat param struct
     %%%%%% CHANGE THIS %%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%
     
-    param=struct('param1',1,'param2',3); % input here the name and default values of parameters to be used
+    % input here the name and default values of parameters to be used
+    % channel is mandatory to indicate which channel in your project is used for
+    % segmentation 
     
+    param=struct('channel',1,'param1',1,'param2',3); 
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
     phy_Objects=param;
@@ -51,8 +54,9 @@ if nargin==1 % call GUI to assign parameter values
     %%%%%%%%%%%%%%%%%%%%%%%%
     
     % input the description of the paramaters used
-    description{1}='my first param is used for ...';
-    description{2}='my second param is used for ...';
+    description{1}='channel number';
+    description{2}='my first param is used for ...';
+    description{3}='my second param is used for ...';
     
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,6 +77,8 @@ end
    %%%%%% PUT YOUR CODE HERE %%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+   
+   img=mat2gray(img);
    level=graythresh(img);
    BW=im2bw(img,level);
    L=bwlabel(BW);
@@ -88,11 +94,11 @@ stat = regionprops(L,img, 'Area','Eccentricity','PixelValues');
 
 phy_Objects = phy_Object();
 
-npoints=32; cc=1;
+npoints=100; cc=1;
 
 % building phy_Objects based on labels
 for i=1:numel(stat)
-    tmp=newlabels==i;
+    tmp=L==i;
     
         contours= bwboundaries(tmp);
         contour = contours{1};
