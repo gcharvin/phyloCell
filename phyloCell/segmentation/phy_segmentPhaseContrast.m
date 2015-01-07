@@ -50,6 +50,7 @@ if nargin==1 % call GUI to assign parameter values
    [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
     
    if OK==0
+       phy_Objects=img;
        return;
    end
    
@@ -138,15 +139,16 @@ figure, imshow(img,[]);
 end
 
 %returns thresh containing N threshold values using Otsu's method
-if param.thresh==0
-level = graythresh(img);
-else
-level=param.thresh;    
-end
+
+% if param.thresh==0
+% level = graythresh(img);
+% else
+% level=param.thresh;    
+% end
 
 level2=graythresh(img2);
 
-BW2 = im2bw(img2,level2+0.05);
+BW2 = im2bw(img2,level2+0.0);
 
 
 if param.display
@@ -156,10 +158,16 @@ end
 
 for j=1:1 % currently, only one loop is necessary 
    % l=0.005-0.001*(j); % for log filter
-    l=level-0.02*(j-1);
     
-BW=edge(img,'canny',l); % try other edge detection filters ? 
+  if param.thresh~=0
+     l=param.thresh-0.02*(j-1);
+     BW=edge(img,'canny',l); % try other edge detection filters ? 
+  else
+     BW=edge(img,'canny');    
+  end
+  
 %BW = im2bw(img,level);
+
 BW = BW | BW2;
 
 BW = bwareaopen(BW, 10);

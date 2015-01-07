@@ -668,8 +668,8 @@ function Save_current_analysis_Callback(hObject, eventdata, handles)
 global timeLapse;
 global segmentation segList
 
-status('Saving.... Be patient !',handles);
-tic
+statusbar(handles.figure1,'Saving.... Be patient !');
+
 
 cur=find([segList.selected]==1);
 
@@ -702,8 +702,7 @@ else
     save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
 end
 
-toc
-status('Idle',handles);
+statusbar;
 
 % --- Executes on button press in pushbutton_Set_Mother.
 function pushbutton_Set_Mother_Callback(hObject, eventdata, handles)
@@ -1259,7 +1258,7 @@ function File_ND2_to_phyloCell_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global timeLapse
+global timeLapse segList segmentation
 
 statusbar;
 statusbar(handles.figure1,'Converting nd2 file into PhyloCell project...');
@@ -1296,7 +1295,7 @@ function File_New_Project_Callback(hObject, eventdata, handles)
 % hObject    handle to File_New_Project (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global timeLapse
+global timeLapse segList segmentation
 
 statusbar;
 statusbar(handles.figure1,'Creating new PhyloCell project...');
@@ -1337,7 +1336,7 @@ function File_loadImageList_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % load images into a new segmentation project
-global timeLapse
+global timeLapse segList segmentation
 
 statusbar;
 statusbar(handles.figure1,'Loading Images into PhyloCell');
@@ -1550,94 +1549,9 @@ for i=1:length(cSeg1)%(endFrame-startFrame)%get(handles.slider1,'Max')
             end
         end
         
-        if proc==8
-            
-            param=parametres{2,2};
-            c=c+1;
-            if c==1
-                segmentation.(featname)(x,:)=phy_mapObjects(param,segmentation.(featname)(x,:));
-            elseif c==2
-                segmentation.(featname)(x,:)=phy_mapObjects(param,segmentation.(featname)(x,:),segmentation.(featname)(cSeg1(i-1),:));
-            elseif c>2
-                %i
-                segmentation.(featname)(x,:)=phy_mapObjects(param,segmentation.(featname)(x,:),segmentation.(featname)(cSeg1(i-1),:),segmentation.(featname)(cSeg1(i-2),:));
-            end
-        end
         
-        if proc == 13
-            if x == (startFrame + 1)
-                % retrieve inputs
-                p = [];
-                p.areaWeight = parametres{1, 2};
-                p.xWeight = parametres{2, 2};
-                p.yWeight = parametres{3, 2};
-                p.costThreshold = parametres{4, 2};
-                
-                
-                %im=segmentation.realImage(:,:,1);
-                %im2=mat2gray(im2);
-                segmentation.p=p;
-                
-                lastObjectNumber=max([segmentation.cells1(startFrame,:).n]);
-            end
-            
-            
-            if mod(x-startFrame-1,30)==0
-                im=phy_loadTimeLapseImage(segmentation.position,x,1,'non retreat');
-                im = mat2gray(im);
-                
-                warning off all
-                im=imtophat(im,strel('disk',30));
-                warning on all
-                C = phy_computeMask(im, 40);
-                
-                % figure, imshow(double(mat2gray(im))+double(C),[]);
-                % [min(C(:)) max(C(:))]
-                
-                %figure, imshow(C,[]);
-                
-                markers = C > 0;
-                markers(2:(end-1), 2:(end-1)) = 0;
-                geodistances = imChamferDistance(C, markers);
-                
-                % figure, imshow(C,[]);
-                
-                %parametres{5, 2} = 'mask.png';
-                
-                p.geodistances = geodistances;
-                segmentation.p=p;
-            end
-            %ytracker.ContourPredictionTools.borderGeodesicDistances(parametres{5, 2});
-            
-            %a=[segmentation.(featname)(startFrame:cSeg1(i-1),:).n];
-            lastObjectNumber=max(lastObjectNumber, max([segmentation.cells1(cSeg1(i-1),:).n])); % used to increment the label of newly arising objects
-            
-            % compute and apply mapping
-            trackYeastCells(segmentation.cells1, cSeg1(i-1):cSeg1(i), lastObjectNumber, p);
-            %   trackYeastCells(segmentation.cells1, [cSeg1(i-1) cSeg1(i)], lastObjectNumber, p); % ???
-            
-        end
         
-        if proc == 12
-            if x == (startFrame + 1)
-                % retrieve inputs
-                p = [];
-                p.areaWeight = parametres{1, 2};
-                p.xWeight = parametres{2, 2};
-                p.yWeight = parametres{3, 2};
-                p.costThreshold = parametres{4, 2};
-                p.minimumAreaVariation = parametres{5, 2};
-                p.maximumAreaVariation = parametres{6, 2};
-                parametres{7, 2} = 'mask.png';
-                mask = double(imread(parametres{7, 2}));
-                [p.h, p.w] = size(mask);
-                p.maskPath = parametres{7, 2};
-                segmentation.cells1(1);
-                
-                % compute and apply mapping
-                mapCellsUsingYTracker(segmentation.cells1, startFrame:endFrame, p);
-            end
-        end
+        
         
         segmentation.([featname 'Mapped'])(x)=1;
         segmentation.frameChanged(x)=1;
@@ -2580,18 +2494,18 @@ function Change_Disp1(pos,handles,dispCells)
 %global timeLapse;
 %global segmentation;
 
-        try
-            
-        sb=statusbar(handles.figure1,'Displaying...');
-        catch,end
-        
+try
+    
+    sb=statusbar(handles.figure1,'Displaying...');
+catch,end
+
 if nargin==2
     phy_change_Disp1(pos,handles);
 else
     phy_change_Disp1(pos,handles,dispCells);
 end
 
-try 
+try
     statusbar
 catch
 end
@@ -5055,12 +4969,21 @@ if strcmp(get(hObject,'String'),'Process all !')
     
     for i=1:size(segmentation.contour,1) % loop on feature list
         
-        if segmentation.contour{i,6}==false
+        % so process checked
+        if segmentation.contour{i,6}==false && segmentation.contour{i,9}==false
             continue;
         end
-        if numel(segmentation.contour{i,4})==0
+        
+        % no seg method selected
+        if segmentation.contour{i,6}==true & numel(segmentation.contour{i,4})==0
             continue;
         end
+        
+        % no tracking method selected
+        if segmentation.contour{i,9}==true & numel(segmentation.contour{i,7})==0
+            continue;
+        end
+        
         
         frames=segmentation.contour{i,10};
         if numel(frames)==0
@@ -5090,18 +5013,18 @@ if strcmp(get(hObject,'String'),'Process all !')
     cc=0;
     tot=length(framestot)*length(cont);
     
-        sb = statusbar(handles.figure1,'Processing ...');
+    sb = statusbar(handles.figure1,'Processing ...');
     warning off all
-      set(sb.CornerGrip, 'visible','off');
-      set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
-     set(sb.ProgressBar, 'Visible','on');
-     set(sb, 'Background',java.awt.Color.white);
-     warning on all   
-      
-     set(handles.contour_table,'Enable','off');
-     
+    set(sb.CornerGrip, 'visible','off');
+    set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
+    set(sb.ProgressBar, 'Visible','on');
+    set(sb, 'Background',java.awt.Color.white);
+    warning on all
+    
+    set(handles.contour_table,'Enable','off');
+    
     for i=framestot
-       
+        
         phy_change_Disp1(i,handles);
         
         for j=1:numel(cont) % loop on feature list
@@ -5110,7 +5033,7 @@ if strcmp(get(hObject,'String'),'Process all !')
             frames=str2num(frames);
             
             cc=cc+1;
-                        
+            
             if ~(i>=frames(1) && i<=frames(2))
                 continue
             end
@@ -5124,44 +5047,71 @@ if strcmp(get(hObject,'String'),'Process all !')
             sb.setText(['Processing ' featname ' for frame ' num2str(segmentation.frame1) '...'])
             warning on all
             pause(0.05);
-            
-            
-            try
-               process_segmentation(handles,cont(j));
-               pause(0.05);
-                
-            catch
-                segmentation.play=false;
-                set(hObject,'String','Process all !');
-                set(handles.contour_table,'Enable','on');
+ 
+            if segmentation.contour{cont(j),6}==true
+                try
+                    process_segmentation(handles,cont(j));
+                    pause(0.05);
+                    
+                catch
+                    segmentation.play=false;
+                    set(hObject,'String','Process all !');
+                    set(handles.contour_table,'Enable','on');
+                    statusbar('Segmentation error!');
+                    return;
+                end
             end
             
- 
+            if segmentation.contour{cont(j),9}==true
+                try
+                    if i>framestot(1)
+                         lastObjectNumber=process_tracking(handles,cont(j),i,lastObjectNumber);
+                    else
+                        lastObjectNumber=0;
+                    end
+                    
+                    pause(0.05);
+                    
+                catch
+                    segmentation.play=false;
+                    set(hObject,'String','Process all !');
+                    set(handles.contour_table,'Enable','on');
+                    statusbar('Tracking error!');
+                    return;
+                end
+            end
+            
+            if segmentation.play==false;
+                set(handles.contour_table,'Enable','on');
+                break
+            end
+            
         end
         
         if segmentation.play==false;
             set(handles.contour_table,'Enable','on');
             break
         end
-       
+        
     end
+    
+    for j=1:numel(cont)
+       sb.setText(['Building tracks for ' featname '...']);
+        featname=segmentation.contour{cont(j),2};
+        [segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
+
+    end
+    
     warning off all
-     set(sb.ProgressBar, 'Visible','off');
-     warning on all
-     
-    
+    set(sb.ProgressBar, 'Visible','off');
+    warning on all
 else
-    segmentation.play=false;
-    
+    segmentation.play=false; 
 end
 
 set(hObject,'String','Process all !');
 set(handles.contour_table,'Enable','on');
 statusbar;
-
-
-
-
 
 % --------------------------------------------------------------------
 function phylocell_help_Callback(hObject, eventdata, handles)
@@ -5204,27 +5154,54 @@ if eventdata.Indices(2)==4 % select segmentation method
     sel=eventdata.Indices(1);
     segmentation.contour{sel,1}=true;
     segmentation.contour{sel,6}=true;
+    
+     if strcmp(eventdata.NewData,'New...') % add new segmentation method
+         [FileName,PathName,FilterIndex] =uigetfile({'*.m','m Enter .m file'},'',pwd);
+         if ~isequal(FileName,0)
+             [pth fle ext]=fileparts(FileName);
+             segmentation.contour{sel,4}=fle;
+             [segmentation.processing.param.(fle) OK]=feval(fle); % call function to assign default params
+        
+         for j=2:5
+            segmentation.processing.param.(fle)(j)=segmentation.processing.param.(fle)(1);
+         end
+    
+    cf=get(handles.contour_table,'ColumnFormat');
+    tmp=cf(4);
+    tmp{1}{end+1}=fle;
+    cf(4)=tmp;
+    set(handles.contour_table,'ColumnFormat',cf);
+         end
+     end
+    
+end
+
+if eventdata.Indices(2)==7 % select tracking method
+    sel=eventdata.Indices(1);
+    
+    segmentation.contour{sel,1}=true;
+    segmentation.contour{sel,9}=true;
 end
 
 
 if eventdata.Indices(2)==11 & eventdata.NewData==1 % test segmentation method
     sel=eventdata.Indices(1);
     segmentation.contour{sel,11}=false;
-    
+    segmentation.contour{sel,1}=true;
     curseg=segmentation.contour{sel,4};
     
     if ~strcmp(curseg,'');
-    featname=segmentation.contour{sel,2};
-    statusbar(handles.figure1,['Test segmentation for ' featname ' at frame ' num2str(segmentation.frame1) '...']);
+        featname=segmentation.contour{sel,2};
+        statusbar(handles.figure1,['Test segmentation for ' featname ' at frame ' num2str(segmentation.frame1) '...']);
     end
     
-    try 
-    set(handles.contour_table,'Enable','off');
-    pause(0.05);
-    process_segmentation(handles,sel);
-    catch
+    %try
+        set(handles.contour_table,'Enable','off');
+        pause(0.05);
+        process_segmentation(handles,sel);
+    %catch
         
-    end
+    %end
     set(handles.contour_table,'Enable','on');
 end
 
@@ -5287,7 +5264,7 @@ if ~strcmp(curseg,'');
     
     featname=segmentation.contour{sel,2};
     
-     % prepare param
+    % prepare param
     
     ax=floor(segmentation.v_axe1);
     
@@ -5301,12 +5278,12 @@ if ~strcmp(curseg,'');
     im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
     
     
-    try
+  %  try
         [tmp OK]=feval(curseg,im,curparam);
-    catch
-        tmp=[];
+  %  catch
+       % tmp=[];
         
-    end
+   % end
     
     % undo cropping and update result
     for i = 1:length(tmp)
@@ -5342,6 +5319,54 @@ if get(handles.splitChannels,'Value')
     set(handles.splitChannels,'Value',0);
 end
 
+function lastObjectNumber=process_tracking(handles,featnumber,frame,lastObjectNumber)
+
+global segmentation
+
+sel=featnumber;
+
+%
+curseg=segmentation.contour{sel,7};
+
+if ~strcmp(curseg,'');
+    
+    featname=segmentation.contour{sel,2};
+    
+    % prepare param
+    
+    param=segmentation.processing.track.(curseg)(sel);
+    
+    startFrame=frame-1;
+    
+    segmentation.([featname 'Mapped'])(startFrame)=1;
+    segmentation.frameChanged(startFrame)=1;
+    
+    lastObjectNumber=max(lastObjectNumber, max([segmentation.(featname)(startFrame,:).n]));
+    
+    segmentation.(featname)(startFrame+1,:)=phy_mapCellsHungarian(segmentation.(featname)(startFrame,:),segmentation.(featname)(startFrame+1,:),lastObjectNumber,param);
+    
+    segmentation.([featname 'Mapped'])(startFrame)=1;
+    segmentation.frameChanged(startFrame)=1;
+    
+end
+
+
+%phy_check_cells;%Check_Cells_Callback([], [], handles);
+% warningDisparitionCells=[];
+% for i=1:length(segmentation.tcells1)
+%     if segmentation.tcells1(i).N~=0
+%         if segmentation.tcells1(i).lastFrame<cSeg1(end)
+%             warningDisparitionCells=[warningDisparitionCells i];
+%         end
+%     end
+% end
+% if ~isempty(warningDisparitionCells)
+%     warndlg({'The folowing cells are not present on the last segmented frame',num2str(warningDisparitionCells)},...
+%         'Warning cell disparition')
+% end
+
+
+%status('Idle',handles);
 
 
 function clearcontour(handles,featname,str,frame)
@@ -5364,8 +5389,6 @@ segmentation.(featname)(frame,:)=phy_Object;
 segmentation.([featname 'Segmented'])(frame)=0;
 segmentation.([featname 'Mapped'])(frame)=0;
 segmentation.frameChanged(frame)=1;
-
-
 
 
 if ishandle(segmentation.myHandles.(['show' str]));
@@ -5408,6 +5431,32 @@ if eventdata.Indices(2)==5 % manages the loading of function parameters
         
         if OK==1
             segmentation.processing.param.(curseg)(sel)=curparam;
+        end
+    end
+end
+
+if eventdata.Indices(2)==8 % manages the loading of tracking function parameters
+    sel=eventdata.Indices(1);
+    curseg=segmentation.contour{sel,7}
+    
+    %segmentation.processing.param.segmentation
+    
+    if ~(strcmp(curseg,'') || strcmp(curseg,'New...'))
+        
+        curseg
+        curparam=segmentation.processing.track.(curseg)(sel);
+        
+        [curparam OK]=feval(curseg,curparam);
+        
+        mtable=hObject;
+        jUIScrollPane = findjobj(mtable);
+        jUITable = jUIScrollPane.getViewport.getView;
+        jUITable.setRowSelectionAllowed(0);
+        jUITable.setColumnSelectionAllowed(0);
+        jUITable.changeSelection(0,0, false, false);
+        
+        if OK==1
+            segmentation.processing.track.(curseg)(sel)=curparam;
         end
     end
 end

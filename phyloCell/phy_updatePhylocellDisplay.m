@@ -86,7 +86,6 @@ end
 
 % update contours table
 
-
 if ~isfield(segmentation,'contour')
     segmentation.contour(1:5,1)={true false false false false};
     segmentation.contour(1:5,2)={'cells1','budnecks','foci','mito','nucleus'};
@@ -118,7 +117,6 @@ if ~isfield(segmentation.processing,'param')
     segmentation.processing.param=[];
 end
 
-
 if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segmentation/tracking methods
     p = mfilename('fullpath');
     [pth fle ext]=fileparts(p);
@@ -149,17 +147,66 @@ if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segme
     cf=get(handles.contour_table,'ColumnFormat');
     cf(4)=str;
     set(handles.contour_table,'ColumnFormat',cf);
+ 
+else
+    cf=get(handles.contour_table,'ColumnFormat');
+    str=fieldnames(segmentation.processing.param);
+    str(2:end+1)=str(1:end); str{1}='New...';
+    str={str'};
+    cf(4)=str;
+    set(handles.contour_table,'ColumnFormat',cf);
+end
+
+
+% tracking method
+
+if ~isfield(segmentation.processing,'track')
+    segmentation.processing.track=[];
+end
+
+if nargin==2 & numel(segmentation.processing.track)==0 % loads the list of segmentation/tracking methods
+    p = mfilename('fullpath');
+    [pth fle ext]=fileparts(p);
+    
+    % segmentation methods
+    [files,total_files] = file_list([pth '/tracking/'],'*.m',1);
+    str={};
+    
+    str{1}='Enter new tracking method...';
+    
+    for i=1:numel(files)
+        [pth fle ext]=fileparts(files{i})
+        str{i+1}=fle;
+        
+        if strcmp(fle,'phy_mapCellsHungarian')
+            [segmentation.processing.track.(fle) OK]=feval(fle); % call function to edit param
+            
+        else
+            segmentation.processing.track.(fle)=struct('ok',1);
+        end
+        
+        for j=2:5
+            segmentation.processing.track.(fle)(j)=segmentation.processing.track.(fle)(1);
+        end
+    end
+    
+    str={str};
+    cf=get(handles.contour_table,'ColumnFormat');
+    cf(7)=str;
+    set(handles.contour_table,'ColumnFormat',cf);
     
     % tracking methods
     
     
 else
     cf=get(handles.contour_table,'ColumnFormat');
-    str=fieldnames(segmentation.processing.param);
-    str={str'};
-    cf(4)=str;
+    str=fieldnames(segmentation.processing.track);
+    str(2:end+1)=str(1:end); str{1}='New...';
+    str={str};
+    cf(7)=str;
     set(handles.contour_table,'ColumnFormat',cf);
 end
+
 
 
 set(handles.contour_table,'Data',segmentation.contour);

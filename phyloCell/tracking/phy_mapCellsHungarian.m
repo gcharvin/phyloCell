@@ -1,5 +1,62 @@
 
-function newcell=phy_mapCellsHungarian(cell0,cell1,lastObjectNumber,cellsize,cellshrink,coefdist,coefsize,filterpos)
+function [newcell OK]=phy_mapCellsHungarian(cell0,cell1,lastObjectNumber,param)
+
+% this function performs the tracking of cell contours based on an
+% assignment cost matrix and the Hungarian method for assignment
+
+%
+% Input :   [newcell OK]=phy_mapCellsHungarian(cell0,cell1,lastObjectNumber,param)
+%           performs the operation of assignment given cell0 and cell1 as
+%           phy_Object and a structure param.
+%
+%           [param OK]=phy_mapCellsHungarian(param)
+%           loads a GUI to assign parameter values and outputs the
+%           structure to be used for tracking
+%
+%           [param OK]=phy_mapCellsHungarian()
+%            assign default parameter values and outputs the
+%           structure to be used for segmentation
+%
+%
+% Usage :   First call the function without any argument to setup the
+%           parameters; then call the function again with image and
+%           parameters
+
+
+if nargin==0 % assigns default parameters and creat param struct
+    
+    param=struct('cellsize',70,'cellshrink',1,'coefdist',1,'coefsize',0,'filterpos',0);
+   
+   newcell=param;
+   OK=1;
+   
+   return;
+end
+
+if nargin==1 % call GUI to assign parameter values
+    
+     
+    if ~isstruct(cell0)
+       disp('Function is argument is incorrect'); 
+    end
+    
+    description{1}='Maximum motion of a cell between two consectuvie frames (in pixels)';
+    description{2}='put 1 if cells are allowed to decrease their size over time, 0 otherwise';
+    description{3}='weight associated with cell motion in cost matrix (0-Inf)';
+    description{4}='weight associated with change in cell size in cost matrix (0-Inf)';
+    description{5}='Put a number a>0 if you want to discard all cell with y>a in the image; a<0 for y<a (in pixels); Default : 0';
+    
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, cell0,'Enter parameters values for operation',description);
+    
+   if OK==0
+       return;
+   end
+   
+   newcell=param;
+   OK=1;
+   
+   return;
+end
 
 
 % check and fix cell redundant indices
@@ -31,12 +88,12 @@ for i=1:numel(pix1)
 end
 
 
-if filterpos~=0
+if param.filterpos~=0
 oy=[cell0.oy];
-if filterpos>0
-pix=find(oy>filterpos);
+if param.filterpos>0
+pix=find(oy>param.filterpos);
 else
- pix=find(oy<-filterpos);   
+ pix=find(oy<-param.filterpos);   
 end
 cell0=cell0(pix);
 end
@@ -89,7 +146,7 @@ for i=1:length(ind0)
         
         dist=sqrt(sqdist);
         
-        if sqrt(sqdist)>cellsize % 70 % impossible to join cells that are further than 70 pixels
+        if sqrt(sqdist)>param.cellsize % 70 % impossible to join cells that are further than 70 pixels
             continue;
         end
         
@@ -99,7 +156,7 @@ for i=1:length(ind0)
        % sizedist=100;
         
       
-       if cellshrink==0
+       if param.cellshrink==0
        if sizedist<0
            if abs(sizedist)>0.3*cell0(id).area
                continue
@@ -112,12 +169,12 @@ for i=1:length(ind0)
        end
        end
        
-%         if cell0(id).area>pi*(cellsize/2)^2
-%         if sizedist>pi*(cellsize/2)^2/2
+%         if cell0(id).area>pi*(param.cellsize/2)^2
+%         if sizedist>pi*(param.cellsize/2)^2/2
 %             continue
 %         end
 %         else
-%         if sizedist>pi*(cellsize/2)^2/2
+%         if sizedist>pi*(param.cellsize/2)^2/2
 %             continue
 %         end    
 %         end
@@ -147,7 +204,7 @@ for i=1:length(ind0)
 %            weight=weight+10;
 %        end
        
-        M(i,j)=weight*(coefdist*sqrt(sqdist)/meancellsize+coefsize*abs(sizedist)/(areamean));
+        M(i,j)=weight*(param.coefdist*sqrt(sqdist)/meancellsize+param.coefsize*abs(sizedist)/(areamean));
         
     end
 end
