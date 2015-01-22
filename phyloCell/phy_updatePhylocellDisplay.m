@@ -110,7 +110,7 @@ if ~isfield(segmentation,'contour')
 end
 
 if ~isfield(segmentation,'processing')
-    segmentation.processsing=[];
+    segmentation.processing=[];
 end
 
 if ~isfield(segmentation.processing,'param')
@@ -125,13 +125,13 @@ if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segme
     [files,total_files] = file_list([pth '/segmentation/'],'*.m',1);
     str={};
     
-    str{1}='Enter new segmentation method...';
+    str{1}='New...';
     
     for i=1:numel(files)
         [pth fle ext]=fileparts(files{i});
         str{i+1}=fle;
-        
-        if strcmp(fle,'phy_segmentPhaseContrast')
+         
+        if strcmp(fle,'phy_segmentPhaseContrast') || strcmp(fle,'phy_segmentCellCluster') || strcmp(fle,'phy_segmentTemplate')
             [segmentation.processing.param.(fle) OK]=feval(fle); % call function to edit param
             
         else
@@ -150,11 +150,14 @@ if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segme
  
 else
     cf=get(handles.contour_table,'ColumnFormat');
+
+    if numel(segmentation.processing.param)~=0
     str=fieldnames(segmentation.processing.param);
     str(2:end+1)=str(1:end); str{1}='New...';
     str={str'};
     cf(4)=str;
     set(handles.contour_table,'ColumnFormat',cf);
+    end
 end
 
 
@@ -175,7 +178,7 @@ if nargin==2 & numel(segmentation.processing.track)==0 % loads the list of segme
     str{1}='Enter new tracking method...';
     
     for i=1:numel(files)
-        [pth fle ext]=fileparts(files{i})
+        [pth fle ext]=fileparts(files{i});
         str{i+1}=fle;
         
         if strcmp(fle,'phy_mapCellsHungarian')
@@ -200,11 +203,13 @@ if nargin==2 & numel(segmentation.processing.track)==0 % loads the list of segme
     
 else
     cf=get(handles.contour_table,'ColumnFormat');
+    if numel(segmentation.processing.track)~=0
     str=fieldnames(segmentation.processing.track);
     str(2:end+1)=str(1:end); str{1}='New...';
     str={str};
     cf(7)=str;
     set(handles.contour_table,'ColumnFormat',cf);
+    end
 end
 
 

@@ -295,6 +295,10 @@ for i=1:maxpos
             %  destination=strcat(fullpath,timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
             % str2=strcat(timeLapse.filename,'-pos',int2str(i),'-ch',int2str(j),'-',localTimeLapse.list(j).ID,'-',framenumber,ext);
             %   end
+            
+            %im=imread(sourcefile);
+            %imwrite(im,destination);
+            
             copyfile(sourcefile,destination);
             
             % imwrite(tempi,str,'BitDepth',12,'Mode','lossless');

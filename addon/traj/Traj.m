@@ -289,11 +289,17 @@ classdef Traj < handle
                 vecV(:,2) = vecV(:,2)*(vecYMinMax(2)-vecYMinMax(1))+vecYMinMax(1);
                 
                 
+
+                
                 switch lower(t.orientation)
                     case 'horizontal'
                         
                     case 'vertical'
                         vecV = -fliplr(vecV);
+                        
+                        temp=vecXMinMax;
+                        vecXMinMax=vecYMinMax;
+                        vecYMinMax=-temp;
                     otherwise
                         error('unrecognised typeHorzVert, must be horizontal or vertical');
                 end
@@ -302,7 +308,13 @@ classdef Traj < handle
                 vecV(:,1)=vecV(:,1)+t.startX;
                 vecV(:,2)=vecV(:,2)+t.startY;
                 
-                t.hPatch(i) =patch('Faces',vecFaceOrder,'Vertices',vecV,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
+                
+                vecXMinMax=sort(vecXMinMax)+t.startX;
+                vecYMinMax=sort(vecYMinMax)+t.startY-t.width/2;
+                
+                %t.hPatch(i) =patch('Faces',vecFaceOrder,'Vertices',vecV,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
+                t.hPatch(i) =rectangle('Position',[vecXMinMax(1) vecYMinMax(1) vecXMinMax(2)-vecXMinMax(1) vecYMinMax(2)-vecYMinMax(1)],'FaceColor',t.color(t.colorIndex(i),:),'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
+               % t.color(t.colorIndex(i),:)
                 
                 set(t.hPatch(i),'ButtonDownFcn',{@test,handle});
                 

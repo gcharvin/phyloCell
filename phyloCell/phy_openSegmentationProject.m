@@ -75,6 +75,8 @@ end
 %str=fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen)
 %exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
 
+%fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen)
+
 if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
     % 'project already exist'
     

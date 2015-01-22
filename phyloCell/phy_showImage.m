@@ -189,6 +189,14 @@ for ik=1:length(contours)
         xc=cells.x;
         yc=cells.y;
         
+        if size(xc,1)==1
+        xc=[xc xc(1)];
+        yc=[yc yc(1)];
+        else
+        xc=[xc; xc(1)];
+        yc=[yc; yc(1)];    
+        end
+        
         xc3=xc-ROI(1)+1;
         yc3=yc-ROI(2)+1;
         
@@ -282,7 +290,7 @@ minutes = mod(floor(t / 60), 60);
 
 if numel(ROI)
     xpos=0.1*ROI(3);
-    ypos=0.1*ROI(4);
+    ypos=0.9*ROI(4);
 else
     xpos=0.1*refwidth;
     ypos=0.1*refheight;

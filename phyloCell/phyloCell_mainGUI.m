@@ -704,56 +704,7 @@ end
 
 statusbar;
 
-% --- Executes on button press in pushbutton_Set_Mother.
-function pushbutton_Set_Mother_Callback(hObject, eventdata, handles)
-global segmentation
-%---------------------------------------------
-prompt = {'Enter mother number:'};
-dlg_title = 'Mother';
-num_lines = 1;
-def = {'0'};
-answer = inputdlg(prompt,dlg_title,num_lines,def);
-if isempty(answer)
-    return
-end
-%--------------------------------------------------
 
-%if get(handles.radiobutton_Image,'Value')
-
-%    segmentation.selectedObj.mother=str2double((answer{1}));
-%segmentation.frameChanged(segmentation.frame1)=1;
-%end
-
-%if get(handles.radiobutton_All_Images,'Value')&&~
-if ~isempty(segmentation.selectedTObj)
-    m=str2double(answer{1});
-    if segmentation.selectedTObj.mother>0
-        tobj=segmentation.(['t',segmentation.selectedType]);
-        tobj(segmentation.selectedTObj.mother).removeDaughter(segmentation.selectedTObj.N);
-        segmentation.(['t',segmentation.selectedType])=tobj;
-    end
-    segmentation.selectedTObj.setMother(0,0);
-    
-    
-    if m~=0
-        segmentation.selectedTObj.setMother(m);
-        segmentation.selectedTObj.birthFrame=segmentation.selectedTObj.detectionFrame;
-        tobj=segmentation.(['t',segmentation.selectedType]);
-        divisionStart=segmentation.selectedTObj.detectionFrame;
-        divisionEnd=segmentation.selectedTObj.detectionFrame;
-        tobj(m).addDaughter(segmentation.selectedTObj.N,divisionStart,divisionEnd);
-        segmentation.(['t',segmentation.selectedType])=tobj;
-        %segmentation.frameChanged(segmentation.selectedTObj.detectionFrame:segmentation.selectedTObj.lastFrame)=1;
-    end
-    
-    phy_change_Disp1('refresh',handles);
-end
-
-%if get(handles.radiobutton_From_This_Image,'Value')&&~isempty(segmentation.selectedTObj)
-%    segmentation.selectedTObj.setMother(0,segmentation.frame1);
-%    segmentation.selectedTObj.setMother(str2double(answer{1}),segmentation.frame1);
-%segmentation.frameChanged(segmentation.frame1:segmentation.selectedTObj.lastFrame)=1;
-%end
 
 % --- Executes on button press in pushbutton_Set_Number.
 function pushbutton_Set_Number_Callback(hObject, eventdata, handles)
@@ -861,84 +812,21 @@ if ~isempty(answer)
     phy_change_Disp1('refresh',handles);
 end
 
-% --- Executes on button press in pushbutton_Delete_Object.
-function pushbutton_Delete_Object_Callback(hObject, eventdata, handles)
-global segmentation
-
-% segmentation.selectedObj.ox=0;
-% segmentation.selectedObj.oy=0;
-% segmentation.selectedObj.n=0;
-
-if isempty(segmentation.selectedObj)
-    errordlg('First select a cell');
-    return;
-end
-
-if get(handles.radiobutton_Image,'Value')
-    set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
-    if ~isempty(segmentation.selectedTObj)
-        segmentation.selectedTObj.deleteObject(segmentation.selectedObj);
-        segmentation.selectedTObj.detectionFrame=min([segmentation.selectedTObj.Obj.image]);
-        segmentation.selectedTObj.lastFrame=max([segmentation.selectedTObj.Obj.image]);
-    else
-        segmentation.selectedObj.ox=0;
-        segmentation.selectedObj.oy=0;
-        segmentation.selectedObj.n=0;
-        
-    end
-    segmentation.selectedObj=[];
-    segmentation.frameChanged(segmentation.frame1)=1;
-    
-end
-
-if isempty(segmentation.selectedTObj)
-    return;
-    %     %index=find(segmentation.selectedTObj.C==segmentation.selectedObj);
-    %     segmentation.selectedTObj.Obj(segmentation.selectedTObj.Obj==segmentation.selectedObj)=[];
-end
-
-
-if get(handles.radiobutton_From_This_Image,'Value')
-    if ~isempty(segmentation.selectedTObj)
-        button = questdlg({'The objects from this image to the end will be completely deleted.','Are you sure?'},'Warning','Yes','No','Yes') ;
-        if strcmpi(button,'Yes')
-            set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
-            segmentation.selectedTObj.deleteObject(segmentation.frame1);
-            
-            segmentation.selectedObj=[];
-            segmentation.frameChanged(segmentation.frame1)=1;
-            
-        end
-    else
-        warndlg('No mapping done. To delete use radio button "image"',' Warning');
-    end
-end
-if get(handles.radiobutton_All_Images,'Value')
-    if ~isempty(segmentation.selectedTObj)
-        button = questdlg({'The objects from the detection frame to the end will be completely deleted.','Are you sure?'},'Warning','Yes','No','Yes') ;
-        if strcmpi(button,'Yes')
-            set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
-            segmentation.selectedTObj.deleteObject('all');
-            
-            segmentation.selectedObj=[];
-            segmentation.frameChanged(segmentation.frame1)=1;
-            
-        end
-    else
-        warndlg('No mapping done. To delete use radio button "image"',' Warning');
-    end
-end
-
-
-
 % --- Executes on button press in pushbutton_Edit_Contour.
 function pushbutton_Edit_Contour_Callback(handles)
 global segmentation
 
 set(segmentation.selectedObj.htext,'visible','off');
 set(segmentation.selectedObj.hcontour,'visible','off');
-[x,y] = getline(handles.axes1,'closed');
-[x,y]=phy_changePointNumber(x,y,50);
+
+h = impoly;
+position = wait(h);
+
+delete(h);
+position(end+1,:)=position(1,:);
+    
+[x,y]=phy_changePointNumber(position(:,1),position(:,2),50);
+
 segmentation.selectedObj.x=x;
 segmentation.selectedObj.y=y;
 segmentation.selectedObj.ox=mean(x);
@@ -966,111 +854,12 @@ function pushbutton_Annotate_Callback(hObject, eventdata, handles)
 
 
 
-% --- Executes on button press in pushbutton_Clear_Image.
-function pushbutton_Clear_Image_Callback(hObject, eventdata, handles)
-
-global segmentation
-%  if segmentation.cells1Mapped(segmentation.frame1)
-% if segmentation.budnecksMapped(segmentation.frame1)
-
-%if get(handles.checkbox_segBud,'Value')
-
-feat=segmentation.processing.selectedFeature;
-proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
-featname=segmentation.processing.features{feat};
-
-myObject=segmentation.(featname);
-
-
-if segmentation.([featname 'Mapped'])(segmentation.frame1)
-    for i=1:size(myObject,2)
-        if myObject(segmentation.frame1,i).n~=0
-            n=myObject(segmentation.frame1,i).n;
-            segmentation.(['t' featname])(n).deleteObject(myObject(segmentation.frame1,i))
-        end
-    end
-end
-
-segmentation.(featname)(segmentation.frame1,:)=phy_Object;
-segmentation.([featname 'Segmented'])(segmentation.frame1)=0;
-segmentation.([featname 'Mapped'])(segmentation.frame1)=0;
-segmentation.frameChanged(segmentation.frame1)=1;
-
-
-if strcmp(featname,'cells1')
-    if ishandle(segmentation.myHandles.showCells)
-        delete(segmentation.myHandles.showCells);
-        delete(segmentation.myHandles.showCellsText);
-    end
-end
-
-
-if strcmp(featname,'budnecks')
-    if ishandle(segmentation.myHandles.showBudnecks)
-        delete(segmentation.myHandles.showBudnecks);
-        delete(segmentation.myHandles.showBudnecksText);
-    end
-end
-
-if strcmp(featname,'mito')
-    if ishandle(segmentation.myHandles.showMito)
-        delete(segmentation.myHandles.showMito);
-        delete(segmentation.myHandles.showMitoText);
-    end
-end
-
-if strcmp(featname,'foci')
-    if ishandle(segmentation.myHandles.showFoci)
-        delete(segmentation.myHandles.showFoci);
-        delete(segmentation.myHandles.showFociText);
-    end
-end
-
-if strcmp(featname,'nucleus')
-    if ishandle(segmentation.myHandles.showNucleus)
-        delete(segmentation.myHandles.showNucleus);
-        delete(segmentation.myHandles.showNucleusText);
-    end
-end
-
-
-
-
-
-% --- Executes on button press in pushbutton_Clear_All.
-function pushbutton_Clear_All_Callback(hObject, eventdata, handles)
-
-global segmentation
-
-
-feat=segmentation.processing.selectedFeature;
-proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
-featname=segmentation.processing.features{feat};
-
-
-segFrames=find(segmentation.([featname 'Segmented']));
-def = {num2str(segFrames)};
-
-%---------------------------------------
-prompt = {'Enter the frames to clear'};
-dlg_title = 'Frames to clear';
-num_lines = 2;
-
-answer = inputdlg(prompt,dlg_title,num_lines,def);
-%-----------------------
-if ~isempty(answer)&&~isempty(answer{1})
-    clearFrames=str2num(answer{1});
-    for i=clearFrames
-        segmentation.frame1=i;
-        pushbutton_Clear_Image_Callback(handles.pushbutton_Clear_Image, eventdata, handles);
-    end
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%% SLIDER CALLBACK FUNCTIONS%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function slider1_Callback(hObject, eventdata, handles)
-newVal = get(hObject, 'Value')
+newVal = get(hObject, 'Value');
 Change_Disp1(newVal,handles);
 
 
@@ -2689,7 +2478,7 @@ if strcmp(eventdata.Key,'equal')
 end
 
 if strcmp(eventdata.Key,'delete')
-    pushbutton_Delete_Object_Callback(handles.pushbutton_Delete_Object, [], handles);
+    deleteObject('object',handles);
 end
 
 if strcmp(eventdata.Key,'o') || strcmp(eventdata.Key,'p')
@@ -3243,7 +3032,85 @@ pushbutton_Set_Number_Callback(handles.pushbutton_Set_Number, [], handles)
 
 % --------------------------------------------------------------------
 function Context_Objects_Delete_Callback(hObject, eventdata, handles)
-pushbutton_Delete_Object_Callback(handles.pushbutton_Delete_Object, [], handles);
+deleteObject('object',handles)
+
+% --------------------------------------------------------------------
+function Context_Object_Delete_track_Callback(hObject, eventdata, handles)
+deleteObject('track',handles)
+
+% --------------------------------------------------------------------
+function Context_Object_Cut_Track_Callback(hObject, eventdata, handles)
+deleteObject('cut',handles)
+
+% --- Executes on button press in pushbutton_Delete_Object.
+function deleteObject(type,handles)
+global segmentation
+
+% segmentation.selectedObj.ox=0;
+% segmentation.selectedObj.oy=0;
+% segmentation.selectedObj.n=0;
+
+if isempty(segmentation.selectedObj)
+    errordlg('First select a cell');
+    return;
+end
+
+if strcmp(type,'object')
+    set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
+    if ~isempty(segmentation.selectedTObj)
+        segmentation.selectedTObj.deleteObject(segmentation.selectedObj);
+        segmentation.selectedTObj.detectionFrame=min([segmentation.selectedTObj.Obj.image]);
+        segmentation.selectedTObj.lastFrame=max([segmentation.selectedTObj.Obj.image]);
+    else
+        segmentation.selectedObj.ox=0;
+        segmentation.selectedObj.oy=0;
+        segmentation.selectedObj.n=0;
+        
+    end
+    segmentation.selectedObj=[];
+    segmentation.frameChanged(segmentation.frame1)=1;
+    
+end
+
+if isempty(segmentation.selectedTObj)
+    return;
+    %     %index=find(segmentation.selectedTObj.C==segmentation.selectedObj);
+    %     segmentation.selectedTObj.Obj(segmentation.selectedTObj.Obj==segmentation.selectedObj)=[];
+end
+
+
+if strcmp(type,'cut')
+    if ~isempty(segmentation.selectedTObj)
+        button = questdlg({'The objects from this image to the end will be completely deleted.','Are you sure?'},'Warning','Yes','No','Yes') ;
+        if strcmpi(button,'Yes')
+            set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
+            segmentation.selectedTObj.deleteObject(segmentation.frame1);
+            
+            segmentation.selectedObj=[];
+            segmentation.frameChanged(segmentation.frame1)=1;
+            
+        end
+    else
+        warndlg('No mapping done. To delete use radio button "image"',' Warning');
+    end
+end
+
+if strcmp(type,'track')
+    if ~isempty(segmentation.selectedTObj)
+        button = questdlg({'The objects from the detection frame to the end will be completely deleted.','Are you sure?'},'Warning','Yes','No','Yes') ;
+        if strcmpi(button,'Yes')
+            set([segmentation.selectedObj.htext,segmentation.selectedObj.hcontour],'visible','off');
+            segmentation.selectedTObj.deleteObject('all');
+            
+            segmentation.selectedObj=[];
+            segmentation.frameChanged(segmentation.frame1)=1;
+            
+        end
+    else
+        warndlg('No mapping done. To delete use radio button "image"',' Warning');
+    end
+end
+
 
 % --------------------------------------------------------------------
 function Context_Objects_Copy_Callback(hObject, eventdata, handles)
@@ -3394,8 +3261,6 @@ else
         n1= segmentation.selectedObj.n;
         n2= segmentation.swapObj.n;
         
-        
-        
         %collect n1 cells and delete from n1 tobject
         c=0;
         objectMoved1=phy_Object;
@@ -3484,9 +3349,9 @@ else
         for i=1:c
             segmentation.selectedTObj.deleteObject(objectMoved1(i),'only from tobject');
         end
-        'ok2'
-        tobj(n2).mother
-        tobj(n1).mother
+%         'ok2'
+%         tobj(n2).mother
+%         tobj(n1).mother
         
         %collect n2 cells and delete from n2 tobject
         c=0;
@@ -3504,17 +3369,17 @@ else
             end
         end
         
-        'ok2b'
-        tobj(n2).mother
-        tobj(n1).mother
+       % 'ok2b'
+       % tobj(n2).mother
+       % tobj(n1).mother
         
         for i=1:c
             tobj(n2).deleteObject(objectMoved2(i),'only from tobject');
         end
         
-        'ok3'
-        tobj(n2).mother
-        tobj(n1).mother
+       % 'ok3'
+       % tobj(n2).mother
+       % tobj(n1).mother
         
         tobj(n2).addObject(objectMoved1);
         segmentation.selectedTObj.addObject(objectMoved2);
@@ -3538,16 +3403,16 @@ else
         %             segmentation.selectedTObj.lastFrame=minFrame;
         
         
-        'ok4'
-        tobj(n2).mother
-        tobj(n1).mother
+       % 'ok4'
+       % tobj(n2).mother
+       % tobj(n1).mother
         
         segmentation.(['t',segmentation.selectedType])=tobj;
         % segmentation.frameChanged(segmentation.frame1:tobj(n).lastFrame)=1;
         
-        'ok5'
-        tobj(n2).mother
-        tobj(n1).mother
+       % 'ok5'
+       % tobj(n2).mother
+       % tobj(n1).mother
     end
     
     
@@ -3702,181 +3567,112 @@ end
 
 
 % --------------------------------------------------------------------
-function Context_Create_Object_Callback(hObject, eventdata, handles)
-% hObject    handle to Context_Create_Object (see GCBO)
+function Context_Create_Cells1_Callback(hObject, eventdata, handles)
+% hObject    handle to Context_Create_Cells1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+createObject('cells1',handles)
 
+% --------------------------------------------------------------------
+function Context_Create_Budnecks_Callback(hObject, eventdata, handles)
+% hObject    handle to Context_Create_Budnecks (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+createObject('budnecks',handles)
+
+% --------------------------------------------------------------------
+function Context_Create_Foci_Callback(hObject, eventdata, handles)
+% hObject    handle to Context_Create_Foci (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+createObject('foci',handles)
+
+% --------------------------------------------------------------------
+function Context_Create_Mito_Callback(hObject, eventdata, handles)
+% hObject    handle to Context_Create_Mito (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+createObject('mito',handles)
+
+% --------------------------------------------------------------------
+function Context_Create_Nucleus_Callback(hObject, eventdata, handles)
+% hObject    handle to Context_Create_Nucleus (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+createObject('nucleus',handles)
+
+function createObject(objecttype,handles)
 global segmentation
 
-% create the dialog box
-dim = [3 3]; %number of objects in dialog box
-Title = 'Create object';
-
-Prompt = cell(1,2);
-Prompt{1,1} = 'Chose the type and the number of the new object';
-Formats(1,1).type = 'text';
-for k = 2:dim(2) % span the static text across the entire dialog
-    Formats(1,k).type = 'none';
-    Formats(1,k).limits = [0 1]; % extend from left
+pix=find(segmentation.([objecttype 'Mapped']));
+if numel(find(pix==segmentation.frame1))
+   n = length(segmentation.(['t' objecttype]))+1; 
+else
+   if size(segmentation.(objecttype),1)>= segmentation.frame1
+   cn=[segmentation.(objecttype)(segmentation.frame1,:).n];
+   n=max(cn+1);
+   else
+   n=1;    
+   end
 end
-
-Prompt(2,:) = {'Choose type of objects','type'};
-Formats(2,1).type = 'list';
-Formats(2,1).style = 'radiobutton';
-Formats(2,1).items = {'Budnecks','Cells1','Foci','Mito','Nucleus'};
-for k = 2:dim(2) % span the static text across the entire dialog
-    Formats(2,k).type = 'none';
-    Formats(2,k).limits = [0 1]; % extend from left
-end
-
-Prompt(3,:) = {'Budneck Number','budneck_number'};
-Formats(3,1).type = 'edit';
-Formats(3,1).format = 'integer';
-Formats(3,1).limits = [0 9999]; % 4-digits (positive #)
-Formats(3,1).size = 50;
-
-Prompt(4,:) = {'Cell Number1','cell_number1'};
-Formats(3,2).type = 'edit';
-Formats(3,2).format = 'integer';
-Formats(3,2).limits = [0 9999]; % 4-digits (positive #)
-Formats(3,2).size = 50;
 %
-% Prompt(5,:) = {'Cell Number2','cell_number2'};
-% Formats(3,3).type = 'edit';
-% Formats(3,3).format = 'integer';
-% Formats(3,3).limits = [0 9999]; % 4-digits (positive #)
-% Formats(3,3).size = 50;
 
-DefAns.type = 2;
-if ~isempty(segmentation.tbudnecks)
-    DefAns.budneck_number = length(segmentation.tbudnecks)+1;
-else
-    DefAns.budneck_number=0;
-end
-if ~isempty(segmentation.tcells1)
-    DefAns.cell_number1 = length(segmentation.tcells1)+1;
-else
-    DefAns.cell_number1=0;
-end
-% if ~isempty(segmentation.tcells2)
-%     DefAns.cell_number2=length(segmentation.tcells2)+1;
-% else
-%     DefAns.cell_number2=0;
-% end
-
-
-
-
-[Answer,Cancelled] = phy_inputsdlg(Prompt,Title,Formats);%,DefAns);%Options);
-
-% create the points
-if ~Cancelled
-    %     [x,y] = getline(handles.axes1,'closed');
-    %     hold(handles.axes1,'on');
-    %     plot(handles.axes1,x,y);
-    %     hold(handles.axes1,'off');
-    %hellipse=imellipse(handles.axes1);
-    [bw x y]=roipolyold;
-    x
-    y
-    [x,y]=phy_changePointNumber(x,y,50);
-    %vertices=wait(hellipse);
-    %x=vertices(:,1);
-    %y=vertices(:,2);
-    %hellipse.delete;
-    ox=mean(x);
-    oy=mean(y);
+    h = impoly;
+    position = wait(h);
+ 
+    position(end+1,:)=position(1,:);
     
-    added=false;
-    switch Answer.type
-        case 1
-            n=Answer.budneck_number;
-            budn=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
-            budn.ox=ox;
-            budn.oy=oy;
-            budn.image=segmentation.frame1;
-            budn.area=polyarea(x,y);
-            
-            if size(segmentation.budnecks,1)<segmentation.frame1
-                for i=size(segmentation.budnecks,1)+1:segmentation.frame1
-                    segmentation.budnecks(i,1)=phy_Object;
-                end
-            end
-            
-            for i=1:length(segmentation.budnecks(segmentation.frame1,:))
-                if segmentation.budnecks(segmentation.frame1,i).ox==0
-                    segmentation.budnecks(segmentation.frame1,i)=budn;
-                    added=true;
-                    break;
-                end
-            end
-            if ~added
-                segmentation.budnecks(segmentation.frame1,end+1)=budn;
-            end
-            if n~=0 && ~isempty(segmentation.selectedTObj)
-                if n>length(segmentation.tbudnecks)
-                    segmentation.tbudnecks(n)=phy_Tobject;
-                end
-                segmentation.tbudnecks(n).addObject(budn);
-            end
-        case 2
-            n=Answer.cell_number1;
+    [x,y]=phy_changePointNumber(position(:,1),position(:,2),50);
+    ox=mean(x); oy=mean(y);
+
             cellule=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
-            cellule.ox=ox;
-            cellule.oy=oy;
-            cellule.image=segmentation.frame1;
-            cellule.area=polyarea(x,y);
+            %cellule.ox=ox;
+            %cellule.oy=oy;
+            %cellule.image=segmentation.frame1;
+            %cellule.area=polyarea(x,y);
             
-            if size(segmentation.cells1,1)<segmentation.frame1
-                for i=size(segmentation.cells1,1)+1:segmentation.frame1
-                    segmentation.cells1(i,1)=phy_Object;
+            if size(segmentation.(objecttype),1)<segmentation.frame1
+                for i=size(segmentation.(objecttype),1)+1:segmentation.frame1
+                    segmentation.(objecttype)(i,1)=phy_Object;
                 end
             end
             
-            for i=1:length(segmentation.cells1(segmentation.frame1,:))
-                if segmentation.cells1(segmentation.frame1,i).ox==0
-                    segmentation.cells1(segmentation.frame1,i)=cellule;
+            added=false;
+            
+            for i=1:length(segmentation.(objecttype)(segmentation.frame1,:))
+                if segmentation.(objecttype)(segmentation.frame1,i).ox==0
+                    segmentation.(objecttype)(segmentation.frame1,i)=cellule;
                     added=true;
                     break;
                 end
             end
+            
             if ~added
-                segmentation.cells1(segmentation.frame1,end+1)=cellule;
+                segmentation.(objecttype)(segmentation.frame1,end+1)=cellule;
             end
+            
             if n~=0 && ~isempty(segmentation.selectedTObj)
-                if n>length(segmentation.tcells1)
-                    segmentation.tcells1(n)=phy_Tobject;
+                if n>length(segmentation.(['t' objecttype]))
+                    segmentation.(['t' objecttype])(n)=phy_Tobject;
                 end
-                segmentation.tcells1(n).addObject(cellule);
+                segmentation.(['t' objecttype])(n).addObject(cellule);
             end
-            %         case 3
-            %             n=Answer.cell_number2;
-            %             cellule=phy_Object(n,x,y);
-            %             cellule.ox=ox;
-            %             cellule.oy=oy;
-            %             cellule.image=segmentation.frame1;
-            %             cellule.area=polyarea(x,y);
-            %             for i=1:length(segmentation.cells2(segmentation.frame1,:))
-            %                 if segmentation.cells2(segmentation.frame1,i).ox==0
-            %                     segmentation.cells2(segmentation.frame1,i)=cellule;
-            %                     added=true;
-            %                     break;
-            %                 end
-            %             end
-            %             if ~added
-            %                 segmentation.cells2(segmentation.frame1,end+1)=cellule;
-            %             end
-            %             if n~=0 && ~isempty(segmentation.selectedTObj)
-            %                 if n>length(segmentation.tcells1)
-            %                     segmentation.tcells2(n)=phy_Tobject;
-            %                 end
-            %                 segmentation.tcells2(n).addObject(cellule);
-            %             end
+            
+    %end
+    
+    for i=1:numel(segmentation.contour{:,2})
+       if strcmp(objecttype, segmentation.contour{i,2})
+           segmentation.contour{i,1}=true;
+           break
+       end
     end
-    Change_Disp1('refresh',handles);
+    
+    phy_updatePhylocellDisplay(handles)
+    
+    %phy_change_Disp1('refresh',handles);
     segmentation.frameChanged(segmentation.frame1)=1;
-end
+%end
+
 
 % --------------------------------------------------------------------
 function Analyse_Callback(hObject, eventdata, handles)
@@ -4081,174 +3877,7 @@ function handles=checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handle
 % Hint: get(hObject,'Value') returns toggle state of checkbox_Show_Fluo_Analysis
 global segmentation
 
-newline=0;
-if get(handles.checkbox_Show_Fluo_Analysis,'Value')
-    
-    if isfield(segmentation,'plot')
-        if isfield(segmentation.plot,'hfluo')
-            if ishandle(segmentation.plot.hfluo)
-                figure(segmentation.plot.hfluo);
-            else
-                segmentation.plot.hfluo=figure;
-                newline=1;
-            end
-        else
-            segmentation.plot.hfluo=figure;
-            newline=1;
-        end
-    else
-        segmentation.plot=[];
-        segmentation.plot.hfluo=figure;
-    end
-    
-    if isfield(segmentation,'channels')
-        if length(segmentation.channels)~=0
-            i=segmentation.channels(length(segmentation.channels));
-            img=phy_loadTimeLapseImage(segmentation.position,segmentation.frame1,i,'non retreat');
-            warning off all;
-            img=imresize(img,segmentation.sizeImageMax);
-            subplot(3,1,1);
-            %get(h,'Units')
-            %set(h,'Position',[0 0 0.1 0.1]);
-            
-            imshow(img,[]);
-            warning on all;
-            colormap(jet); colorbar;
-            haxe=get(segmentation.plot.hfluo,'Children');
-            haxe=haxe(length(haxe));
-            
-            
-            xmin=1; xmax=segmentation.sizeImageMax(1); ymin=segmentation.sizeImageMax(1)/2; ymax=segmentation.sizeImageMax(2)/2;
-            X=[]; y=[];
-            
-            if size(segmentation.cells1,1)>=segmentation.frame1
-                if ~isempty(segmentation.selectedObj)
-                    X=segmentation.selectedObj.x;
-                    Y=segmentation.selectedObj.y;
-                    N=segmentation.selectedObj.n;
-                    c = phy_Object(N,X,Y,0,polyarea(X,Y),mean(X),mean(Y),0);
-                    
-                    [hplot htext]=phy_showObject(haxe,c,'k','cells',[],[],'on',[],segmentation.v_axe1);
-                    
-                    xmin=max(1,min(segmentation.selectedObj.x)-50);
-                    ymin=max(1,min(segmentation.selectedObj.y)-50);
-                    xmax=min(segmentation.sizeImageMax(1),max(segmentation.selectedObj.x)+50);
-                    ymax=min(segmentation.sizeImageMax(2),max(segmentation.selectedObj.y)+50);
-                    axis([xmin xmax ymin ymax]);
-                end
-            end
-            
-            % if isfield(segmentation,'plot')
-            %         if isfield(segmentation.plot,'line')
-            %
-            %           xl=segmentation.plot.line.x;
-            %           yl=segmentation.plot.line.y;
-            %           if newline
-            %               xl(1)=xmin;
-            %               xl(2)=xmax;
-            %               yl(1)=(ymin+ymax)/2;
-            %               yl(2)=(ymin+ymax)/2;
-            %           end
-            %         else
-            %          xl(1)=xmin;
-            %          xl(2)=xmax;
-            %          yl(1)=(ymin+ymax)/2;
-            %          yl(2)=(ymin+ymax)/2;
-            %         end
-            % else
-            xl(1)=xmin;
-            xl(2)=xmax;
-            yl(1)=(ymin+ymax)/2;
-            yl(2)=(ymin+ymax)/2;
-            %end
-            
-            segmentation.plot.line.h = imline(haxe,xl,yl);
-            id = addNewPositionCallback(segmentation.plot.line.h,@moveLine);
-            set(segmentation.plot.line.h,'ButtonDownFcn',{@replot,haxe});
-            set(segmentation.plot.hfluo,'WindowButtonUpFcn',@replot);
-            
-            segmentation.plot.img=img;
-            segmentation.plot.line.x=xl;
-            segmentation.plot.line.y=yl;
-            
-            subplot(3,1,2);
-            im=improfile(img,xl,yl);
-            plot(im);
-            title(['max :' num2str(round(max(im))) ' ; min : ' num2str(round(min(im)))]);
-            %xlabel('position(pixels)');
-            %ylabel('Intensity (A.U.)');
-            
-            subplot(3,1,3);
-            if ~isempty(X)
-                mask = poly2mask(X,Y,segmentation.sizeImageMax(1),segmentation.sizeImageMax(2));
-                pix=mask==1;
-                flu=double(img(mask));
-                mine=min(flu); maxe=max(flu);
-                xbin=mine:10:maxe;
-                hist(flu,xbin);
-                xlabel('Intensity (A.U.)');
-                title(['mean :' num2str(round(mean(flu))) '; std :' num2str(round(std(flu)))]);
-                %ylabel('Pixel count');
-            end
-            
-            pos=get(segmentation.plot.hfluo,'Position');
-            pos2=pos;
-            pos2(3)=300;
-            pos2(4)=700;
-            set(segmentation.plot.hfluo,'Position',pos2);
-            
-        end
-    end
-    
-    guidata(hObject, handles);% Save the structure
-    
-else
-    if isfield(segmentation,'plot')
-        if isfield(segmentation.plot,'hfluo')
-            if ishandle(segmentation.plot.hfluo)
-                delete(segmentation.plot.hfluo);
-            end
-        end
-    end
-end
-
-
-function moveLine(hObject, eventdata, img)
-global segmentation;
-
-
-a=get(segmentation.plot.line.h,'Children');
-b=get(a,'XData');
-segmentation.plot.line.x(2)=cell2mat(b(1));
-segmentation.plot.line.x(1)=cell2mat(b(2));
-b=get(a,'YData');
-segmentation.plot.line.y(2)=cell2mat(b(1));
-segmentation.plot.line.y(1)=cell2mat(b(2));
-
-xl=segmentation.plot.line.x;
-yl=segmentation.plot.line.y;
-warning off all;
-im=improfile(segmentation.plot.img,xl,yl);
-warning on all;
-
-figure(segmentation.plot.hfluo);
-subplot(3,1,2);
-plot(im);
-title(['max :' num2str(round(max(im))) ' ; min : ' num2str(round(min(im)))]);
-
-
-
-function replot(hObject,eventdata,handles)
-
-global segmentation
-xl=segmentation.plot.line.x;
-yl=segmentation.plot.line.y;
-warning off all;
-im=improfile(segmentation.plot.img,xl,yl);
-warning on all;
-figure(segmentation.plot.hfluo);
-subplot(3,1,2);
-plot(im);
+phy_change_Disp1('refresh',handles);
 
 
 
@@ -4856,14 +4485,14 @@ if eventdata.Indices(2)==1
     phy_updatePhylocellDisplay(handles);
 end
 
-if eventdata.Indices(2)==4
-    sel=eventdata.Indices(1);
-    
-    segData=get(hObject,'Data');
-    
-    [~,~,~]=phy_propertiesGUI(0,segList(sel).t,'Segmentation variable properties');
-    
-end
+% if eventdata.Indices(2)==4 % too long for large projects....
+%     sel=eventdata.Indices(1);
+%     
+%     segData=get(hObject,'Data');
+%     
+%     [~,~,~]=phy_propertiesGUI(0,segList(sel).t,'Segmentation variable properties');
+%     
+% end
 
 
 % --- Executes when entered data in editable cell(s) in channel_table.
@@ -5181,6 +4810,25 @@ if eventdata.Indices(2)==7 % select tracking method
     
     segmentation.contour{sel,1}=true;
     segmentation.contour{sel,9}=true;
+    
+    if strcmp(eventdata.NewData,'New...') % add new segmentation method
+         [FileName,PathName,FilterIndex] =uigetfile({'*.m','m Enter .m file'},'',pwd);
+         if ~isequal(FileName,0)
+             [pth fle ext]=fileparts(FileName);
+             segmentation.contour{sel,7}=fle;
+             [segmentation.processing.track.(fle) OK]=feval(fle); % call function to assign default params
+        
+         for j=2:5
+            segmentation.processing.track.(fle)(j)=segmentation.processing.track.(fle)(1);
+         end
+    
+    cf=get(handles.contour_table,'ColumnFormat');
+    tmp=cf(7);
+    tmp{1}{end+1}=fle;
+    cf(7)=tmp;
+    set(handles.contour_table,'ColumnFormat',cf);
+         end
+     end
 end
 
 
@@ -5190,10 +4838,10 @@ if eventdata.Indices(2)==11 & eventdata.NewData==1 % test segmentation method
     segmentation.contour{sel,1}=true;
     curseg=segmentation.contour{sel,4};
     
-    if ~strcmp(curseg,'');
+    if ~strcmp(curseg,'') &&  ~strcmp(curseg,'New...')
         featname=segmentation.contour{sel,2};
         statusbar(handles.figure1,['Test segmentation for ' featname ' at frame ' num2str(segmentation.frame1) '...']);
-    end
+
     
     %try
         set(handles.contour_table,'Enable','off');
@@ -5202,6 +4850,9 @@ if eventdata.Indices(2)==11 & eventdata.NewData==1 % test segmentation method
     %catch
         
     %end
+    
+    end
+    
     set(handles.contour_table,'Enable','on');
 end
 
@@ -5406,7 +5057,6 @@ function contour_table_CellSelectionCallback(hObject, eventdata, handles)
 
 global segmentation
 
-
 if numel(eventdata.Indices)==0
     return;
 end
@@ -5461,3 +5111,89 @@ if eventdata.Indices(2)==8 % manages the loading of tracking function parameters
         end
     end
 end
+
+
+% --- Executes when entered data in editable cell(s) in tobject_table.
+function tobject_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to tobject_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+global segmentation
+
+if eventdata.Indices(2)==1
+   return; 
+end
+
+dat=get(hObject,'Data');
+
+sel=eventdata.Indices(1);
+
+nam=dat{sel,1};
+
+answer{1}=eventdata.NewData;
+
+if strcmp(nam,'mother') % changes the mother of a particular track
+    if ~isempty(segmentation.selectedTObj)
+    m=str2double(answer{1});
+    if segmentation.selectedTObj.mother>0
+        tobj=segmentation.(['t',segmentation.selectedType]);
+        tobj(segmentation.selectedTObj.mother).removeDaughter(segmentation.selectedTObj.N);
+        segmentation.(['t',segmentation.selectedType])=tobj;
+    end
+    segmentation.selectedTObj.setMother(0,0);
+    
+    
+    if m~=0
+        segmentation.selectedTObj.setMother(m);
+        segmentation.selectedTObj.birthFrame=segmentation.selectedTObj.detectionFrame;
+        tobj=segmentation.(['t',segmentation.selectedType]);
+        divisionStart=segmentation.selectedTObj.detectionFrame;
+        divisionEnd=segmentation.selectedTObj.detectionFrame;
+        tobj(m).addDaughter(segmentation.selectedTObj.N,divisionStart,divisionEnd);
+        segmentation.(['t',segmentation.selectedType])=tobj;
+        %segmentation.frameChanged(segmentation.selectedTObj.detectionFrame:segmentation.selectedTObj.lastFrame)=1;
+    end
+    
+    phy_change_Disp1('refresh',handles);
+    end
+end
+
+
+
+
+
+
+    
+% --- Executes when entered data in editable cell(s) in object_table.
+function object_table_CellEditCallback(hObject, eventdata, handles)
+% hObject    handle to object_table (see GCBO)
+% eventdata  structure with the following fields (see UITABLE)
+%	Indices: row and column indices of the cell(s) edited
+%	PreviousData: previous data for the cell(s) edited
+%	EditData: string(s) entered by the user
+%	NewData: EditData or its converted form set on the Data property. Empty if Data was not changed
+%	Error: error string when failed to convert EditData to appropriate value for Data
+% handles    structure with handles and user data (see GUIDATA)
+
+
+if eventdata.Indices(2)==1
+   return; 
+end
+
+dat=get(hObject,'Data');
+
+sel=eventdata.Indices(1);
+
+nam=dat{sel,1}
+
+
+% --------------------------------------------------------------------
+function Segmentation_Callback(hObject, eventdata, handles)
+% hObject    handle to Segmentation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
