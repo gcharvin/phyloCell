@@ -48,26 +48,48 @@ else
     disp('Choose approriate segmentation variable (.mat file)');
     lifi=dir([timeLapse.realPath timeLapse.pathList.position{position}]);
     
-    count=1; cc={};
-    for i=1:numel(lifi)
-        [p,n,ext]=fileparts(lifi(i).name);
-        if strcmp(ext,'.mat')
-            cc{count}=lifi(i).name;
-            count=count+1;
-        end
+    fname=fieldnames(lifi);
+    fname=fname(1:3);
+    
+    lifiArr=struct2cell(lifi);
+    lifiArr=lifiArr';
+    lifiArr=lifiArr(3:end,:);
+    lifiFil=cell(1,size(lifiArr,2));
+    cc=1;
+    
+    for i=1:size(lifiArr,1)
+        
+        [p,n,ext]=fileparts(lifiArr{i,1});
+
+       if lifiArr{i,4}==0 & strcmp(ext,'.mat')
+           
+        lifiFil(cc,:)=lifiArr(i,:);
+        cc=cc+1;
+       end
     end
     
-    if numel(cc)~=0
-    [sel,ok] = listdlg('ListString',cc,'Name','Segmentation file','SelectionMode','single');
+    lifiFil=lifiFil(:,1:3);
     
-    if ok==0
-        return;
-    end
+    h=figure; 
+    t=uitable('ColumnWidth',{250 120 100},'ColumnName',fname,'Units','normalized','Position',[0 0 1 1]);
+    set(t,'Data',lifiFil);
     
-    filen=cc{sel};
+    myfunc=@(hObject,event,handles)set(hObject,'UserData',event);
+    
+    set(t,'CellSelectionCallback',myfunc);
+    
+    hui = uicontrol('Position',[20 20 300 50],'String','Select File and Click !',...
+              'Callback','uiresume(gcbf)');
+    uiwait(gcf);
+    a=get(t,'UserData');
+    close(gcf);
+    
+    if numel(a)~=0
+    filen= lifiFil{a.Indices(1),1};
     else
-    filen='segmentation.mat';    
+     return;   
     end
+    
 end
 
 % check if data are already segmented
@@ -107,9 +129,10 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
         segmentation.discardImage=zeros(1,timeLapse.numberOfFrames);
     end
     
-    if nargin==3
-        status('Idle',handles);
-    end
+    
+   segmentation.showFieldsObj={'n','area','ox','oy','fluoMean','fluoVar','Nrpoints'};
+   segmentation.showFieldsTObj={'N','detectionFrame','lastFrame','mother','daughterList','divisionTimes','budTimes'};
+
     
 else
     %' creat new segmentation structure'

@@ -58,22 +58,27 @@ if isfield(timeLapse,'numberOfFrames')
     if segmentation.frame1~=timeLapse.currentFrame
         
         
-        segmentation.myHandles.showCells=[];
-        segmentation.myHandles.showCellsText=[];
-        segmentation.myHandles.showBudnecks=[];%clear contours from previous image
-        segmentation.myHandles.showBudnecksText=[];
-        segmentation.myHandles.showFoci=[];
-        segmentation.myHandles.showFociText=[];
-        segmentation.myHandles.showNucleus=[];
-        segmentation.myHandles.showNucleusText=[];
-        segmentation.myHandles.showMito=[];
-        segmentation.myHandles.showMitoText=[];
-        segmentation.myHandles.showPedigree1=[];
-        segmentation.myHandles.showPedigree2=[];
+        segmentation.myHandles.showcells1=[];
+        segmentation.myHandles.showcells1Text=[];
+        segmentation.myHandles.showbudnecks=[];%clear contours from previous image
+        segmentation.myHandles.showbudnecksText=[];
+        segmentation.myHandles.showfoci=[];
+        segmentation.myHandles.showfociText=[];
+        segmentation.myHandles.shownucleus=[];
+        segmentation.myHandles.shownucleusText=[];
+        segmentation.myHandles.showmito=[];
+        segmentation.myHandles.showmitoText=[];
+        
+        segmentation.myHandles.showPedigreecells1=[];
+        segmentation.myHandles.showPedigreebudnecks=[];
+        segmentation.myHandles.showPedigreefoci=[];
+        segmentation.myHandles.showPedigreenucleus=[];
+        segmentation.myHandles.showPedigreemito=[];
         
         timeLapse.currentFrame=segmentation.frame1;
         nch=length(timeLapse.pathList.channels(1,:));
         %n chanels
+       
         
         %%%%%%
         if ~isfield(segmentation,'realImage')
@@ -206,6 +211,7 @@ if isfield(timeLapse,'numberOfFrames')
         %catch
         %end
         
+
         if get(handles.splitChannels,'Value')==1
             %crop images according to zoom and pan if montage
             %acrop=floor(axis(handles.axes1));
@@ -332,23 +338,22 @@ if isfield(timeLapse,'numberOfFrames')
         end
         
         
-        checkbox_Show_Pedigree_Callback(handles);
+        if ~isempty(segmentation.selectedTObj)
+            segmentation.selectedTObj.select()
+        end
         
-        checkbox_ShowCells_Callback(handles);%if the case is checked then show the segmentation.cells1 by first segmentation
-        
-        checkbox_ShowBudneck_Callback(handles); %if the case is checked then show the budnecks
-        
-        checkbox_ShowFoci_Callback(handles); %if the case is checked then show the budnecks
-        
-        checkbox_ShowNucleus_Callback(handles); %if the case is checked then show the budnecks
-        
-        checkbox_ShowMito_Callback(handles); %if the case is checked then show the budnecks
-        
+        showObject_Callback('cells1',handles);
+        showObject_Callback('budnecks',handles);
+        showObject_Callback('foci',handles);
+        showObject_Callback('mito',handles);
+        showObject_Callback('nucleus',handles);
         
         segmentation.selectedObj={};
-        segmentation.selectedTObj={};
+        %segmentation.selectedTObj={};
         
-        hselected=findobj('Selected','on');
+        
+        hselected=findobj('Selected','on','Type','patch');
+        %get(hselected)
         
         if isempty(hselected)
             set(handles.object_table,'Data',{});
@@ -360,7 +365,7 @@ if isfield(timeLapse,'numberOfFrames')
             %set(handles.edit_TCell_Properties,'string',[]);
         else
             phy_mouseSelectObject(hselected(1), 1, handles)
-            %mouseSelectObject(hselected(1), 1, handles); % weird behavior
+         
             % with toolbar sometimes
         end
         
@@ -419,6 +424,7 @@ parametres=segmentation.processing.parameters(feat,proc);
 
 parametres=parametres{1,1};
 
+
 if ~isempty(segmentation.selectedObj)
     %segmentation.selectedObj.selected=false;
     
@@ -426,11 +432,25 @@ if ~isempty(segmentation.selectedObj)
         set(segmentation.selectedObj.hcontour,'Marker','none');
         set(segmentation.selectedObj.hcontour,'Selected','off');
     end
+    
+    if isfield(segmentation,'swapObj')
+        try
+            for kl=1:length(segmentation.swapObj)
+    if ishandle(segmentation.swapObj{kl}.hcontour)
+        set(segmentation.swapObj{kl}.hcontour,'Marker','none');
+        set(segmentation.swapObj{kl}.hcontour,'Selected','off');
+    end
+    
+            end
+        catch
+        end
+        segmentation.swapObj={};
+    end
+    
     set(handles.object_table,'Data',{});
     set(handles.object_type,'String','Object name');
     set(handles.tobject_table,'Data',{});
     segmentation.selectedObj={};
-    
 end
 
 if strcmp(butonType,'open')
@@ -439,6 +459,7 @@ if strcmp(butonType,'open')
     end
     
     set(handles.tobject_table,'Data',{});
+     set(handles.tobject_type,'String','Track of Object name');
     segmentation.selectedTObj={};
 end
 
@@ -576,155 +597,38 @@ checkbox_Show_Fluo_Analysis_Callback(hObject, eventdata, handles);
 
 
 
-function checkbox_Show_Pedigree_Callback(handles)
-
-global segmentation
-
-%handles
-%if get(handles.checkbox_ShowCells,'Value')
-    if size(segmentation.cells1,1)>=segmentation.frameToDisplay %test if the image already segmented
-        %if get(hObject,'Value') %if checked
-            
-            if get(handles.splitChannels,'Value')
-                siz=size(segmentation.realImage);
-            else
-                siz=[];
-            end
-            segmentation.myHandles.showPedigree1=phy_showPedigree(handles.axes1,segmentation.cells1(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree1,'r','on',siz,segmentation.v_axe1);
-       
-    end
-%end
-%if get(handles.checkbox_ShowNucleus,'Value')
-    
-    if size(segmentation.nucleus,1)>=segmentation.frameToDisplay %test if the image already segmented
-       
-            if get(handles.splitChannels,'Value')
-                siz=size(segmentation.realImage);
-            else
-                siz=[];
-            end
-            segmentation.myHandles.showPedigree2=phy_showPedigree(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),segmentation.myHandles.showPedigree2,'c','on',siz,segmentation.v_axe1);
-       
-    end
-    
-%end
-
-
-
-function checkbox_ShowBudneck_Callback(handles)
-global segmentation
-
-if size(segmentation.budnecks,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if segmentation.contour{2,1}==true %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showBudnecks segmentation.myHandles.showBudnecksText]...
-            =phy_showObject(handles.axes1,segmentation.budnecks(segmentation.frameToDisplay,:),str2num(segmentation.contour{2,3}),'budnecks',segmentation.myHandles.showBudnecks,segmentation.myHandles.showBudnecksText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showBudnecks(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showBudnecks(:),'UIContextMenu',handles.Context_Objects);
-    else %if not checked
-        [segmentation.myHandles.showBudnecks segmentation.myHandles.showBudnecksText]...
-            =phy_showObject(handles.axes1,segmentation.budnecks(segmentation.frameToDisplay,:),str2num(segmentation.contour{2,3}),'budnecks',segmentation.myHandles.showBudnecks,segmentation.myHandles.showBudnecksText,'off');
-    end
-end
-%guidata(hObject, handles);% Save the structure
-
-function checkbox_ShowFoci_Callback(handles)
-global segmentation
-
-if size(segmentation.foci,1)>=segmentation.frameToDisplay %check if the image was segmented
-   if segmentation.contour{3,1}==true %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showFoci segmentation.myHandles.showFociText]...
-            =phy_showObject(handles.axes1,segmentation.foci(segmentation.frameToDisplay,:),str2num(segmentation.contour{3,3}),'foci',segmentation.myHandles.showFoci,segmentation.myHandles.showFociText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showFoci(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showFoci(:),'UIContextMenu',handles.Context_Objects);
-    else %if not checked
-        [segmentation.myHandles.showFoci segmentation.myHandles.showFociText]...
-            =phy_showObject(handles.axes1,segmentation.foci(segmentation.frameToDisplay,:),str2num(segmentation.contour{3,3}),'foci',segmentation.myHandles.showFoci,segmentation.myHandles.showFociText,'off');
-    end
-end
-%guidata(hObject, handles);% Save the structure
-
-function checkbox_ShowMito_Callback(handles)
-global segmentation
-
-if size(segmentation.mito,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if segmentation.contour{4,1}==true %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showMito segmentation.myHandles.showMitoText]...
-            =phy_showObject(handles.axes1,segmentation.mito(segmentation.frameToDisplay,:),str2num(segmentation.contour{4,3}),'mito',segmentation.myHandles.showMito,segmentation.myHandles.showMitoText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showMito(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showMito(:),'UIContextMenu',handles.Context_Objects);
-        
-    else %if not checked
-        [segmentation.myHandles.showMito segmentation.myHandles.showMitoText]...
-            =phy_showObject(handles.axes1,segmentation.mito(segmentation.frameToDisplay,:),str2num(segmentation.contour{4,3}),'mito',segmentation.myHandles.showMito,segmentation.myHandles.showMitoText,'off');
-    end
-end
-%guidata(hObject, handles);% Save the structure
-
-function checkbox_ShowNucleus_Callback(handles)
-global segmentation
-
-if size(segmentation.nucleus,1)>=segmentation.frameToDisplay %check if the image was segmented
-   if segmentation.contour{5,1}==true %if checked
-        if get(handles.splitChannels,'Value')
-            siz=size(segmentation.realImage);
-        else
-            siz=[];
-        end
-        [segmentation.myHandles.showNucleus segmentation.myHandles.showNucleusText]...
-            =phy_showObject(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),str2num(segmentation.contour{5,3}),'nucleus',segmentation.myHandles.showNucleus,segmentation.myHandles.showNucleusText,'on',siz,segmentation.v_axe1);
-        set(segmentation.myHandles.showNucleus(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showNucleus(:),'UIContextMenu',handles.Context_Objects);
-    else %if not checked
-        [segmentation.myHandles.showNucleus segmentation.myHandles.showNucleusText]...
-            =phy_showObject(handles.axes1,segmentation.nucleus(segmentation.frameToDisplay,:),str2num(segmentation.contour{5,3}),'nucleus',segmentation.myHandles.showNucleus,segmentation.myHandles.showNucleusText,'off');
-    end
-end
-%guidata(hObject, handles);% Save the structure
-
-
-function checkbox_ShowCells_Callback(handles)
+function showObject_Callback(objecttype,handles)
 %show the cells1 by first segmentation on the first display
 global segmentation
 
+% if ~isempty(segmentation.selectedTObj)
+%    if strcmp(objecttype, segmentation.selectedType)
+%       selected= 
+%    end
+% end
 
 %AppData=getappdata(handles.figure1);
-if size(segmentation.cells1,1)>=segmentation.frameToDisplay %check if the image was segmented
-    if segmentation.contour{1,1}==true %if checked
-
+if size(segmentation.(objecttype),1)>=segmentation.frameToDisplay %check if the image was segmented
+    
+    for i=1:numel([segmentation.contour{:,1}])
+        if strcmp(segmentation.contour{i,2},objecttype)
+            sel=i;
+            break;
+        end
+    end
+    if segmentation.contour{sel,1}==true %if checked
         tempcells=phy_Object();
-        if segmentation.ROItable{4,1}==true & strcmp(segmentation.ROItable{4,2},'cells1')
+        if segmentation.ROItable{4,1}==true & strcmp(segmentation.ROItable{4,2},objecttype)
             cellsind=str2num(segmentation.ROItable{4,3});
-            
             cont=1;
             
-            n=[segmentation.cells1(segmentation.frameToDisplay,:).n];
+            n=[segmentation.(objecttype)(segmentation.frameToDisplay,:).n];
             [pix ia ib]=intersect(n,cellsind);
             
-            tempcells=segmentation.cells1(segmentation.frameToDisplay,ia);
+            tempcells=segmentation.(objecttype)(segmentation.frameToDisplay,ia);
             
         else
-            %cellsind=str2num(get(handles.showSpecificCells,'String'));
-            
-            %if numel(cellsind)==0
-            tempcells=segmentation.cells1(segmentation.frameToDisplay,:);
-            % else
-            %  tempcells=segmentation.cells1(segmentation.frameToDisplay,:);
-            % end
+            tempcells=segmentation.(objecttype)(segmentation.frameToDisplay,:);
         end
         
         %tempcells
@@ -734,16 +638,22 @@ if size(segmentation.cells1,1)>=segmentation.frameToDisplay %check if the image 
             siz=[];
         end
         
+        if segmentation.([objecttype 'Mapped'])(segmentation.frame1)==1
+            linestyle='-';
+        else
+            linestyle='--';
+        end
         
-        [segmentation.myHandles.showCells segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,tempcells,str2num(segmentation.contour{1,3}),'cells1',[],[],'on',siz,segmentation.v_axe1);
+        [segmentation.myHandles.(['show' objecttype]) segmentation.myHandles.(['show' objecttype 'Text'])]=phy_showObject(handles.axes1,tempcells,str2num(segmentation.contour{sel,3}),objecttype,[],[],'on',siz,segmentation.v_axe1,linestyle);
         
-        set(segmentation.myHandles.showCells(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
-        set(segmentation.myHandles.showCells(:),'UIContextMenu',handles.Context_Objects);
+        set(segmentation.myHandles.(['show' objecttype])(:),'ButtonDownFcn',{@phy_mouseSelectObject,handles});
+        %set(segmentation.myHandles.(['show' objecttype])(:),'UIContextMenu',handles.Context_Objects);
         
-        
-        %set(segmentation.myHandles.showCells(:),'userdata',segmentation.cells1(segmentation.frameToDisplay,:));
+        segmentation.myHandles.(['showPedigree' objecttype])=phy_showPedigree(handles.axes1,segmentation.(objecttype)(segmentation.frameToDisplay,:),segmentation.myHandles.(['showPedigree' objecttype]),str2num(segmentation.contour{sel,3}),'on',siz,segmentation.v_axe1);
+       
+        %set(segmentation.myHandles.showCells(:),'userdata',segmentation.(objecttype)(segmentation.frameToDisplay,:));
     else %if not checked
-        [segmentation.myHandles.showCells segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,segmentation.cells1(segmentation.frameToDisplay,:),str2num(segmentation.contour{1,3}),'cells1',segmentation.myHandles.showCells,segmentation.myHandles.showCellsText,'off');
+        [segmentation.myHandles.(['show' objecttype]) segmentation.myHandles.(['show' objecttype 'Text'])]=phy_showObject(handles.axes1,segmentation.(objecttype)(segmentation.frameToDisplay,:),str2num(segmentation.contour{sel,3}),objecttype,segmentation.myHandles.(['show' objecttype]),segmentation.myHandles.(['show' objecttype 'Text']),'off');
     end
 end
 

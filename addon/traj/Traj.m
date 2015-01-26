@@ -241,7 +241,7 @@ classdef Traj < handle
                         break
                     end
                 end
-                 if ischar(varargin{i}) && strcmpi(varargin{i},'tag')
+                if ischar(varargin{i}) && strcmpi(varargin{i},'tag')
                     t.tag=varargin{i+1};
                     i=i+2;
                     if i>numel(varargin)
@@ -250,8 +250,10 @@ classdef Traj < handle
                 end
                 if ishandle(varargin{i})
                     handle=varargin{i};
-                    figure(handle)
-                    i=i+1;
+                    handlestruct=varargin{i+1};
+                    %figure(handle)
+                    % phyloCell handle is provided
+                    i=i+2;
                     if i>numel(varargin)
                         break
                     end
@@ -262,8 +264,11 @@ classdef Traj < handle
             end
             
             if numel(handle)==0
-               handle=figure; 
+                handle=gca;
+                handlestruct=[];
             end
+            
+            
             
             % plotting traj
             
@@ -289,7 +294,7 @@ classdef Traj < handle
                 vecV(:,2) = vecV(:,2)*(vecYMinMax(2)-vecYMinMax(1))+vecYMinMax(1);
                 
                 
-
+                
                 
                 switch lower(t.orientation)
                     case 'horizontal'
@@ -312,11 +317,15 @@ classdef Traj < handle
                 vecXMinMax=sort(vecXMinMax)+t.startX;
                 vecYMinMax=sort(vecYMinMax)+t.startY-t.width/2;
                 
+                if vecXMinMax==vecXMinMax(2)
+                    continue
+                end
+                
                 %t.hPatch(i) =patch('Faces',vecFaceOrder,'Vertices',vecV,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
                 t.hPatch(i) =rectangle('Position',[vecXMinMax(1) vecYMinMax(1) vecXMinMax(2)-vecXMinMax(1) vecYMinMax(2)-vecYMinMax(1)],'FaceColor',t.color(t.colorIndex(i),:),'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
-               % t.color(t.colorIndex(i),:)
+                % t.color(t.colorIndex(i),:)
                 
-                set(t.hPatch(i),'ButtonDownFcn',{@test,handle});
+                set(t.hPatch(i),'ButtonDownFcn',{@test,handle,handlestruct});
                 
                 %function myCallback(src,eventdata,arg1
             end
@@ -355,7 +364,16 @@ classdef Traj < handle
                             error('unrecognised typeHorzVert, must be horizontal or vertical');
                     end
                     
-                    t.hSep(i) =patch('Faces',vecFaceOrder,'Vertices',vecV2,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none');
+                    vecXMinMax=sort(vecXMinMax)+t.startX;
+                    vecYMinMax=sort(vecYMinMax)+t.startY-t.width/2;
+                    
+                    % t.hSep(i) =patch('Faces',vecFaceOrder,'Vertices',vecV2,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none');
+                    
+                    %t.hPatch(i) =patch('Faces',vecFaceOrder,'Vertices',vecV,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
+                    
+                    t.hSep(i) =rectangle('Position',[vecXMinMax(1) vecYMinMax(1) vecXMinMax(2)-vecXMinMax(1) vecYMinMax(2)-vecYMinMax(1)],'FaceColor',t.sepColor,'EdgeColor','none','EdgeColor','none');
+                    
+                    
                 end
             end
             
@@ -394,7 +412,7 @@ classdef Traj < handle
                     
                     vecV(:,1)=vecV(:,1)+t.startX;
                     vecV(:,2)=vecV(:,2)+t.startY;
-                    a=t.edgeColorIndex(i)
+                    %a=t.edgeColorIndex(i)
                     vecBorderColor=t.edgeColor(t.edgeColorIndex(i),:);
                     linewidth=t.edgeWidth;
                     
@@ -437,8 +455,48 @@ classdef Traj < handle
 end
 
 
-function test(obj, event, handles)
-src=get(obj,'Tag');
-figure(handles);
-title(src);
+function test(obj, event, handles,handlesstruct)
+
+if isstruct(handlesstruct)
+    global segmentation
+    pt = get(gca, 'CurrentPoint');
+    frame=round(pt(1,1));
+    
+    src=get(obj,'Tag');
+    f1=strfind(src,':');
+    f2=strfind(src,'-');
+    nObject=str2num(src(f1+1:f2-1));
+
+    
+    if ~isempty(segmentation.selectedTObj)  %if exist a selected tobject then delesect it
+        strObj=segmentation.selectedType;
+        segmentation.selectedTObj.deselect();
+        segmentation.selectedTObj={};
+    else
+       return; 
+    end
+    
+    if ~isempty(segmentation.selectedObj) %if exist a selected object then deselect it
+        segmentation.selectedObj.selected=0;
+        segmentation.selectedObj={};
+    end
+    
+    
+    
+    if nObject<=length(segmentation.(['t' strObj])) && nObject>=1 %if it is in the limits
+        if segmentation.(['t' strObj])(nObject).N==nObject %check if it was deleted (.N==0)
+            segmentation.(['t' strObj])(nObject).select(); %select the new cell
+            segmentation.selectedTObj=segmentation.(['t' strObj])(nObject); % copy it
+           
+            phy_change_Disp1(frame,handlesstruct);
+        end
+    end
+    
+    
+    
+else
+    src=get(obj,'Tag');
+    axes(handles);
+    title(src);
+end
 end

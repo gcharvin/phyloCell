@@ -20,7 +20,7 @@ y=repmat(y,2,1);
 
 xc=repmat(xc,1,length(x));
 yc=repmat(yc,1,length(x));
-
+%x,y
 dist=(x-xc).^2+(y-yc).^2;
 
 [~,ind]=min(dist,[],2);
@@ -76,7 +76,14 @@ bud.image=pos;
 segmentation.(featname)(pos,end+1)=bud;
 segmentation.frameChanged(pos)=1;
 
-[segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
+     if  segmentation.([featname 'Mapped'])(segmentation.frame1)==1
+                if bud.n>length(segmentation.(['t' featname]))
+                    segmentation.(['t' featname])(bud.n)=phy_Tobject;
+                end
+                segmentation.(['t' featname])(bud.n).addObject(bud);
+     end
+            
+%[segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
 
 warning off all;
 phy_change_Disp1('refresh',handles);

@@ -12,6 +12,11 @@ i=1;
 
 index=[];
 cellindex=[];
+feature='';
+featname='cells1';
+
+handles=[];
+handlestruct=[];
 
 cellwidth=10;
 col=[0.9 0.2 0.2];
@@ -75,8 +80,6 @@ while i<=numel(varargin)
         if i>numel(varargin)
             break
         end
-    else
-        featname='cells1';
     end
     
     if ischar(varargin{i}) && strcmpi(varargin{i},'feature')
@@ -85,8 +88,16 @@ while i<=numel(varargin)
         if i>numel(varargin)
             break
         end
-    else
-        feature='fluoMean';
+    end
+    
+    if ischar(varargin{i}) && strcmpi(varargin{i},'handles')
+        handles=varargin{i+1};
+        handlestruct=varargin{i+2};
+        
+        i=i+3;
+        if i>numel(varargin)
+            break
+        end
     end
     
     
@@ -99,7 +110,7 @@ end
 
 switch mode
     case 0
-        col=[0.3 0.3 0.3; 0.3 0.3 0.9; 1 0.3 0.3];
+        col=[1 0 0; 0.3 0.3 0.9; 1 0.3 0.3];
         sep=1;
     case 1
         col=[1 0.3 0.3; 0.3 1 0.3];
@@ -110,8 +121,12 @@ switch mode
         sep=0;
 end
 
-
-hf=figure('Color','w');
+if numel(handles)==0
+    hf=figure('Color','w');
+    handles=gca;
+else
+    axes(handles);
+end
 
 if numel(index)
     seg=segList(index).s;
@@ -167,19 +182,20 @@ end
 res=sortrows(res,2); % sorted cells
 
 
-if iscell(feature)
-    func=feature{1};
+if isa(feature,'function_handle')
+    func=feature;
     
-%     if numel(feature)>1
-%     args=feature(2:end);
-%     else
-%     args=[];    
-%     end
+    %     if numel(feature)>1
+    %     args=feature(2:end);
+    %     else
+    %     args=[];
+    %     end
 end
+
 
 switch mode % detect min max fluo levels
     case 2
-        if numel(fluo)==1
+        if numel(fluo)==0
             
             mine=inf;
             maxe=-inf;
@@ -190,45 +206,44 @@ switch mode % detect min max fluo levels
                 
                 tcells=seg.(['t' featname])(res(i,1));
                 
-                if iscell(feature)
-                   
-                %if numel(args)
-                %temp=arrayfun(func,tcells.Obj,args{1}*ones(1,length(tcells.Obj)));
-                %else
-                temp=arrayfun(func,tcells.Obj);    
-                %end
-                
-                else      
+                if isa(feature,'function_handle')
                     
-                temp=[tcells.Obj.(feature)];
-                nz=length(tcells.Obj(1).(feature));
-                temp=temp(fluo(1):nz:end);
+                    %if numel(args)
+                    %temp=arrayfun(func,tcells.Obj,args{1}*ones(1,length(tcells.Obj)));
+                    %else
+                    temp=arrayfun(func,tcells.Obj);
+                    %end
+                    
+                else
+                    
+                    temp=[tcells.Obj.(feature)];
+                    nz=length(tcells.Obj(1).(feature));
+                    temp=temp(1:nz:end);
                 end
-
+                
                 maxe=max(maxe,max(temp));
                 mine=min(mine,min(temp));
             end
             
-           
-           % mine,maxe
-            fluo(3)=fluo(1);
+            
+            % mine,maxe
+            % fluo(3)=fluo(1);
             
             if logscale==0
-            fluo(1)=mine;
-            fluo(2)=maxe;
+                fluo(1)=mine;
+                fluo(2)=maxe;
             else
                 if mine<=0
                     disp('Range is not possible in log scale <0!!');
                     return;
                 end
-            fluo(1)=log10(mine);
-            fluo(2)=log10(maxe);    
+                fluo(1)=log10(mine);
+                fluo(2)=log10(maxe);
             end
             
             
         end
 end
-
 
 % plot cell traj
 
@@ -285,7 +300,7 @@ for k=1:numel(res(:,1));
             
             cindex=ones(1,length(rec(:,1)));
             
-        case 2 % fluorescence plotting
+        case 2 % feature plotting
             
             
             cindex=ones(1,length(tcells.Obj));
@@ -303,49 +318,39 @@ for k=1:numel(res(:,1));
                 
                 
                 
-                if fluo(3)>=1
+                if isa(feature,'function_handle')
                     
-                    if iscell(feature)
-                        
-                        %if numel(args)
-                        %temp=func(tcells.Obj(l),args{:}); 
-                        %else
-                        temp=func(tcells.Obj(l));     
-                        %end
-                          
-                    else
-                            
-                         if numel(tcells.Obj(l).(feature))>=fluo(3)
-                        temp=tcells.Obj(l).(feature)(fluo(3));
-                         else
-                        temp=NaN;
-                         end
-                    end
-                    
-                      if logscale==1
-                            temp=log10(temp);
-                      end
-             
-                        
-                  
-                        warning off all;
-                        
-                        t=uint8(round(255*(temp-fluo(1))/(fluo(2)-fluo(1))));
-                        warning on all;
-                        
-                        cindex(ccc)=max(1,t);
-                        
-                        if isnan(temp)
-                        cindex(ccc)=257;
-                        end
-                    
+                    %if numel(args)
+                    %temp=func(tcells.Obj(l),args{:});
+                    %else
+                    temp=func(tcells.Obj(l));
+                    %end
                     
                 else
-                    warning off all;
-                    t=uint8(round(255*(tcells.Obj(l).area)-fluo(1))/(fluo(2)-fluo(1)));
-                    warning on all;
-                    cindex(ccc)=max(1,t);
+                    
+%                     if numel(tcells.Obj(l).(feature))>=fluo(3)
+                        temp=tcells.Obj(l).(feature);
+%                     else
+%                         temp=NaN;
+%                     end
                 end
+                
+                if logscale==1
+                    temp=log10(temp);
+                end
+                
+                warning off all;
+                
+                t=uint8(round(255*(temp-fluo(1))/(fluo(end)-fluo(1))));
+                warning on all;
+                
+                cindex(ccc)=max(1,t);
+                
+                if isnan(temp)
+                    cindex(ccc)=257;
+                end
+                
+                
                 
                 ccc=ccc+1;
                 
@@ -354,15 +359,13 @@ for k=1:numel(res(:,1));
             
     end
     
-    
-    
     %cindex=ones(1,length(rec(:,1)));
     %    cindex(1)=2; % first cel cycle
     %    cindex(end)=3; % last cell cycle
     
     %startX=tcells.detectionFrame;
     
-    startX=1;
+    startX=0;
     startY=(6*cellwidth)*(cc-1)+50;
     
     line([0 0],[0 0],'Color','w');
@@ -375,12 +378,12 @@ for k=1:numel(res(:,1));
     yticklabel{cc}=[num2str(j)];
     
     if ~orientation
-        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],hf,'width',5*cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'gradientwidth',0);
+        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],'width',5*cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'gradientwidth',0,handles,handlestruct);
     else
         temp=startX;
         startX=startY;
         startY=temp;
-        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],hf,'width',5*cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'orientation','vertical','gradientwidth',0);
+        Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],'width',5*cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'orientation','vertical','gradientwidth',0,handles,handlestruct);
     end
     
     if tcells.mother~=0
@@ -390,9 +393,9 @@ for k=1:numel(res(:,1));
         %   [motherY startY]
         
         if ~orientation
-            Traj(-[motherY+2.5*cellwidth startY+2.5*cellwidth],'Color',[0.1 0.1 0.1],hf,'width',1,'startX',rec(1,1)+1,'startY',0,'sepwidth',0,'orientation','vertical','gradientwidth',0);
+            Traj(-[motherY+2.5*cellwidth startY+2.5*cellwidth],'Color',[0.1 0.1 0.1],'width',1,'startX',rec(1,1),'startY',0,'sepwidth',0,'orientation','vertical','gradientwidth',0);
         else
-            Traj([motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],hf,'width',1,'startX',0,'startY',-rec(1,1)+1,'sepwidth',0,'gradientwidth',0);
+            Traj([motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],'width',1,'startX',0,'startY',-rec(1,1),'sepwidth',0,'gradientwidth',0);
         end
         
         
@@ -406,26 +409,43 @@ for k=1:numel(res(:,1));
     
 end
 
-plotDivTimeHS(res,cellwidth);
+%plotDivTimeHS(res,cellwidth);
 
 
-if mode==2 
+if mode==2
     
-%     sca=log10(fluo(2)-fluo(1));
-%     digits=1;
-%     no=floor(sca)-digits+1;
-%     ran=10^no*floor((fluo(2))/10^no) %rounding number
-%     step=ran/5
-% 
-%     arr=fluo(1):step:fluo(2)
+    %     sca=log10(fluo(2)-fluo(1));
+    %     digits=1;
+    %     no=floor(sca)-digits+1;
+    %     ran=10^no*floor((fluo(2))/10^no) %rounding number
+    %     step=ran/5
+    %
+    %     arr=fluo(1):step:fluo(2)
     
     colormap(jet(256));
     
     hc=colorbar;
     
-   % set(gc,'CLim',[0 1];
-   
-    set(hc,'YTick',[1 256],'YTickLabel',{['<' num2str(fluo(1))], ['>' num2str(fluo(2))]});
+    if ischar(feature)
+   % ylabel(hc,feature)
+    else
+   % ylabel(hc,'Custom')    
+    end
+    % set(gc,'CLim',[0 1];
+    
+    yctick=(fluo-fluo(1))*255./(fluo(end)-fluo(1))+1;
+    
+    ytlabel={};
+    for i=1:length(yctick)
+    ytlabel{i}=num2str(fluo(i));
+    end
+    
+    ytlabel{1}=['<' ytlabel{1}];
+    ytlabel{end}=['>' ytlabel{end}];
+        
+    set(hc,'YTick',yctick,'YTickLabel',ytlabel);
+    
+    %{['<' num2str(fluo(1))], ['>' num2str(fluo(2))]});
     
 else
     hc=0;
@@ -456,10 +476,10 @@ end
 
 %axis tight;
 
-if iscell(feature)
-title(['Pedigree of ' featname '-custom function']);
+if isa(feature,'function_handle')
+    title(['Pedigree of ' featname '-custom function']);
 else
-title(['Pedigree of ' featname '-' feature]);
+    title(['Pedigree of ' featname '-' feature]);
 end
 
 ha=gca;
@@ -504,11 +524,19 @@ function xpos=buildNode(tcells,xpos,i,posmin,posmax)
 
 daughterList=tcells(i).daughterList;
 
-if ~issorted(tcells(i).divisionTimes)
-    [B,IX]=sort(tcells(i).divisionTimes);
-    daughterList(:)=daughterList(IX);
-end;
+detect=[];
+cc=1;
+for j=daughterList
+    detect(cc)=tcells(j).detectionFrame;
+    cc=cc+1;
+end
+
+%if ~issorted(tcells(i).divisionTimes)
+[B,IX]=sort(detect);
+daughterList(:)=daughterList(IX);
+%end;
 n=0;
+
 
 %daughterList
 

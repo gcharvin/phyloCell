@@ -121,7 +121,7 @@ problems=1;
 energy=0;
 cc=1;
 
-[narr(:,3) candarr(:,1:3) scorearr(:,1:3)]
+%[narr(:,3) candarr(:,1:3) scorearr(:,1:3)]
 
 %return;
 
@@ -250,7 +250,7 @@ for i=1:numel(mothers)
         if numel(find(tcells(i).daughterList==dau))==0
             pix=find(n==dau);
             tcells(pix).setMother(n(i));
-            tcells(i).addDaughter(dau,[],tcells(pix).detectionFrame); %add a new daughter to the mother
+            tcells(i).addDaughter(dau,tcells(pix).detectionFrame,tcells(pix).detectionFrame); %add a new daughter to the mother
         end
     end
 end

@@ -10,8 +10,7 @@
 % hplot=the handle to each contour of objects
 % htext= the handle to each text of the object
 %hold(haxe,'on');
-function [hplot htext]=phy_showObject(haxe,object,color,name,hplotin,htextin,option,imagesize,v_axe1)
-global segmentation %not very nice but we have to !
+function [hplot htext]=phy_showObject(haxe,object,color,name,hplotin,htextin,option,imagesize,v_axe1,linestyle)
 
 if (strcmpi(option, 'on'))&((isempty(hplotin))|(~ishandle(hplotin))) % if option is on and there is no handle(not sown yet) then show and build the handle
     hplot=[];
@@ -50,14 +49,14 @@ if (strcmpi(option, 'on'))&((isempty(hplotin))|(~ishandle(hplotin))) % if option
                     %  if ~strcmp(name,'budnecks')
                 
                     
-                    ht=text(object(l).ox-xshift,object(l).oy-yshift,num2str(object(l).n),'Color',color,'FontSize',10);
+                    ht=text(object(l).ox-xshift,object(l).oy-yshift,num2str(object(l).n),'Color',color,'FontSize',14,'FontWeight','bold');
                     set(ht,'Parent',haxe);
                     htext(l)= ht;
                     object(l).htext=ht;
                     
                     %hp=plot(h,object(l).x,object(l).y,'Color',color);
                     
-                    hp=patch(object(l).x-xshift,object(l).y-yshift,color,'linewidth',1,'parent',haxe,'EdgeColor',color,'FaceColor','none');
+                    hp=patch(object(l).x-xshift,object(l).y-yshift,color,'linewidth',1,'parent',haxe,'EdgeColor',color,'FaceColor','none','LineStyle',linestyle);
                     
                     
                     %set(hp,'DisplayName',[name,'(',num2str(object(l).image),',',num2str(l),')']);
@@ -108,25 +107,7 @@ if (strcmpi(option, 'on'))&((isempty(hplotin))|(~ishandle(hplotin))) % if option
                     
                     %    'ok4'
                     
-                    if strcmp(name,'cells1')
-                        n=object(l).n;
-                        if segmentation.cells1Mapped(segmentation.frame1)
-                            %                 if numel(segmentation.tcells1(n).budTimes)~=0
-                            %                     pix=length(find(segmentation.tcells1(n).budTimes<segmentation.frame1));
-                            %
-                            %                     trackSingleCells=0;
-                            %                     if isfield(segmentation.parametres,'trackSingleCells')
-                            %                             if segmentation.parametres.trackSingleCells==1
-                            %                                     trackSingleCells=1;
-                            %                             end
-                            %                     end
-                            %
-                            %                     if trackSingleCells
-                            %                     text(object(l).ox-xshift,object(l).oy-yshift+70,num2str(pix),'Color',color,'FontSize',36,'parent',haxe,'Rotation',0);
-                            %                     end
-                            %                 end
-                        end
-                    end
+
                     
                 end
             end

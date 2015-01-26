@@ -352,10 +352,14 @@ for i=1:length(cells)
     for j=1:length(cells(i).Obj)
         
         for l=1:length(dat(:,1))
-           % l,cell2mat(dat(l,3)),cell2mat(dat(l,2)),cell2mat(dat(l,1))
+          
             if cell2mat(dat(l,3))~=0
-              % cell2mat(dat(l,1)),cell2mat(dat(l,2)),cell2mat(dat(l,3))
+               %cell2mat(dat(l,1)),cell2mat(dat(l,2)),cell2mat(dat(l,3))
+               if numel(cells(i).Obj(j).(cell2mat(dat(l,2))))>=cell2mat(dat(l,3))
                 X.(cell2mat(dat(l,1)))=cells(i).Obj(j).(cell2mat(dat(l,2)))(cell2mat(dat(l,3)));
+               else
+                X.(cell2mat(dat(l,1)))=0;   
+               end
             else
                 X.(cell2mat(dat(l,1)))=cells(i).Obj(j).(cell2mat(dat(l,2)));
             end

@@ -113,7 +113,7 @@ segmentation.frame1=1;
 
 segmentation.frameChanged=zeros(1,timeLapse.numberOfFrames);
 
-segmentation.showFieldsObj={'n','area','ox','oy','image','fluoMean','fluoVar','Nrpoints'};
-segmentation.showFieldsTObj={'N','detectionFrame','birthFrame','lastFrame','mother','daughterList','divisionTimes','budTimes'};
+segmentation.showFieldsObj={'n','area','ox','oy','fluoMean','fluoVar','Nrpoints'};
+segmentation.showFieldsTObj={'N','detectionFrame','lastFrame','mother','daughterList','divisionTimes','budTimes'};
 
 

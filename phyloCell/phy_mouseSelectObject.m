@@ -6,8 +6,55 @@ function phy_mouseSelectObject(hObject, eventdata, handles)
 
 global segmentation
 
+try
+sb=statusbar(handles.figure1,'Selecting object/track...');
+catch
+end
 
+
+str=get(hObject,'DisplayName');
 butonType=get(handles.figure1,'SelectionType');
+
+if strcmp(butonType,'extend') && ~isempty(segmentation.selectedObj) % multiple selection for swapping/merging
+   
+   if~isempty(segmentation.selectedObj)
+       if ~isfield(segmentation,'swapObj')
+           segmentation.swapObj={};
+       end
+       
+       temp=get(hObject,'userdata');
+       
+       if temp.n==segmentation.selectedObj.n % do not select 2nd selection of first one
+           statusbar;
+           return;
+       end
+       
+     if  numel(segmentation.swapObj)==0
+      segmentation.swapObj={get(hObject,'userdata')};   
+     else
+     segmentation.swapObj{end+1}=get(hObject,'userdata');
+     end
+   end
+   
+   set(hObject,'Marker','*','MarkerSize',4,'MarkerEdgeColor','g');
+   
+    statusbar;
+    return;
+end
+
+if strcmp(butonType,'alt') 
+    
+    
+    if~isempty(segmentation.selectedObj)
+     set(segmentation.myHandles.(['show' str])(:),'UIContextMenu',handles.Context_Objects);
+    end
+    if~isempty(segmentation.selectedTObj)
+     set(segmentation.myHandles.(['show' str])(:),'UIContextMenu',handles.Context_Tracks);
+    end
+    
+    statusbar;
+    return;
+end
 %get the tipe of click
 
 %deselect selected object
@@ -41,7 +88,7 @@ end
 set(hObject,'Marker','*','MarkerSize',4,'MarkerEdgeColor','c');
 
 %get the selected object from user data
-str=get(hObject,'DisplayName');
+
 segmentation.selectedObj=get(hObject,'userdata');
 segmentation.selectedType=str;
 n=segmentation.selectedObj.n;
@@ -111,7 +158,6 @@ end
 
 
 %show the fields of the object in the cell properties
-s='';
 
 dat=cell(length(segmentation.showFieldsObj),2);
 
@@ -124,10 +170,8 @@ for i=1:length(segmentation.showFieldsObj)
         
         dat{i,1}=segmentation.showFieldsObj{i};
         dat{i,2}=num2str(sprop);
-        s=[s,segmentation.showFieldsObj{i},': ',num2str(sprop),'\n'];
     end
 end
-s=sprintf(s);
 
 
 set(handles.object_table,'Data',dat);
@@ -135,45 +179,14 @@ set(handles.object_table,'Data',dat);
 set(handles.object_type,'String',segmentation.selectedType);
 
 
-
-%select the tobject coresponding to the object
-if strcmp(str,'cells1')
-    if segmentation.([str 'Mapped'])(segmentation.frame1) %& length(segmentation.(['t' str]))>=n
-        segmentation.selectedTObj=segmentation.(['t' str])(n);
-    end
-end
-
-
 %select tobject by duble click and if the pedigree is shown , show in
 %pedigree the coresponding cell
-if strcmp(butonType,'open')&&~isempty(segmentation.selectedTObj)
+if strcmp(butonType,'open') | eventdata==1 %&&~isempty(segmentation.selectedTObj)
     
-    segmentation.selectedTObj.select();
-    
-    if isfield(segmentation.myHandles,'pedigreeImage') && ishandle(segmentation.myHandles.pedigreeImage)% show the cell on the pedigree image
-        uData=get(segmentation.myHandles.pedigreeImage,'UserData');
-        xpos=uData.xpos;
-        %linesize=uData.linesize;
-        %tcells=uData.tcells;
-        %nCell=find((xpos<=j)&(xpos+linesize>=j));
-        %if ~isempty(nCell)
-        scaleFactor=uData.scaleFactor;
-        frame=segmentation.selectedObj.image;
-        x=xpos(n);
-        y=frame*scaleFactor;
-        haxe=uData.haxe;
-        if isfield(uData,'hselect')
-            hs=uData.hselect;
-            set(hs,'xData',x);
-            set(hs,'yData',y);
-        else
-            hold(haxe,'on');
-            uData.hselect=plot(haxe,x,y,'co','hitTest','off');
-            hold(haxe,'off');
-        end
-        set(hObject,'UserData',uData);
-        
-    end
+        if segmentation.([str 'Mapped'])(segmentation.frame1) %& length(segmentation.(['t' str]))>=n
+        segmentation.selectedTObj=segmentation.(['t' str])(n);
+        segmentation.selectedTObj.select();
+        end  
 end
 
 %modify the string coresponding to the tcell properties edit box
@@ -235,10 +248,12 @@ if ~isempty(segmentation.selectedTObj)
             %plot(handles.axes3,segmentation.frame1,f(pix),'Color','r','LineStyle','none','Marker','o'); hold on
             xlabel(handles.axes3,'Time (frames)');
             % title(handles.axes3,['mean :' num2str(round(mean(flu))) '; std :' num2str(round(std(flu)))]);
-            ylabel(handles.axes3,'Fluorescence');
+            ylabel(handles.axes3,['Mean Cell Fluorescence in channel ' num2str(ok)]);
             end
             end
             
+        else
+           quickPedigree(handles); 
         end
        
     end
@@ -334,6 +349,11 @@ if strcmp(get(handles.manualMapping,'State'),'on')
     
 end
 
+try
+sb=statusbar(handles.figure1,'');
+catch
+end
+
 % end of manual mapping
 
 
@@ -365,3 +385,46 @@ segmentation.selectedObj.oy=t(2);
 %set(select.htext, 'yData', (pt(1,2)-old(1,2))+Y);
 
 segmentation.myHandles.oldPoint=pt;
+
+function quickPedigree(handles)
+global segmentation
+
+obj=segmentation.selectedTObj;
+    
+    if isempty(obj)
+    return;
+    end
+    
+typ=segmentation.selectedType;
+
+varargin={};
+varargin{end+1}='cellindex' ;
+varargin{end+1}=obj.N;
+
+varargin{end+1}='mode';
+varargin{end+1}=0;
+%varargin{end+1}=[]; % plot area
+
+%varargin{end+1}='feature';
+%varargin{end+1}='area';
+
+varargin{end+1}='object';
+varargin{end+1}=typ;
+
+varargin{end+1}='handles';
+varargin{end+1}=handles.axes3;
+varargin{end+1}=handles;
+
+cla(handles.axes3);
+
+try
+[hf ha hc]=phy_plotPedigree(varargin{:});
+catch
+end
+
+lim=get(gca,'YTick');
+line([segmentation.frame1 segmentation.frame1],[lim(1) lim(end)],'Color','k','LineStyle','--','LineWidth',3);
+set(gca,'FontSize',12);
+ylabel('Cell #');
+
+
