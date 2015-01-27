@@ -56,7 +56,7 @@ function phy_montage_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 % reload previous global variable
-global sequence
+global sequence segmentation
 
 % Update handles structure
 guidata(hObject, handles);
@@ -64,6 +64,30 @@ guidata(hObject, handles);
 if ~isfield(sequence,'project')
     out=setupSequence();
 end
+
+% inherit from segmentation variable
+if isfield(segmentation,'channel')
+        for i=1:size(sequence.channel,1)
+           sequence.channel{i,2}=segmentation.channel{i,3};
+           minmax=str2num(segmentation.channel{i,4});
+           sequence.channel{i,3}=num2str(minmax(1));
+           sequence.channel{i,4}=num2str(minmax(2));
+        end
+end
+
+if isfield(segmentation,'ROItable')
+    pix=find([segmentation.ROItable{:,1}]);
+    if pix<=2
+       sequence.param{8}=segmentation.ROItable{pix,3};
+    end
+end
+if isfield(segmentation,'contour')
+        for i=1:size(sequence.channel,1)
+            sequence.contour{i,1}=segmentation.contour{i,2};
+            sequence.contour{i,2}=segmentation.contour{i,3};
+        end
+end
+
 
 %if out==1
 updateSequence(handles)
@@ -122,9 +146,11 @@ rgb=[1 1 1; 0 1 0; 1 0 0];
 
 for i=1:numel(timeLapse.list)
     sequence.channel{i,1}=i;
+   
     sequence.channel{i,2}=num2str(rgb(i,:));
     sequence.channel{i,3}=round(timeLapse.list(i).setLowLevel);
     sequence.channel{i,4}=round(timeLapse.list(i).setHighLevel);
+    
     sequence.channel{i,5}=false;
     sequence.channel{i,6}=timeLapse.list(i).binning;
 end
@@ -301,11 +327,10 @@ end
 
 pix=~cellfun(@isempty,sequence.display(:,1));
 pix=cellfun(@mean,sequence.display(pix,1));
-pix=find(pix==1)
+pix=find(pix==1);
 
 cc=1;
 for i=pix'
-    'ok'
    channelGroup(cc)= {'1 0 1 0'};
    cc=cc+1;
 end
@@ -458,12 +483,16 @@ nimages=str2num(sequence.param{7,1});
 
 % get channels settings
 
-for i=1:size(sequence.channel,1)
-    if i==1
 
-       ch=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[sequence.channel{i,3} sequence.channel{i,4}]);
+
+for i=1:size(sequence.channel,1)
+            mine=str2num(sequence.channel{i,3});
+            maxe=str2num(sequence.channel{i,4});
+            
+    if i==1
+       ch=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[mine maxe]);
     else
-       ch(i)=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[sequence.channel{i,3} sequence.channel{i,4}]);
+       ch(i)=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[mine maxe]);
     end
 end
 

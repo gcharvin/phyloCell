@@ -52,7 +52,7 @@ else
 end
 
 % open the file
-r = bfGetReader(fileName);
+r = bfGetReader([pat '/' fileName]);
 
 % initialize logging
 loci.common.DebugTools.enableLogging('INFO');
@@ -111,7 +111,7 @@ timeLapse.status='done';
 
 for i=1:meta.channels
     
-    timeLapse.list(i).ID= strtrim(char(omeMeta.getChannelName(1,i-1)));
+    timeLapse.list(i).ID= strtrim(char(omeMeta.getChannelName(0,i-1)));
     
     timeLapse.list(i).videoResolution(1)=meta.width;
     timeLapse.list(i).videoResolution(2)=meta.height;

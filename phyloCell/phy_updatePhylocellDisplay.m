@@ -107,6 +107,9 @@ if ~isfield(segmentation,'contour')
     segmentation.contour(1:5,11)={false false false false false};
     segmentation.contour(1:5,12)={false false false false false};
     segmentation.contour(1:5,13)={false false false false false};
+else
+        segmentation.contour(1:5,5)={'Edit...','Edit...','Edit...','Edit...','Edit...'};
+        segmentation.contour(1:5,8)={'Edit...','Edit...','Edit...','Edit...','Edit...'};
 end
 
 if ~isfield(segmentation,'processing')
@@ -217,8 +220,15 @@ end
 set(handles.contour_table,'Data',segmentation.contour);
 
 % update GUI
+
 if isfield(timeLapse,'numberOfFrames')
     set(handles.slider1,'Max',max(2,timeLapse.numberOfFrames));
+end
+
+if isfield(segmentation,'sequence')
+   sequence=segmentation.sequence;  
+else
+   sequence=[]; 
 end
 
 try

@@ -1,11 +1,71 @@
-%segment budneck function
-function [budneck]=phy_segmentFoci4(img,minSize,maxSize,thrfiltre,siz)
-
+function [phy_Objects OK]=phy_segmentFoci(img,param)
+% this function performs the semgnetation of dmall cellular oragnelles
 % new function based on 1.	Kimori, Y., Baba, N. & Morone, N. Extended
 % morphological processing: a practical method for automatic spot detection
 % of biological markers from microscopic images. BMC Bioinformatics 11, 373 (2010).
 
 % from the function phy_segmentFoci4.m in phyloCell2.1 version 
+
+%
+% Input :   [phy_Objects OK]=phy_segmentFoci(img,param)
+%           performs the operation on image img using set of parameters param; Structure of parameter is detailed below
+%           Output : is an array of instance of the phy_Object class which
+%           contains the contours obtained following the operation
+%
+%           [param OK]=phy_segmentFoci(param)
+%           loads a GUI to assign parameter values and outputs the
+%           structure to be used for segmentation
+%
+%           [param OK]=phy_segmentFoci()
+%            assign default parameter values and outputs the
+%           structure to be used for segmentation
+%
+%
+% Usage :   First call the function without any argument to setup the
+%           parameters; then call the function again with image and
+%           parameters
+
+OK=0;
+
+if nargin==0 % assigns default parameters and creat param struct
+    
+    %% EDIT THIS STRUCTURE
+    param=struct('channel',2,'minSize',1,'maxSize',10000,'thrfiltre',10,'size',2,'display',0);
+    %%
+   
+   phy_Objects=param;
+   OK=1;
+   
+   return;
+end
+
+if nargin==1 % call GUI to assign parameter values
+    if ~isstruct(img)
+       disp('Function is argument is incorrect'); 
+    end
+    
+    %% EDIT THIS DESCRIPTION
+    description{1}='Fluorescence channel to be used for segmentation';
+    description{end+1}='Min foci area cutoff output by segmentation (area in pixels)';
+    description{end+1}='Max foci cutoff output by segmentation (area in pixels)';
+    description{end+1}='Binarization threshold used in segmentation';
+    description{end+1}='Size of typical foci (pixels)';
+    description{end+1}='Display steps of segmentation';
+    %% THE NUMBER OF ITEMS MUST MATCH THE NUMBER OF FIELDS IN THE PARAM STRUCT
+    
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
+    
+   if OK==0
+       phy_Objects=img;
+       return;
+   end
+   
+   phy_Objects=param;
+   OK=1;
+   
+   return;
+end
+
 
 budneck=phy_Object;%initialize
 
@@ -13,15 +73,16 @@ budneck=phy_Object;%initialize
 img=imresize(img,0.5);
 %%%%
 
-display=0;
 imgor=img;
 
 
-if display
-figure;
-%subplot(3,3,1);
-imshow(img,[]); hold on;
-end
+   if param.display==1 % display original image
+scr=get(0,'ScreenSize');   
+figure('Color','w','Position',[1 scr(3)-500 scr(3) 500]); p=panel; p.de.margin=0; p.pack('h',1); ccc=1; p(ccc).select(); 
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(img,[]);
+   end
 
 %maxI=max(img(:));
 %minI=min(img(:));
@@ -30,7 +91,7 @@ end
 
 
 M=zeros([size(img) 36]);
-SE = strel('line', siz, 0);
+SE = strel('line', param.size, 0);
 
 % im rotation
 for i=1:36
@@ -44,23 +105,28 @@ U=max(M,[],3);
 R=double(img)-U; % top hat filtering
 R=uint16(R);
 
-if display
-figure, imshow(R,[0 200]);
-end
+  if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((R),[0 200]);
+   end
 
-% if display
-% figure, imshow(R,[]);
-% end
-% return;
-%level = graythresh(R);
 
-level=thrfiltre;
+level=param.thrfiltre;
 
 %maxR=max(R(:));
 %R=phy_scale(R);
 
 BW = im2bw(R,level/65535);
 
+  if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((BW),[]);
+  end
+   
 %level/(maxI-minI)
 
 
@@ -73,16 +139,20 @@ stat = regionprops(L, 'Area');
 
 for i=1:numel(stat)
 
-if stat(i).Area <minSize || stat(i).Area >maxSize
+if stat(i).Area <param.minSize || stat(i).Area >param.maxSize
 tmp=L==i;
 %t=stat(i).Area
 BW(tmp)=0;
 end
 end
 
-if display
-figure, imshow(BW,[]);
-end
+  if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((BW),[]);
+  end
+   
 
 BW=imdilate(BW,strel('square',2)); % expand contours
 
@@ -90,10 +160,12 @@ BW=imdilate(BW,strel('square',2)); % expand contours
 n = length(B);
 
 
-if display
-figure, imshow(imgor,[]); hold on;
-%figure, imshow(R,[0 200]); hold on;
-end
+  if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((imgor),[]);
+   end
 
 % for j=1:n
 %         contour = B{j};
@@ -113,7 +185,7 @@ pix=find(L==cc);
 
 %numel(pix)
 area=polyarea(boundary(:,2),boundary(:,1));
-if area>= minSize && area<=maxSize
+if area>= param.minSize && area<=param.maxSize
 
 
 budneck(k).Mean=mean(imgor(pix));
@@ -144,9 +216,12 @@ budneck(k).oy=2*mean(r);  %y center
 
 budneck(k).n=k;
 
-if display
+   
+if param.display
 plot(boundary(:,2),boundary(:,1),'Color','r'); hold on
 end
 k=k+1;
 end
 end
+
+phy_Objects=budneck;

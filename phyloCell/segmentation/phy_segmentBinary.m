@@ -1,5 +1,68 @@
-%segment budneck function
-function [budneck]=phy_segmentMito(img,parametres)
+
+function [phy_Objects OK]=phy_segmentBinary(img,param)
+% this function performs the segmentation of small cellular oragnelles by
+% simple binarization
+
+
+%
+% Input :   [phy_Objects OK]=phy_segmentBinary(img,param)
+%           performs the operation on image img using set of parameters param; Structure of parameter is detailed below
+%           Output : is an array of instance of the phy_Object class which
+%           contains the contours obtained following the operation
+%
+%           [param OK]=phy_segmentBinary(param)
+%           loads a GUI to assign parameter values and outputs the
+%           structure to be used for segmentation
+%
+%           [param OK]=phy_segmentBinary()
+%            assign default parameter values and outputs the
+%           structure to be used for segmentation
+%
+%
+% Usage :   First call the function without any argument to setup the
+%           parameters; then call the function again with image and
+%           parameters
+
+OK=0;
+
+if nargin==0 % assigns default parameters and creat param struct
+    
+    %% EDIT THIS STRUCTURE
+    param=struct('channel',2,'minSize',1,'maxSize',10000,'thr',20,'size',5,'display',0);
+    %%
+   
+   phy_Objects=param;
+   OK=1;
+   
+   return;
+end
+
+if nargin==1 % call GUI to assign parameter values
+    if ~isstruct(img)
+       disp('Function is argument is incorrect'); 
+    end
+    
+    %% EDIT THIS DESCRIPTION
+    description{1}='Fluorescence channel to be used for segmentation';
+    description{end+1}='Min object area cutoff output by segmentation (area in pixels)';
+    description{end+1}='Max object cutoff output by segmentation (area in pixels)';
+    description{end+1}='Binarization threshold used in segmentation';
+    description{end+1}='Size of opening element';
+    description{end+1}='Display steps of segmentation';
+    %% THE NUMBER OF ITEMS MUST MATCH THE NUMBER OF FIELDS IN THE PARAM STRUCT
+    
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
+    
+   if OK==0
+       phy_Objects=img;
+       return;
+   end
+   
+   phy_Objects=param;
+   OK=1;
+   
+   return;
+end
 
 imgor=img;
 %img=phy_scale(img);% scale image (O 1)
@@ -10,26 +73,36 @@ budneck=phy_Object;%initialize
 
 display=0;
 
-if display
-figure; subplot(3,3,1); imshow(img,[]); hold on; 
-end
+ if param.display==1 % display original image
+scr=get(0,'ScreenSize');   
+figure('Color','w','Position',[1 scr(3)-500 scr(3) 500]); p=panel; p.de.margin=0; p.pack('h',1); ccc=1; p(ccc).select(); 
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(img,[]);
+   end
 
 img = medfilt2(img,[4 4]);% filtre median
 
-if display
-subplot(3,3,2); imshow(img,[]); hold on; 
-end
+ if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((img),[]);
+   end
 
 %substract background
 warning off all
-background = imopen(img,strel('disk',parametres{4,2}));
+background = imopen(img,strel('disk',param.size));
 warning on all
 I2 = imsubtract(img,background);
 
 
-if display
-subplot(3,3,3); imshow(I2,[]); hold on; 
-end
+ if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(I2,[]);
+   end
 
 %figure, imshow(I2,[]);
 
@@ -42,7 +115,7 @@ if cells_max==0
    return;
 end
 
-filterlevel=parametres{5,2}/double(cells_max);
+filterlevel=param.thr/double(cells_max);
 %return;
 
 %xbin=0:0.01:1;
@@ -50,26 +123,17 @@ filterlevel=parametres{5,2}/double(cells_max);
 
 med=median(double(I2(:)));
 
-%first level of threshold
-
-% level1 =parametres{5,2};
-% 
-% %+parametres{5,2}
-% %+cells_stdv %graythresh(I2);
-% if level1>=1
-%     level1=0.999;
-% end
-% if level1<=0
-%     level1=0.001;
-% end
 
 I2=phy_scale(I2);% scale image (O 1)
 img=phy_scale(imgor);
 bw_bud=im2bw(I2,filterlevel);
 
-if display
-subplot(3,3,4); imshow(bw_bud,[]); hold on; 
-end
+ if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(bw_bud,[]);
+   end
 %figure; imshow(bw_bud);
 
 %second level of threshold
@@ -82,9 +146,6 @@ end
 % end
 % bw_bud=im2bw(I2,level2);
 
-if display
-subplot(3,3,5); imshow(bw_bud,[]); hold on;
-end
 
 %low=bw_bud;
 %figure; imshow(bw_bud);
@@ -117,9 +178,6 @@ end
 %     disp('level 2 low');
 % end
 
-if display
-subplot(3,3,6); imshow(bw_bud,[]); hold on; 
-end
 
 %bw_bud=low;
 
@@ -142,9 +200,6 @@ end
 
 %figure; imshow(bw_bud);
 
-if display
-subplot(3,3,7); imshow(bw_bud,[]); hold on; 
-end
 
 cells_mean=mean2(img(bw_bud));
 cells_stdv=std2(img(bw_bud));
@@ -153,15 +208,19 @@ cells_stdv=std2(img(bw_bud));
 se = strel('disk',3);
 bw_bud=imdilate(bw_bud,se);
 
-if display
-subplot(3,3,8); imshow(bw_bud,[]); hold on; 
-end
+ if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(bw_bud,[]);
+ end
+   
 %figure; imshow(bw_bud);
 
 %exit the function if no budnecks detected
-if ~any(bw_bud)
-    return
-end
+%if ~any(bw_bud)
+%    return
+%end
 
 % %mask the real image with new found budnecks
 % bud=bw_bud.*img;
@@ -227,9 +286,12 @@ end
 
 L=bw_bud; % for mitochondria detection (no watershed)
 
-if display
-subplot(3,3,9); imshow(L,[]); hold on; 
-end
+ if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(imgor,[]);
+   end
 
 [B,L] = bwboundaries(L,4,'noholes');%hyst
 
@@ -246,7 +308,7 @@ for cc = 1:length(B)
     %calcul mean ,mode, min,max, intensity budneck
    % 'ok'
    
-    if min(boundary(:,2))>10 && max(min(boundary(:,2)))<size(img,2)-10 && min(boundary(:,1))>10 && max(min(boundary(:,1)))<size(img,1)-10
+    if min(boundary(:,2))>10 && max(min(boundary(:,2)))<size(img,2)-10 && min(boundary(:,1))>10 && max(min(boundary(:,1)))<size(img,1)-10 && polyarea(boundary(:,2),boundary(:,1))>param.minSize && polyarea(boundary(:,2),boundary(:,1))<param.maxSize  
     budneck(k).Mean=mean(img(pix));
     budneck(k).Median=median(img(pix));
     budneck(k).Min=min(img(pix));
@@ -263,7 +325,13 @@ for cc = 1:length(B)
     budneck(k).oy=mean(r);  %y center
     budneck(k).n=k;
     
+    if param.display
+plot(boundary(:,2),boundary(:,1),'Color','r'); hold on
+    end
+
     k=k+1;
     end
     end
 end
+
+phy_Objects=budneck;

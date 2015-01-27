@@ -1811,7 +1811,7 @@ global segmentation sequence
 
 if isfield(segmentation,'sequence')
    sequence=segmentation.sequence; 
-   'ok'
+   
 end
 
 phy_montage; 
@@ -2509,7 +2509,6 @@ if strcmp(eventdata.Key,'z')
         %end
     %end
 end
-
 
 % undocumented yet
 if strcmp(eventdata.Key,'t')
@@ -4823,10 +4822,10 @@ if ~strcmp(curseg,'');
     
     % process segmentation
     curparam=segmentation.processing.param.(curseg)(sel);
-    im=segmentation.segmentationImage(:,:,curparam.channel);
+    im=segmentation.realImage(:,:,curparam.channel);
     im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
-    
-    
+    %curparam.channel
+    %figure, imshow(im,[]);
   %  try
         [tmp OK]=feval(curseg,im,curparam);
   %  catch
@@ -4857,7 +4856,7 @@ if ~strcmp(curseg,'');
         delete(segmentation.myHandles.(['show' str 'Text']));
     end
     
-    [segmentation.myHandles.(['show' str]) segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,myObject(segmentation.frame1,:),str2num(segmentation.contour{sel,3}),featname,segmentation.myHandles.(['show' str]),segmentation.myHandles.(['show' str 'Text']),'on',[],segmentation.v_axe1);
+    [segmentation.myHandles.(['show' str]) segmentation.myHandles.showCellsText]=phy_showObject(handles.axes1,myObject(segmentation.frame1,:),str2num(segmentation.contour{sel,3}),featname,segmentation.myHandles.(['show' str]),segmentation.myHandles.(['show' str 'Text']),'on',[],segmentation.v_axe1,'--');
     set(segmentation.myHandles.(['show' str])(:),'ButtonDownFcn',{@mouseSelectObject,handles});
     set(segmentation.myHandles.(['show' str])(:),'UIContextMenu',handles.Context_Objects);
     %

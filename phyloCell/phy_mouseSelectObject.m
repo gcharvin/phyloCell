@@ -263,6 +263,12 @@ else
     
     set(handles.setSelectedCellBudTime,'State','off');
     set(handles.setSelectedCellDivisionTime,'State','off');
+    
+end
+
+if isempty(segmentation.selectedObj)
+        axes(handles.axes3);
+    cla;
 end
 
 %a=segmentation.selectedObj

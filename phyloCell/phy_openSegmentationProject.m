@@ -70,6 +70,9 @@ else
     
     lifiFil=lifiFil(:,1:3);
     
+    if numel(lifiFil{1,1})==0
+        filen='segmentation.mat';
+    else
     h=figure; 
     t=uitable('ColumnWidth',{250 120 100},'ColumnName',fname,'Units','normalized','Position',[0 0 1 1]);
     set(t,'Data',lifiFil);
@@ -88,6 +91,8 @@ else
     filen= lifiFil{a.Indices(1),1};
     else
      return;   
+    end
+    
     end
     
 end

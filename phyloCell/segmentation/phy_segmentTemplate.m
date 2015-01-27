@@ -35,7 +35,7 @@ if nargin==0 % assigns default parameters and creat param struct
     % channel is mandatory to indicate which channel in your project is used for
     % segmentation 
     
-    param=struct('channel',1,'param1',1,'param2',3); 
+    param=struct('channel',1,'param1',1,'param2',3,'display',1); 
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
     phy_Objects=param;
@@ -57,7 +57,8 @@ if nargin==1 % call GUI to assign parameter values
     description{1}='channel number';
     description{2}='my first param is used for ...';
     description{3}='my second param is used for ...';
-    
+    description{4}='display intermediate results ...';
+    % THE NUMBER OF ITEMS MUST MATCH THE NUMBER OF FIELDS IN THE PARAM STRUCT
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -77,16 +78,40 @@ end
    %%%%%% PUT YOUR CODE HERE %%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+   if param.display==1 % display original image
+scr=get(0,'ScreenSize');   
+figure('Color','w','Position',[1 scr(3)-500 scr(3) 500]); p=panel; p.de.margin=0; p.pack('h',1); ccc=1; p(ccc).select(); 
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(img,[]);
+   end
+  
    
    img=mat2gray(img);
    level=graythresh(img);
    BW=im2bw(img,level);
+   
+   
+   if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((BW),[]);
+   end
+  
    L=bwlabel(BW);
    
    
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   
+   if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((img),[]);
+   end
    
    
 % stats about lidentified labels
@@ -111,6 +136,10 @@ for i=1:numel(stat)
             phy_Objects(cc).fluoMean(1)=mean(stat(i).PixelValues);
             phy_Objects(cc).fluoVar(1)=std(double(stat(i).PixelValues));
             
+            if param.display
+       line( phy_Objects(cc).x,phy_Objects(cc).y,'Color','r','LineWidth',2);
+            end
+   
             cc=cc+1;
         end
 end

@@ -25,7 +25,9 @@ OK=0;
 
 if nargin==0 % assigns default parameters and creat param struct
     
+    %% EDIT THIS STRUCTURE
     param=struct('channel',1,'minSize',100,'maxSize',10000,'thresh',0.25,'display',0,'mask','');
+    %%
    
    phy_Objects=param;
    OK=1;
@@ -34,18 +36,18 @@ if nargin==0 % assigns default parameters and creat param struct
 end
 
 if nargin==1 % call GUI to assign parameter values
-    
-     
     if ~isstruct(img)
        disp('Function is argument is incorrect'); 
     end
     
+    %% EDIT THIS DESCRIPTION
     description{1}='Fluorescence channel to be used for segmentation';
     description{2}='Min cell area cutoff output by segmentation (area in pixels)';
     description{3}='Max cell area cutoff output by segmentation (area in pixels)';
     description{4}='Binarization threshold used in segmentation (usually 0.1-0.4); Type 0 if you want to use Otsu method';
     description{5}='Display steps of segmentation';
     description{6}='Mask (used internally, no edition allowed)';
+    %% THE NUMBER OF ITEMS MUST MATCH THE NUMBER OF FIELDS IN THE PARAM STRUCT
     
    [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
     
@@ -60,26 +62,22 @@ if nargin==1 % call GUI to assign parameter values
    return;
 end
 
-
-
  sca=1;
  
-  %if display
- %figure, imshow(img,[]);
- % end
-  
  imgstore=img;
  if sca~=1;
  img=imresize(img,1/sca);
  end
 
-
 img=mat2gray(img);
 
-if param.display
-figure, imshow(img,[]);
-%figure, imshow(img,[]);
-end
+if param.display==1
+scr=get(0,'ScreenSize');   
+figure('Color','w','Position',[1 scr(3)-500 scr(3) 500]); p=panel; p.de.margin=0; p.pack('h',1); ccc=1; p(ccc).select(); 
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(img,[]);
+  end
 
 %h = fspecial('disk',3);
 %blurred = imfilter(I,H,'replicate');
@@ -134,10 +132,12 @@ img = rangefilt(img);
 %[img,Xpad] = kuwahara(1-Iobrcbr);
 %figure, imshow(img,[]);
 
-if param.display
-figure, imshow(img,[]);
-end
-
+if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow((img),[]);
+  end
 %returns thresh containing N threshold values using Otsu's method
 
 % if param.thresh==0
@@ -148,12 +148,15 @@ end
 
 level2=graythresh(img2);
 
-BW2 = im2bw(img2,level2+0.0);
+BW2 = im2bw(img2,level2);
 
 
-if param.display
-figure, imshow(BW2,[]);
-end
+if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(BW2,[]);
+  end
 
 
 for j=1:1 % currently, only one loop is necessary 
@@ -166,9 +169,19 @@ for j=1:1 % currently, only one loop is necessary
      BW=edge(img,'canny');    
   end
   
+  
+  if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+
+imshow(BW,[]);
+  end
+  
+  
 %BW = im2bw(img,level);
 
-BW = BW | BW2;
+%BW = BW | BW2;
 
 BW = bwareaopen(BW, 10);
 
@@ -176,9 +189,6 @@ BW = bwareaopen(BW, 10);
 %BW = im2bw(img,l);
 %BW=BW3;
 
-if param.display
-figure,imshow(BW,[]);
-end
 
 %BW=imopen(BW,strel('disk',2));
 
@@ -189,9 +199,12 @@ end
 if ~ischar(param.mask)
     BW=BW | param.mask;
     
-    if param.display
-figure,imshow(BW,[]);
-end
+if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(BW,[]);
+  end
 end
 
 
@@ -201,9 +214,12 @@ imdist=bwdist(BW);
 imdist = imclose(imdist, strel('disk',2));
 imdist = imhmax(imdist,2);
 
-if param.display
-figure,imshow(imdist,[0 30]); colormap jet
-end
+if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(imdist,[0 30]); colormap(jet)
+  end
 
 sous=BW- imdist;
 
@@ -240,9 +256,12 @@ end
 oldlabels = newlabels;
 end
 
-if param.display
-figure, imshow(newlabels,[]);
-end
+if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(newlabels,[]);
+  end
 
 if sca~=1;
  img=imresize(img,sca);
@@ -252,9 +271,12 @@ end
  
  %newlabels=uint16(newlabels);
 
- if param.display
-figure; imshow(img2,[]); hold on;
- end
+if param.display==1
+p.pack('h',1); ccc=ccc+1; p(ccc).select();
+p(ccc).marginleft=0;
+p(ccc).marginright=0;
+imshow(img2,[]);
+  end
 
 % tic;
 stat = regionprops(newlabels,imgstore, 'Area','Eccentricity','PixelValues');
@@ -296,6 +318,10 @@ for i=1:numel(stat)
 end
 
 OK=1;
+
+p.marginleft=0;
+p.marginright=0;
+
 
 % fuse cells that are oversegmented
 %phy_Objects=removeFusedCells(phy_Objects,30,npoints,imgstore);
