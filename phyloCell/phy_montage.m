@@ -300,28 +300,30 @@ function makeMovie_Callback(hObject, eventdata, handles)
 % hObject    handle to makeMovie (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global sequence segmentation
+global sequence segmentation timeLapse
 
 sequence.param=get(handles.tableparameter,'Data');
 sequence.display=get(handles.tabledisplay,'Data');
 sequence.channel=get(handles.tablechannel,'Data');
 sequence.contour=get(handles.tablecontour,'Data');
 
-channelGroups={};
+channelGroup={};
 framesIndices=str2num(sequence.param{4}):1:str2num(sequence.param{5});
 manualStart=0;
 
-varargin(1:2)={'ROI', str2num(sequence.param{8})};
 
-[pth nme]=fileparts(sequence.project.seqname)
-
-varargin(3:4)={'output', nme};
+[pth nme]=fileparts(sequence.project.seqname);
 
 if numel(sequence.param{3})~=0
  varargin(end+1:end+2)={'cavity', str2num(sequence.param{3})};   
 end
 
+for i=1:size(sequence.channel,1)
+    timeLapse.list(i).setLowLevel=str2num(sequence.channel{i,3});
+    timeLapse.list(i).setHighLevel=str2num(sequence.channel{i,4});
+end
 
+cavity=sequence.param{3,1};
 
 % generate panel structure
 
@@ -331,59 +333,61 @@ pix=find(pix==1);
 
 cc=1;
 for i=pix'
-   channelGroup(cc)= {'1 0 1 0'};
+   cha=str2num(sequence.display{i,3});
+   str='0 0 0 0';
+   for j=1:numel(cha)
+       colo=str2num(sequence.channel{cha(j),2});
+       
+       if colo(1)==1 && colo(2)==1 && colo(3)==1 %phase contrast
+           str(1)=num2str(cha(j));
+       end
+       if colo(1)==0 && colo(2)==1 && colo(3)==0 %gfp
+           str(5)=num2str(cha(j));
+       end
+       if colo(1)==1 && colo(2)==0 && colo(3)==0 %rfp
+           str(3)=num2str(cha(j));
+       end
+       if colo(1)==0 && colo(2)==0 && colo(3)==1 %rfp
+           str(7)=num2str(cha(j));
+       end
+       
+   end
+   
+   channelGroup{cc}= str;
+   
    cc=cc+1;
 end
 
-
-
-
-nlin= str2num(sequence.param{2,1}) * sum(pix);
-ncol= ceil(str2num(sequence.param{6,1})/str2num(sequence.param{2,1}));
-nframes= str2num(sequence.param{6,1});
-nch= sum(pix);
-
-% generate figure;
-
-
-
-%
-%track=str2num(sequence.param{9,1});
-
-
-
-
-% get channels settings
-
-for i=1:size(sequence.channel,1)
-    if i==1
-
-       ch=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[sequence.channel{i,3} sequence.channel{i,4}]);
-    else
-       ch(i)=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[sequence.channel{i,3} sequence.channel{i,4}]);
-    end
-end
-
-% adjust timeLapse high and low level so that levels are identical for
-% movie generation  
-
-% get contours settings
-
+cf=1;
+cont=[];
 for i=1:size(sequence.contour,1)
-    if i==1
-       cont=struct('object',sequence.contour{i,1},'color',str2num(sequence.contour{i,2}),'lineWidth',str2num(sequence.contour{i,3}),'link',double(sequence.contour{i,5}),'incells',str2num(sequence.contour{i,4}),'cycle',[]);
-    else
-       cont(i)=struct('object',sequence.contour{i,1},'color',str2num(sequence.contour{i,2}),'lineWidth',str2num(sequence.contour{i,3}),'link',double(sequence.contour{i,5}),'incells',str2num(sequence.contour{i,4}),'cycle',[]);
+    ok=[];
+    for j=pix'
+        contfield=str2num(sequence.display{j,4});
+        
+        if numel(find(contfield==i))~=0
+            ok=[ok j];
+        end
     end
+ %   ok
     
+    if numel(ok)~=0
+    if cf==1
+        cont=struct('channelGroup',ok,'object',sequence.contour{i,1},'color',str2num(sequence.contour{i,2}),'lineWidth',str2num(sequence.contour{i,3}),'link',double(sequence.contour{i,5}),'incells',str2num(sequence.contour{i,4}),'cycle',[]);
+    else
+        cont(cf)=struct('channelGroup',ok,'object',sequence.contour{i,1},'color',str2num(sequence.contour{i,2}),'lineWidth',str2num(sequence.contour{i,3}),'link',double(sequence.contour{i,5}),'incells',str2num(sequence.contour{i,4}),'cycle',[]);
+    end
+   %%cont(cf).channelGroup=ok;
+    end
+
+    cf=cf+1;
     %cont.channelGroup=[1 2];
 end
+   
 
-varargin(end+1:end+2)={'contours',cont}
+frameIndices=str2num(sequence.param{4,1}):str2num(sequence.param{5,1});
 
-cont.channelGroup=[1 2];
-
-exportMontage('','', segmentation.position, channelGroups, frameIndices, manualStart, segmentation, varargin)
+exportMontage('','', segmentation.position, channelGroup, frameIndices, 0, segmentation,'ROI',str2num(sequence.param{8}),'output',nme,'contours',cont,'cavity',cavity)
 
 
 % --- Executes when entered data in editable cell(s) in tableparameter.
@@ -444,7 +448,6 @@ sequence.param=get(handles.tableparameter,'Data');
 sequence.display=get(handles.tabledisplay,'Data');
 sequence.channel=get(handles.tablechannel,'Data');
 sequence.contour=get(handles.tablecontour,'Data');
-
 
 % generate panel structure
 

@@ -23,6 +23,9 @@ function [newcell OK]=phy_mapCellsHungarian(cell0,cell1,lastObjectNumber,param)
 %           parameters
 
 
+OK=0;
+newcell=[];
+
 if nargin==0 % assigns default parameters and creat param struct
     
     param=struct('cellsize',70,'cellshrink',1,'coefdist',1,'coefsize',0,'filterpos',0);
@@ -46,7 +49,8 @@ if nargin==1 % call GUI to assign parameter values
     description{4}='weight associated with change in cell size in cost matrix (0-Inf)';
     description{5}='Put a number a>0 if you want to discard all cell with y>a in the image; a<0 for y<a (in pixels); Default : 0';
     
-   [hPropsPane,param,OK] = phy_propertiesGUI(0, cell0,'Enter parameters values for operation',description);
+    str=mfilename;
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, cell0,['Enter parameters values for ' str],description);
     
    if OK==0
        return;
@@ -266,6 +270,8 @@ for i=1:length(newcell)
    end
    end
 end
+
+OK=1;
 
 if display
 

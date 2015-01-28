@@ -50,7 +50,8 @@ if nargin==1 % call GUI to assign parameter values
     description{end+1}='Display steps of segmentation';
     %% THE NUMBER OF ITEMS MUST MATCH THE NUMBER OF FIELDS IN THE PARAM STRUCT
     
-   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
+    str=mfilename;
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,['Enter parameters values for ' str],description);
     
    if OK==0
        phy_Objects=img;

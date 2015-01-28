@@ -909,7 +909,7 @@ if ~isempty(answer)
        
         
         for i=1:length(segmentation.selectedTObj.Obj)
-            if segmentation.selectedTObj.Obj(i).image>=segmentation.frame1
+            if segmentation.selectedTObj.Obj(i).image>=segmentation.selectedTObj.detectionFrame
                 segmentation.selectedTObj.Obj(i).n=n;
                 tobj(n).addObject(segmentation.selectedTObj.Obj(i));
                 c=c+1;
@@ -949,7 +949,6 @@ if ~isempty(answer)
             end
             
             tobj(n).addDaughter(dl(i),bt(i),dt(i));
-            
             
             end
            
@@ -4191,9 +4190,12 @@ Change_Disp1('refresh',handles);
 
 if ~isempty(numel)
     %segmentation.(strObj)(segmentation.frame1,numel).select();%select the object on current frame
+    try
     segmentation.selectedObj=segmentation.(strObj)(segmentation.frame1,numel); % copy it
     set(segmentation.selectedObj.hcontour,'Marker','*','MarkerSize',4,'MarkerEdgeColor','c');
     set(segmentation.selectedObj.hcontour,'Selected','on');
+    catch
+    end
 else
     %set(hObject,'string','not on this frame');
     disp('Object not found on this frame');
@@ -4490,6 +4492,9 @@ if strcmp(get(hObject,'String'),'Process all !')
     
     set(handles.contour_table,'Enable','off');
     
+    
+    % segmentating objects
+    if any([segmentation.contour{:,6}])
     for i=framestot
         
         phy_change_Disp1(i,handles);
@@ -4511,11 +4516,11 @@ if strcmp(get(hObject,'String'),'Process all !')
             set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
             featname=segmentation.contour{cont(j),2};
             
-            sb.setText(['Processing ' featname ' for frame ' num2str(segmentation.frame1) '...'])
+            sb.setText(['Segmenting ' featname ' for frame ' num2str(i) '...'])
             warning on all
             pause(0.05);
  
-            if segmentation.contour{cont(j),6}==true
+           
                 try
                     process_segmentation(handles,cont(j));
                     pause(0.05);
@@ -4527,26 +4532,9 @@ if strcmp(get(hObject,'String'),'Process all !')
                     statusbar('Segmentation error!');
                     return;
                 end
-            end
             
-            if segmentation.contour{cont(j),9}==true
-                try
-                    if i>framestot(1)
-                         lastObjectNumber=process_tracking(handles,cont(j),i,lastObjectNumber);
-                    else
-                        lastObjectNumber=0;
-                    end
-                    
-                    pause(0.05);
-                    
-                catch
-                    segmentation.play=false;
-                    set(hObject,'String','Process all !');
-                    set(handles.contour_table,'Enable','on');
-                    statusbar('Tracking error!');
-                    return;
-                end
-            end
+            
+           
             
             if segmentation.play==false;
                 set(handles.contour_table,'Enable','on');
@@ -4561,10 +4549,64 @@ if strcmp(get(hObject,'String'),'Process all !')
         end
         
     end
+    end
+    
+    % tracking objects
+    cc=0;
+
+    
+     if any([segmentation.contour{:,9}])
+         
+        for i=framestot
+        
+        for j=1:numel(cont) % loop on feature list
+            
+            frames=segmentation.contour{cont(j),10};
+            frames=str2num(frames);
+            
+            cc=cc+1;
+            
+            az=round(100*cc/tot);
+            warning off all
+            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
+            featname=segmentation.contour{cont(j),2};
+            
+            sb.setText(['Tracking ' featname ' for frame ' num2str(i) '...'])
+            warning on all
+            pause(0.05);
+            
+            
+            if ~(i>=frames(1) && i<=frames(2))
+                continue
+            end
+            
+                try
+                    if i>framestot(1)
+                        
+                         lastObjectNumber=process_tracking(handles,cont(j),i,lastObjectNumber);
+                    else
+                        lastObjectNumber=0;
+                    end
+                    
+                    pause(0.01);
+                    
+                catch
+                    segmentation.play=false;
+                    set(hObject,'String','Process all !');
+                    set(handles.contour_table,'Enable','on');
+                    statusbar('Tracking error!');
+                    return;
+                end
+        end
+        
+         end
+     end
+            
     
     for j=1:numel(cont)
+       featname=segmentation.contour{cont(j),2};
        sb.setText(['Building tracks for ' featname '...']);
-        featname=segmentation.contour{cont(j),2};
+        
         [segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
 
     end
@@ -4800,13 +4842,15 @@ end
 phy_updatePhylocellDisplay(handles);
 
 
-function process_segmentation(handles,featnumber)
+function OK=process_segmentation(handles,featnumber)
 global segmentation
 
 sel=featnumber;
 curseg=segmentation.contour{sel,4};
 
 %segmentation.processing.param.segmentation
+
+OK=0;
 
 if ~strcmp(curseg,'');
     
@@ -4826,12 +4870,18 @@ if ~strcmp(curseg,'');
     im = im(ax(3)+1:ax(4), ax(1)+1:ax(2));
     %curparam.channel
     %figure, imshow(im,[]);
-  %  try
+    try
         [tmp OK]=feval(curseg,im,curparam);
-  %  catch
-       % tmp=[];
-        
-   % end
+    catch err
+       tmp=[];
+
+       
+       for i=1:numel(err.stack)
+          disp(err.stack(i)); 
+       end
+       statusbar(handles.figure1,'Segmentation Test Error !');
+       pause(1);
+    end
     
     % undo cropping and update result
     for i = 1:length(tmp)
@@ -4850,6 +4900,9 @@ if ~strcmp(curseg,'');
     
     lis={'Cells','Budnecks','Foci','Mito','Nucleus'};
     str=lis{sel};
+    
+    segmentation.myHandles.(['show' str])=[];
+    segmentation.myHandles.(['show' str 'Text'])=[];
     
     if ishandle(segmentation.myHandles.(['show' str]));
         delete(segmentation.myHandles.(['show' str]));
@@ -4893,7 +4946,7 @@ if ~strcmp(curseg,'');
     
     segmentation.(featname)(startFrame+1,:)=phy_mapCellsHungarian(segmentation.(featname)(startFrame,:),segmentation.(featname)(startFrame+1,:),lastObjectNumber,param);
     
-    segmentation.([featname 'Mapped'])(startFrame)=1;
+    segmentation.([featname 'Mapped'])(startFrame+1)=1;
     segmentation.frameChanged(startFrame)=1;
     
 end
@@ -4965,7 +5018,14 @@ if eventdata.Indices(2)==5 % manages the loading of function parameters
     %segmentation.processing.param.segmentation
     
     if ~strcmp(curseg,'') && ~strcmp(curseg,'New...') 
+        
         curparam=segmentation.processing.param.(curseg)(sel);
+        
+        if isfield(curparam,'ok') % no parameter existing, first assign default values
+        [curparam OK]=feval(curseg)  ;  
+        segmentation.processing.param=rmfield(segmentation.processing.param,curseg);
+        
+        end
         
         [curparam OK]=feval(curseg,curparam);
         
@@ -5170,3 +5230,15 @@ function Context_Tracks_Callback(hObject, eventdata, handles)
 % hObject    handle to Context_Tracks (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function File_New_Project_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to File_New_Project (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+File_New_Project_Callback(hObject, eventdata, handles)
+
+

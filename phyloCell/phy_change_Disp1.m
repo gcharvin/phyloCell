@@ -95,6 +95,11 @@ if isfield(timeLapse,'numberOfFrames')
         
         cellsind=[];
         
+        
+        if ~isfield(segmentation,'ROItable') % in case phylocell has not been refreshed after at_batch
+            phy_updatePhylocellDisplay(handles);
+            return;
+        end
         if segmentation.ROItable{4,1}==true
             obj=segmentation.ROItable{4,2};
             cellsind=str2num(segmentation.ROItable{4,3});
@@ -338,8 +343,10 @@ if isfield(timeLapse,'numberOfFrames')
         end
         
         
+        if isfield(segmentation,'selectedTObj')
         if ~isempty(segmentation.selectedTObj)
             segmentation.selectedTObj.select()
+        end
         end
         
         showObject_Callback('cells1',handles);
@@ -415,14 +422,6 @@ function mouseAxesImage(hObject, eventdata, handles)
 global segmentation
 
 butonType=get(handles.figure1,'SelectionType');
-
-feat=segmentation.processing.selectedFeature;
-proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
-featname=segmentation.processing.features{feat};
-
-parametres=segmentation.processing.parameters(feat,proc);
-
-parametres=parametres{1,1};
 
 
 if ~isempty(segmentation.selectedObj)
@@ -759,8 +758,13 @@ else
     set(handles.checkbox_Show_Fluo_Analysis,'String',['Fluo analysis']);
     axes(handles.axes2);
     cla;
+    
+    if isfield(segmentation,'selectedTObj')
+    if isempty(segmentation.selectedTObj)
     axes(handles.axes3);
     cla;
+    end
+    end
     
     %     if isfield(segmentation,'plot')
     %         if isfield(segmentation.plot,'hfluo')

@@ -62,7 +62,8 @@ if nargin==1 % call GUI to assign parameter values
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
-    [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
+     str=mfilename;
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,['Enter parameters values for ' str],description);
     
     if OK==0
         return;

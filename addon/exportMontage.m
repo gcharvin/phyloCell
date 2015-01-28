@@ -79,6 +79,7 @@ end
 
 
 
+
 secondsPerFrame = timeLapse.interval;
 tmpDirectory = 'tmp_single_frames_for_movie';
 compositionFunction = initializeCompositionFunction;
@@ -91,6 +92,7 @@ cavity = initializeCavity;
 pixelSize = initializePixel;
 output = initializeOutput;
 contours=initializeContours;
+
 tracking=initializeTracking;
 %cycle = initializeCycle;
 
@@ -277,6 +279,7 @@ end
         
         
         % plot object contours
+    
         if numel(contours)
             for ik=1:length(contours)
                 for lk=1:length(contours(ik).channelGroup)
@@ -575,7 +578,7 @@ end
 %%
 
     function contours = initializeContours
-        
+
         contours = getMapValue(varargin, 'contours');
         
         if isempty(contours)
@@ -754,7 +757,7 @@ end
     function maxSize = computeMaxSize
         sizes = [];
         
-       
+
         for j = 1:channelCount
           
             sizes = [sizes; size(imread(char(imageNames(1, j))))];
@@ -788,7 +791,9 @@ end
         for channel = channels
             positionName = [project '-pos' num2str(position)];
             channelName = strcat(positionName, '-ch', num2str(channel), '-' ,timeLapse.list(1,channel).ID);
+            if iscell(channelName)
             channelName=channelName{1};
+            end
             files = dir(fullfile(base, positionName, channelName));
             channelImageFiles = files(arrayfun(@(file) ~isempty(strfind(file.name, '.jpg')), files));
             channelImageFiles = arrayfun(@(imageFile) fullfile(base, positionName, channelName, imageFile.name), channelImageFiles, 'UniformOutput', false);
@@ -801,8 +806,10 @@ end
 
     function value = getMapValue(map, key)
         value = [];
-        
+       
+      % key %size(map),class(map)
         for i = 1:2:numel(map)
+          %  a=map{i},class(a)
             if strcmp(map{i}, key)
                 value = map{i + 1};
                 

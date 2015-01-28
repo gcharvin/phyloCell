@@ -103,10 +103,9 @@ segmentation.pedigree.orientation=0;
 segmentation.pedigree.cellindex=[];
 
 
-
 %%%%%%%%% new variables for processing
 
-segmentation=phy_createProcessingVariable(segmentation);
+%segmentation=phy_createProcessingVariable(segmentation);
 
 
 segmentation.frame1=1;

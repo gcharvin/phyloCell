@@ -49,7 +49,8 @@ if nargin==1 % call GUI to assign parameter values
     description{6}='Mask (used internally, no edition allowed)';
     %% THE NUMBER OF ITEMS MUST MATCH THE NUMBER OF FIELDS IN THE PARAM STRUCT
     
-   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,'Enter parameters values for operation',description);
+    str=mfilename;
+   [hPropsPane,param,OK] = phy_propertiesGUI(0, img,['Enter parameters values for ' str],description);
     
    if OK==0
        phy_Objects=img;
@@ -63,6 +64,8 @@ if nargin==1 % call GUI to assign parameter values
 end
 
  sca=1;
+ 
+ 
  
  imgstore=img;
  if sca~=1;
