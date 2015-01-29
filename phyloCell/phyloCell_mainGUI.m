@@ -5018,7 +5018,6 @@ if eventdata.Indices(2)==5 % manages the loading of function parameters
     %segmentation.processing.param.segmentation
     
     if ~strcmp(curseg,'') && ~strcmp(curseg,'New...') 
-        
         curparam=segmentation.processing.param.(curseg)(sel);
         
         if isfield(curparam,'ok') % no parameter existing, first assign default values
@@ -5240,5 +5239,3 @@ function File_New_Project_ClickedCallback(hObject, eventdata, handles)
 
 
 File_New_Project_Callback(hObject, eventdata, handles)
-
-

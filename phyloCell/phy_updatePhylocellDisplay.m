@@ -4,6 +4,7 @@ function phy_updatePhylocellDisplay(handles,option)
 % option : =1: refrshed the segmentation methods used for segmentation;
 % used every time phyloCell is started
 
+
 global segmentation timeLapse segList
 
 if numel(segList)==0
@@ -47,7 +48,19 @@ elseif isfield(timeLapse,'list')
     for i=1:numel(timeLapse.list)
         segmentation.channel{i,1}=true;
         segmentation.channel{i,2}=timeLapse.list(i).ID;
-        segmentation.channel{i,3}=num2str([1 1 1]);
+
+switch i
+case 1
+str='1 1 1';
+case 2
+str='0 1 0';
+case 3
+str='1 0 0';
+case 4
+str='0 0 1';
+end
+
+        segmentation.channel{i,3}=str;
         segmentation.channel{i,4}=num2str([500 5000]);
         segmentation.channel{i,5}=false;
     end
@@ -121,6 +134,7 @@ if ~isfield(segmentation.processing,'param')
 end
 
 if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segmentation/tracking methods
+    'ok'
     p = mfilename('fullpath');
     [pth fle ext]=fileparts(p);
     
@@ -134,12 +148,12 @@ if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segme
         [pth fle ext]=fileparts(files{i});
         str{i+1}=fle;
          
-        if strcmp(fle,'phy_segmentPhaseContrast') || strcmp(fle,'phy_segmentCellCluster') || strcmp(fle,'phy_segmentTemplate')
+       % if strcmp(fle,'phy_segmentPhaseContrast') || strcmp(fle,'phy_segmentCellCluster') || strcmp(fle,'phy_segmentTemplate')
             [segmentation.processing.param.(fle) OK]=feval(fle); % call function to edit param
             
-        else
-            segmentation.processing.param.(fle)=struct('ok',1);
-        end
+      %  else
+         %   segmentation.processing.param.(fle)=struct('ok',1);
+      %  end
         
         for j=2:5
             segmentation.processing.param.(fle)(j)=segmentation.processing.param.(fle)(1);
@@ -184,12 +198,12 @@ if nargin==2 & numel(segmentation.processing.track)==0 % loads the list of segme
         [pth fle ext]=fileparts(files{i});
         str{i+1}=fle;
         
-        if strcmp(fle,'phy_mapCellsHungarian')
+       % if strcmp(fle,'phy_mapCellsHungarian')
             [segmentation.processing.track.(fle) OK]=feval(fle); % call function to edit param
             
-        else
-            segmentation.processing.track.(fle)=struct('ok',1);
-        end
+       % else
+       %     segmentation.processing.track.(fle)=struct('ok',1);
+       % end
         
         for j=2:5
             segmentation.processing.track.(fle)(j)=segmentation.processing.track.(fle)(1);
@@ -216,6 +230,54 @@ else
 end
 
 
+% if loading an at_batch project, we need to display the segmentation
+% parameters
+
+if isfield(segmentation.processing,'segCells')
+    if segmentation.processing.segCells==1
+        segmentation.processing.param.(segmentation.processing.segCellsMethod)=segmentation.processing.segCellsPar;
+        segmentation.contour{1,4}=segmentation.processing.segCellsMethod;
+        segmentation.contour{1,6}=true;
+        segmentation.contour{1,1}=true;
+    end
+end
+if isfield(segmentation.processing,'mapCells')
+    if segmentation.processing.mapCells==1
+        segmentation.processing.param.(segmentation.processing.mapCellsMethod)=segmentation.processing.mapCellsPar;
+        segmentation.contour{1,7}=segmentation.processing.mapCellsMethod;
+        segmentation.contour{1,9}=true;
+    end
+end
+if isfield(segmentation.processing,'segNucleus')
+    if segmentation.processing.segNucleus==1
+        segmentation.processing.param.(segmentation.processing.segNucleusMethod)(5)=segmentation.processing.segNucleusPar;
+        segmentation.contour{5,4}=segmentation.processing.segNucleusMethod;
+        segmentation.contour{5,6}=true;
+        segmentation.contour{5,1}=true;
+    end
+end
+if isfield(segmentation.processing,'mapNucleus')
+    if segmentation.processing.mapNucleus==1
+        segmentation.processing.param.(segmentation.processing.mapNucleusMethod)(5)=segmentation.processing.mapNucleusPar;
+        segmentation.contour{5,7}=segmentation.processing.mapNucleusMethod;
+        segmentation.contour{5,9}=true;
+    end
+end
+if isfield(segmentation.processing,'segFoci')
+    if segmentation.processing.segFoci==1
+        segmentation.processing.param.(segmentation.processing.segFociMethod)(3)=segmentation.processing.segFociPar;
+        segmentation.contour{3,4}=segmentation.processing.segFociMethod;
+        segmentation.contour{3,6}=true;
+        segmentation.contour{3,1}=true;
+    end
+end
+if isfield(segmentation.processing,'mapFoci')
+    if segmentation.processing.mapFoci==1
+        segmentation.processing.param.(segmentation.processing.mapFoci)(3)=segmentation.processing.mapFoci;
+        segmentation.contour{3,7}=segmentation.processing.mapFoci;
+        segmentation.contour{3,9}=true;
+    end
+end
 
 set(handles.contour_table,'Data',segmentation.contour);
 

@@ -82,10 +82,26 @@ if isfield(segmentation,'ROItable')
     end
 end
 if isfield(segmentation,'contour')
-        for i=1:size(sequence.channel,1)
+    
+    for j=1:size(sequence.display,1)
+                  sequence.display{j,4}=[]; 
+    end
+               
+        for i=1:size(sequence.contour,1)
             sequence.contour{i,1}=segmentation.contour{i,2};
             sequence.contour{i,2}=segmentation.contour{i,3};
+            
+            if segmentation.contour{i,1}==true
+               
+               for j=1:size(sequence.display,1)
+                  if sequence.display{j,1}==true
+                  sequence.display{j,4}=[sequence.display{j,4} ' ' num2str(i)]; 
+                  end
+               end
+            end
         end
+        
+        
 end
 
 
