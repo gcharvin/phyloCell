@@ -4533,8 +4533,7 @@ if strcmp(get(hObject,'String'),'Process all !')
                     return;
                 end
             
-            
-           
+         
             
             if segmentation.play==false;
                 set(handles.contour_table,'Enable','on');
@@ -4554,8 +4553,27 @@ if strcmp(get(hObject,'String'),'Process all !')
     % tracking objects
     cc=0;
 
-    
      if any([segmentation.contour{:,9}])
+         
+         
+         % intitalize tracking engine for phy_mapObjectTraining
+         
+         lastObjectNumber=zeros(1,numel(cont));
+         
+         for j=1:numel(cont)
+         if strcmp(segmentation.contour{j,7},'phy_mapObjectTraining')
+             sb.setText(['Initialize tracking engine for phy_mapObjectTraining']);
+             
+             area=[segmentation.(segmentation.contour{cont(j),2}).area];
+             area=mean(area(area~=0));
+             
+             inte=[segmentation.(segmentation.contour{cont(j),2}).fluoMean];
+             inte=mean(inte(inte~=0));
+             
+             segmentation.processing.track.phy_mapObjectTraining(cont(j)).avgArea=area;
+             segmentation.processing.track.phy_mapObjectTraining(cont(j)).avgInte=inte;
+         end
+         end
          
         for i=framestot
         
@@ -4583,18 +4601,19 @@ if strcmp(get(hObject,'String'),'Process all !')
                 try
                     if i>framestot(1)
                         
-                         lastObjectNumber=process_tracking(handles,cont(j),i,lastObjectNumber);
+                         lastObjectNumber(j)=process_tracking(handles,cont(j),i,lastObjectNumber(j));
                     else
-                        lastObjectNumber=0;
+                        lastObjectNumber(j)=0;
                     end
                     
                     pause(0.01);
                     
-                catch
+                catch err
                     segmentation.play=false;
                     set(hObject,'String','Process all !');
                     set(handles.contour_table,'Enable','on');
                     statusbar('Tracking error!');
+                    err,disp(err.stack(1))
                     return;
                 end
         end
@@ -4944,8 +4963,16 @@ if ~strcmp(curseg,'');
     
     lastObjectNumber=max(lastObjectNumber, max([segmentation.(featname)(startFrame,:).n]));
     
-    segmentation.(featname)(startFrame+1,:)=phy_mapCellsHungarian(segmentation.(featname)(startFrame,:),segmentation.(featname)(startFrame+1,:),lastObjectNumber,param);
+   % startFrame
+   % a=segmentation.(featname)(startFrame,:)
+   % b=segmentation.(featname)(startFrame+1,:)
     
+  % curseg
+    segmentation.(featname)(startFrame+1,:)=feval(curseg,segmentation.(featname)(startFrame,:),segmentation.(featname)(startFrame+1,:),lastObjectNumber,param);
+   %segmentation.(featname)(startFrame+1,:)=phy_mapCellsHungarian(segmentation.(featname)(startFrame,:),segmentation.(featname)(startFrame+1,:),lastObjectNumber,param);
+    
+   %a=segmentation.(featname)(startFrame+1,:)
+   
     segmentation.([featname 'Mapped'])(startFrame+1)=1;
     segmentation.frameChanged(startFrame)=1;
     

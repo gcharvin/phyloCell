@@ -134,7 +134,7 @@ if ~isfield(segmentation.processing,'param')
 end
 
 if nargin==2 & numel(segmentation.processing.param)==0 % loads the list of segmentation/tracking methods
-    'ok'
+   % 'ok'
     p = mfilename('fullpath');
     [pth fle ext]=fileparts(p);
     
@@ -171,6 +171,11 @@ else
     if numel(segmentation.processing.param)~=0
     str=fieldnames(segmentation.processing.param);
     str(2:end+1)=str(1:end); str{1}='New...';
+    
+       if size(str,1)==1
+       str=str'; 
+       end
+    
     str={str'};
     cf(4)=str;
     set(handles.contour_table,'ColumnFormat',cf);
@@ -212,6 +217,7 @@ if nargin==2 & numel(segmentation.processing.track)==0 % loads the list of segme
     
     str={str};
     cf=get(handles.contour_table,'ColumnFormat');
+    
     cf(7)=str;
     set(handles.contour_table,'ColumnFormat',cf);
     
@@ -223,7 +229,12 @@ else
     if numel(segmentation.processing.track)~=0
     str=fieldnames(segmentation.processing.track);
     str(2:end+1)=str(1:end); str{1}='New...';
-    str={str};
+    
+    if size(str,1)==1
+       str=str'; 
+    end
+    
+    str={str'};
     cf(7)=str;
     set(handles.contour_table,'ColumnFormat',cf);
     end

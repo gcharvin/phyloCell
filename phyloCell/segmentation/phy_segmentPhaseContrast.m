@@ -40,6 +40,10 @@ if nargin==1 % call GUI to assign parameter values
        disp('Function is argument is incorrect'); 
     end
     
+    if numel(img.mask)~=0
+       img.mask=[]; 
+    end
+    
     %% EDIT THIS DESCRIPTION
     description{1}='Fluorescence channel to be used for segmentation';
     description{2}='Min cell area cutoff output by segmentation (area in pixels)';

@@ -172,11 +172,13 @@ for i=1:length(list)
     xpos=buildNode(tcells,xpos,list(i),i,i+1);
 end
 
-res=[];
-for i=listcells
-    res=[res; i xpos(i)];
-end
+%xpos
+% res=[];
+% for i=listcells
+%     res=[res; i xpos(i)];
+% end
 
+res=[(1:1:numel(xpos))', xpos'];
 %return;
 
 res=sortrows(res,2); % sorted cells
@@ -249,6 +251,8 @@ end
 
 cc=1;
 ytick=[];
+
+
 for k=1:numel(res(:,1));
     
     if res(k,2)==0
@@ -409,6 +413,8 @@ for k=1:numel(res(:,1));
     
 end
 
+
+
 %plotDivTimeHS(res,cellwidth);
 
 
@@ -553,6 +559,7 @@ for j=daughterList
     posmax=xpos(j);
     n=n+1;
 end
+
 
 
 
