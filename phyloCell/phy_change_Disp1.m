@@ -375,11 +375,11 @@ if isfield(timeLapse,'numberOfFrames')
             
             % with toolbar sometimes
         end
-        
+         
         checkbox_Show_Fluo_Analysis_Callback(handles.checkbox_Show_Fluo_Analysis, [], handles);
         
-        
         if get(handles.showTime,'Value')
+            axes(handles.axes1);
             ax=floor(axis(handles.axes1));
             strsize=30;
             
@@ -391,6 +391,7 @@ if isfield(timeLapse,'numberOfFrames')
         end
         
         
+       
     end
     
     if isfield(segmentation.myHandles,'inset')

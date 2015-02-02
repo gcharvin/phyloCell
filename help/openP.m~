@@ -35,14 +35,16 @@
 % This will prompt to enter a new position and a segmentation file, see
 % above. 
 % Please not that multiple projects/positions can be loaded in the same
-% instance of phyloCell. The segmentation table in the top left corner
-% lists all the open projects/positions
-%
+% instance of phyloCell. The 
+
+
 %% Save current analysis
-% The function File > Save current analysis will save the state of the segmentation as
+%
+%  File > Save current analysis will save the state of the segmentation as
 %  .mat file that is stored in the folder that corresponds to the current
 %  position. 
-%
+
 %% Save current analysis as..
-% The function File > Save current analysis as... allows one to rename the segmentation
-% variable for backup purposes 
+%
+%  File > Save current analysis as... allows one to rename the segmentation
+%  variable for backup purposes 

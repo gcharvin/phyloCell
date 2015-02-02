@@ -16,22 +16,20 @@
 % # Converting ND2 Nikon files to PhyloCell project
 % # Custom conversion to PhyloCell project
 
+
+%% Launch phyloCell
+
+phyloCell_mainGUI;
+
 %% Loading a list of images
-% open phyloCell.
-%
-%   phyloCell_mainGUI;
-%
-% <<phyloCell2.png>>
-% 
-% 
-% 
 % Go to: File > Quick Load Images...
 %
 % Select the list of images of interest. Alternatively, you can select a single
 % multi-image tif file. Press OK.
-%%
+%
 % 
 % <<loadImages.png>>
+% 
 % 
 % PhyloCell will create a temp project in the current folder and display
 % the project into the main GUI window.

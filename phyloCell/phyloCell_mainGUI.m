@@ -690,6 +690,8 @@ segList(cur).t=timeLapse;
 localpath=userpath;
 localpath=localpath(1:end-1);
 
+phy_updatePhylocellDisplay(handles);
+
 %save([localpath '/segmentation-autotrack.mat'],'segmentation');
 %copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
 
