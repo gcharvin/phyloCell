@@ -381,6 +381,8 @@ for k=1:numel(res(:,1));
     
     yticklabel{cc}=[num2str(j)];
     
+
+    
     if ~orientation
         Traj(rec,'Color',col,'colorindex',cindex,'tag',['Cell :' num2str(j) ' -mother :' num2str(tcells.mother)],'width',5*cellwidth,'startX',startX,'startY',startY,'sepwidth',sep,'sepColor',[0.9 0.9 0.9],'gradientwidth',0,handles,handlestruct);
     else

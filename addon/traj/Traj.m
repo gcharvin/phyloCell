@@ -55,7 +55,7 @@ classdef Traj < handle
             t.edgeColorIndex=1;
             t.edgeWidth=0;
             
-            t.sepColor=[0.5 0.5 0.5];
+            t.sepColor=[0.3 0.3 0.3];
             t.sepBottomColor=[0 0 0];
             t.sepTopColor=[1 1 1];
             t.sepWidth=3;
@@ -364,7 +364,7 @@ classdef Traj < handle
                             error('unrecognised typeHorzVert, must be horizontal or vertical');
                     end
                     
-                    vecXMinMax=sort(vecXMinMax)+t.startX;
+                    vecXMinMax=sort(vecXMinMax)+t.startX+t.rec(i,1);
                     vecYMinMax=sort(vecYMinMax)+t.startY-t.width/2;
                     
                     % t.hSep(i) =patch('Faces',vecFaceOrder,'Vertices',vecV2,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none');

@@ -924,6 +924,11 @@ if ~isempty(answer)
         %    segmentation.selectedTObj.deleteObject(objectMoved(i),'only from tobject');
         %end
         
+        % remove cell from daughter list of mother cell;
+        
+        mm=segmentation.selectedTObj.mother;
+        tobj(mm).removeDaughter(segmentation.selectedTObj.N);
+        
         %transfer progeny
             
   
@@ -1604,10 +1609,19 @@ if ~isfield(segmentation,'pedigree')
     segmentation.pedigree=[];
 end
 
+ok=0;
 if ~isfield(segmentation.pedigree,'orientation')
+ok=1;
+end
+if ~isfield(segmentation.pedigree,'objindex')
+ok=1;
+end
+if ~isfield(segmentation.pedigree,'mode')
+ok=1;
+end
 
 %segmentation=rmfield(segmentation,'pedigree');
-
+if ok==1
     segmentation.pedigree.orientation=0;
     segmentation.pedigree.object='cells1';
     segmentation.pedigree.objindex=[];
@@ -1620,7 +1634,7 @@ end
 pedigree=[];
 pedigree.orientation=segmentation.pedigree.orientation;
 pedigree.object=segmentation.pedigree.object;
-pedigree.objindex=segmentation.pedigree.objindex;
+pedigree.objindex=[]; %segmentation.pedigree.objindex;
 pedigree.mode=segmentation.pedigree.mode;
 pedigree.feature=segmentation.pedigree.feature;
 pedigree.minmax=segmentation.pedigree.minmax;
@@ -1633,7 +1647,7 @@ end
 description{1}='Orientation of pedigree: 0--> horizontal 1--> vertical';
 description{2}='Object to display : cells1, budnecks, foci, etc...';
 description{3}='leave blank if all cells should be displayed; Otherwise specify a list of cells : 1 4 56';
-description{4}='Type of display : 0--> object links;  1--> object links + division timings; 2--> continuous vairables (area, fluorescence, etc...)';
+description{4}='Type of display : 0--> object links;  2--> continuous vairables (area, fluorescence, etc...)';
 description{5}='Feature to be displayed; Either specify a char : fluoMean, area, or any properties of object; Or provide a function handles: Exemple : @(t) t.fluoMean(2)/t.area will plot mean fluo in channel 2 divided by area ';
 description{6}='leave blank for automated normalization; or provide an array : min tick1 tick2 ... tickn max to display color scale';
 description{7}='0--> llinear scale; 1--> log scale';
@@ -1672,7 +1686,10 @@ varargin{end+1}=segmentation.pedigree.objindex;
 
 varargin{end+1}='mode';
 varargin{end+1}=segmentation.pedigree.mode;
+
+if segmentation.pedigree.mode==2
 varargin{end+1}=segmentation.pedigree.minmax; % plot area
+end
 
 varargin{end+1}='feature';
 varargin{end+1}=segmentation.pedigree.feature;
@@ -1957,12 +1974,18 @@ global segmentation
 set(segmentation.selectedObj.htext,'visible','off');
 set(segmentation.selectedObj.hcontour,'visible','off');
 
-    h = impoly;
-    position = wait(h);
- delete(h);
-    position(end+1,:)=position(1,:);
+%     h = impoly;
+%     position = wait(h);
+%  delete(h);
+%     position(end+1,:)=position(1,:);
 
-    [x,y]=phy_changePointNumber(position(:,1),position(:,2),50);
+axes(handles.axes1);
+
+warning off all
+[BW x y]=roipolyold();
+warning on all;
+
+    [x,y]=phy_changePointNumber(x,y,50);
    
 segmentation.selectedObj.x=x;
 segmentation.selectedObj.y=y;
@@ -3439,13 +3462,19 @@ else
    end
 end
 %
+axes(handles.axes1);
 
-    h = impoly;
-    position = wait(h);
+warning off all; 
+[BW x y]=roipolyold();
+warning on all;
+   % h = impoly;
+   % position = wait(h);
  
-    position(end+1,:)=position(1,:);
+   % position(end+1,:)=position(1,:);
     
-    [x,y]=phy_changePointNumber(position(:,1),position(:,2),50);
+    %[x,y]=phy_changePointNumber(position(:,1),position(:,2),50);
+    [x,y]=phy_changePointNumber(x,y,50);
+    
     ox=mean(x); oy=mean(y);
 
             cellule=phy_Object(n,x,y,segmentation.frame1,polyarea(x,y),ox,oy,0);
