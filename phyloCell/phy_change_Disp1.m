@@ -1,7 +1,6 @@
 function phy_change_Disp1(pos,handles,dispCells)
 global timeLapse segmentation
 
-
 if numel(segmentation)==0
     figure(handles.figure1);
     noiseim=rand(256,256);
@@ -413,6 +412,10 @@ end
 
 
 %handles
+hold(handles.axes1,'on');
+
+set(handles.axes1,'Tag','axes1')
+
 uicontrol(handles.pushbutton_Next1); %give focus to buton next (key pres when slider has focux)
 
 

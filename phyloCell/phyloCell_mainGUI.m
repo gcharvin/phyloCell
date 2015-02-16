@@ -73,7 +73,11 @@ handles.output = hObject;
 
 phy_updatePhylocellDisplay(handles,1);
 
+%set(handles.figure1,'HandleVisibility','on');
+
 guidata(hObject, handles);
+
+
 
 %
 %status('Idle',handles);
@@ -1824,15 +1828,14 @@ phy_checkAndDisp_cells(hObject,eventdata,handles);
 
 % --------------------------------------------------------------------
 function Export_frame_to_image_Callback(hObject, eventdata, handles)
-global segmentation sequence
+global segmentation
 
 
-if isfield(segmentation,'sequence')
-   sequence=segmentation.sequence; 
-   
+if ~isfield(segmentation,'sequence')
+   segmentation.sequence=[]; 
 end
 
-phy_montage; 
+[~]=phy_montage(segmentation.sequence,'phylo'); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%% CHECKBOX CALLBACK FUNCTIONS %%%%%%%%%%%%%%%%%%%%
@@ -4354,6 +4357,7 @@ if eventdata.Indices(2)==1
     timeLapse=segList(sel).t;
     
     phy_updatePhylocellDisplay(handles);
+
 end
 
 % if eventdata.Indices(2)==4 % too long for large projects....

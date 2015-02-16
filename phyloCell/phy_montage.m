@@ -59,12 +59,37 @@ handles.output = hObject;
 global sequence segmentation
 
 % Update handles structure
-guidata(hObject, handles);
+
+
+okload=0; % external loading of sequence variable into gui
+%phylo=0; % loading from phylocell
+
+if ~isempty(varargin)
+    if ischar(varargin{1})
+   if exist(varargin{1})
+      load( varargin{1});
+      okload=1;
+   end
+    else
+   if isfield(varargin{1},'project')
+      sequence=varargin{1};
+      okload=1;
+   end
+    end
+   if numel(varargin)==2
+   if strcmp(varargin{2},'phylo')
+      sequence= segmentation.sequence;
+      okload=0;
+   end
+   end
+end
 
 if ~isfield(sequence,'project')
+ 
     out=setupSequence();
 end
 
+if okload==0
 % inherit from segmentation variable
 if isfield(segmentation,'channel')
         for i=1:size(sequence.channel,1)
@@ -103,10 +128,22 @@ if isfield(segmentation,'contour')
         
         
 end
-
+end
 
 %if out==1
 updateSequence(handles)
+
+guidata(hObject, handles);
+
+if okload
+     if exist(varargin{1})
+plot_Callback([],[], handles);
+
+%figure1_CloseRequestFcn(handles.figure1,[], handles)
+%'ok'
+%varargout = phy_montage_OutputFcn([], [], handles) 
+     end
+end
 %end
 
 
@@ -132,6 +169,8 @@ sequence.project.seqname='myseqproject.mat';
 sequence.project.seqpath=[pwd '/'];
 
 sequence.handles=[];
+sequence.handles.hf=[];
+sequence.handles.hp=[];
 sequence.param={'1200 800', '1', '', '1', num2str(timeLapse.numberOfFrames'),'5'};
 
 inte=str2num(sequence.param{5})-str2num(sequence.param{4})+1;
@@ -204,12 +243,12 @@ function varargout = phy_montage_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
+global sequence
 
 varargout{1} = handles.output;
 
-function quit(handles)
-
-close(handles);
+varargout{2} = sequence.handles.hf;
+varargout{3} = sequence.handles.hp;
 
 % --- Executes on button press in saveMontageAs.
 function saveMontageAs_Callback(hObject, eventdata, handles)
@@ -505,8 +544,14 @@ nimages=str2num(sequence.param{7,1});
 
 
 for i=1:size(sequence.channel,1)
+    
+    if ischar(sequence.channel{i,3})
             mine=str2num(sequence.channel{i,3});
             maxe=str2num(sequence.channel{i,4});
+    else
+          mine=(sequence.channel{i,3});
+            maxe=(sequence.channel{i,4});
+    end
             
     if i==1
        ch=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[mine maxe]);
@@ -542,6 +587,7 @@ for i=1:nframes
         
       dich=str2num(sequence.display{j,3});
       dico=str2num(sequence.display{j,4});
+      scale=double(sequence.display{j,5});
       tim=double(sequence.display{j,6});
       
       if tim>0
@@ -550,7 +596,7 @@ for i=1:nframes
          tim=[]; 
       end
       
-      [hf h]=phy_showImage('frames',nimages(i),'ROI',roi,'channels',ch(dich),'timestamp',tim,'contours',cont(dico),'tracking',track);
+      [hf h]=phy_showImage('frames',nimages(i),'ROI',roi,'channels',ch(dich),'timestamp',tim,'contours',cont(dico),'tracking',track,'scale',scale);
 
       p(j+cc).marginleft=0;
       p(j+cc).marginright=mar;
@@ -573,6 +619,8 @@ for i=1:nframes
 end
 
 p.marginleft=30;
+
+%handles.output(2)=sequence.handles.hf;
 %p.de.margin=0;
 
 %p(1,1).marginleft=15;

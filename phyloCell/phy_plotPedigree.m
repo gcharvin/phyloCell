@@ -91,8 +91,8 @@ while i<=numel(varargin)
     end
     
     if ischar(varargin{i}) && strcmpi(varargin{i},'handles')
-        handles=varargin{i+1};
-        handlestruct=varargin{i+2};
+        handles=varargin{i+1}; % handles to axes
+        handlestruct=varargin{i+2}; % handles struct of GUI
         
         i=i+3;
         if i>numel(varargin)
@@ -237,7 +237,9 @@ switch mode % detect min max fluo levels
             else
                 if mine<=0
                     disp('Range is not possible in log scale <0!!');
-                    return;
+                    %return;
+                    
+                    mine=0.001*maxe;
                 end
                 fluo(1)=log10(mine);
                 fluo(2)=log10(maxe);
@@ -306,7 +308,6 @@ for k=1:numel(res(:,1));
             
         case 2 % feature plotting
             
-            
             cindex=ones(1,length(tcells.Obj));
             
             ccc=1;
@@ -345,7 +346,7 @@ for k=1:numel(res(:,1));
                 
                 warning off all;
                 
-                t=uint8(round(255*(temp-fluo(1))/(fluo(end)-fluo(1))));
+                t=real(uint8(round(255*(temp-fluo(1))/(fluo(end)-fluo(1)))));
                 warning on all;
                 
                 cindex(ccc)=max(1,t);
@@ -417,7 +418,7 @@ end
 
 
 
-%plotDivTimeHS(res,cellwidth);
+plotDivTimeHS(res,cellwidth);
 
 
 if mode==2

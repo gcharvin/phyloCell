@@ -70,9 +70,11 @@ if ~isempty(segmentation.selectedObj) % if already selected an object
 end
 
 %deselect selected object
+if isfield(segmentation,'selectedTObj')
 if ~isempty(segmentation.selectedTObj)
     segmentation.selectedTObj.deselect();
     segmentation.selectedTObj={};
+end
 end
 
 set(handles.tobject_table,'Data',{});
@@ -193,6 +195,7 @@ end
 
 dat=cell(length(segmentation.showFieldsTObj),2);
 
+if isfield(segmentation,'selectedTObj')
 if ~isempty(segmentation.selectedTObj)
     s='';
     for i=1:length(segmentation.showFieldsTObj)
@@ -265,6 +268,8 @@ else
     set(handles.setSelectedCellDivisionTime,'State','off');
     
 end
+end
+
 
 if isempty(segmentation.selectedObj)
         axes(handles.axes3);

@@ -1,3 +1,4 @@
+
 function out=phy_openSegmentationProject(position,varname,handles)
 global timeLapse segmentation
 
@@ -119,7 +120,7 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
     
     if ~isfield(segmentation,'processing')
         % old project , need to generate new variable
-        segmentation=phy_createProcessingVariable(segmentation);
+        %segmentation=phy_createProcessingVariable(segmentation);
     end
     
     if ~isfield(segmentation,'foci')
