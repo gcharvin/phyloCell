@@ -269,9 +269,9 @@ end
         
         taillemin=min(max(0.05*w,20),40);
         
-        ymin=max(20 * scale+30,0.2*h);
+        ymin=max(20 * scale+10,0.1*h);
         
-        drawText(jim, timestamp, [100 50] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+        drawText(jim, timestamp, [10*scale 60] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
 %         drawText(jim, tempstamp, [11*0.05*w ymin] , taillemin, col, java.awt.Color.BLACK);
         
         
@@ -279,7 +279,9 @@ end
         
         
         % plot object contours
-    
+   %i
+   %figure, imshow(montageFrame,[]); hold on;
+   %pause;
         if numel(contours)
             for ik=1:length(contours)
                 for lk=1:length(contours(ik).channelGroup)
@@ -297,6 +299,7 @@ end
                         indc=find(nc>0);
                     end
                     
+                  
                     for kk=1:length(indc)
                         
                         cells=segmentation.(contours(ik).object)(i,indc(kk));
@@ -326,6 +329,7 @@ end
                         
                         if numel(contours(ik).cycle)==0 % don't draw if cell cycle is on
                             drawContours(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                        %line(xc3, yc3,'Color','r');
                         end
                         
                         if isfield(contours(ik),'link') % plot mother bud link
@@ -360,6 +364,7 @@ end
                                         
                                         %[oxc3 mxc3], [oyc3 myc3]
                                         drawContours(jim, [oxc3 mxc3], [oyc3 myc3], java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                                    
                                     end
                                 end
                             end
@@ -797,7 +802,7 @@ end
             files = dir(fullfile(base, positionName, channelName));
             channelImageFiles = files(arrayfun(@(file) ~isempty(strfind(file.name, '.jpg')), files));
             channelImageFiles = arrayfun(@(imageFile) fullfile(base, positionName, channelName, imageFile.name), channelImageFiles, 'UniformOutput', false);
-            %size(channelImageFiles), size(imageNames), pause
+            size(channelImageFiles), size(imageNames) %pause
             imageNames = [imageNames channelImageFiles];
         end
     end
