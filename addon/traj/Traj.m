@@ -304,7 +304,7 @@ classdef Traj < handle
                         
                         temp=vecXMinMax;
                         vecXMinMax=vecYMinMax;
-                        vecYMinMax=-temp;
+                        vecYMinMax=temp;
                     otherwise
                         error('unrecognised typeHorzVert, must be horizontal or vertical');
                 end
@@ -320,6 +320,8 @@ classdef Traj < handle
                 if vecXMinMax==vecXMinMax(2)
                     continue
                 end
+                
+                
                 
                 %t.hPatch(i) =patch('Faces',vecFaceOrder,'Vertices',vecV,'FaceColor',t.colorMode,'FaceVertexCData',cdata,'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);
                 t.hPatch(i) =rectangle('Position',[vecXMinMax(1) vecYMinMax(1) vecXMinMax(2)-vecXMinMax(1) vecYMinMax(2)-vecYMinMax(1)],'FaceColor',t.color(t.colorIndex(i),:),'EdgeColor','none','Tag',[t.tag ' - seg :' num2str(i) '/' num2str(numel(t.rec(:,1))) ' - length :' num2str(t.rec(i,2)-t.rec(i,1)) ' ']);

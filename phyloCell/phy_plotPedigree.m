@@ -355,8 +355,6 @@ for k=1:numel(res(:,1));
                     cindex(ccc)=257;
                 end
                 
-                
-                
                 ccc=ccc+1;
                 
                 % 'ok'
@@ -400,8 +398,12 @@ for k=1:numel(res(:,1));
         %   [motherY startY]
         
         if ~orientation
-            Traj(-[motherY+2.5*cellwidth startY+2.5*cellwidth],'Color',[0.1 0.1 0.1],'width',1,'startX',rec(1,1),'startY',0,'sepwidth',0,'orientation','vertical','gradientwidth',0);
+%          -[motherY+2.5*cellwidth startX+2.5*cellwidth]
+%             line([rec(1,1) rec(1,1)],-[motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],'LineWidth',2);
+%           
+            Traj([motherY+2.5*cellwidth startY+2.5*cellwidth],'Color',[0.1 0.1 0.1],'width',1,'startX',rec(1,1),'startY',0,'sepwidth',0,'orientation','vertical','gradientwidth',0);
         else
+           % line([-rec(1,1) -rec(1,1)],[motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],'LineWidth',2);
             Traj([motherY+2.5*cellwidth startX+2.5*cellwidth],'Color',[0.1 0.1 0.1],'width',1,'startX',0,'startY',-rec(1,1),'sepwidth',0,'gradientwidth',0);
         end
         
@@ -418,7 +420,7 @@ end
 
 
 
-plotDivTimeHS(res,cellwidth);
+%plotDivTimeHS(res,cellwidth);
 
 
 if mode==2

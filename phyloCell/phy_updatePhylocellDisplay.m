@@ -47,7 +47,12 @@ elseif isfield(timeLapse,'list')
     
     for i=1:numel(timeLapse.list)
         segmentation.channel{i,1}=true;
-        segmentation.channel{i,2}=timeLapse.list(i).ID;
+        
+        if iscell(timeLapse.list(i).ID)
+        segmentation.channel{i,2}=cell2mat(timeLapse.list(i).ID);
+        else
+        segmentation.channel{i,2}=timeLapse.list(i).ID;    
+        end
 
 switch i
 case 1

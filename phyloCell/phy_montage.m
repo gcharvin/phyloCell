@@ -22,7 +22,7 @@ function varargout = phy_montage(varargin)
 
 % Edit the above text to modify the response to help phy_montage
 
-% Last Modified by GUIDE v2.5 22-Feb-2015 23:44:52
+% Last Modified by GUIDE v2.5 27-Feb-2015 12:21:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -151,7 +151,7 @@ end
 % uiwait(handles.figure1);
 
 function out=setupSequence
-global segmentation timeLapse sequence
+global segmentation timeLapse sequence segList
 
 if numel(timeLapse)==0
     out=0;
@@ -178,6 +178,7 @@ inte=round(inte/str2num(sequence.param{6}));
 sequence.param(end+1)={num2str(str2num(sequence.param{4}):inte:str2num(sequence.param{5}))};
 sequence.param(end+1)={num2str([1 1 timeLapse.list(1).videoResolution(1) timeLapse.list(1).videoResolution(2)])};
 sequence.param(end+1)={''};
+sequence.param(end+1)={num2str(timeLapse.interval)};
 
 sequence.param=sequence.param';
 
@@ -185,7 +186,12 @@ sequence.display=cell(5,6);
 
 for i=1:numel(timeLapse.list)
     sequence.display{i,1}=true;
-    sequence.display{i,2}=timeLapse.list(i).ID;
+    
+    if iscell(timeLapse.list(i).ID)
+    sequence.display{i,2}=cell2mat(timeLapse.list(i).ID);
+    else
+    sequence.display{i,2}=timeLapse.list(i).ID;    
+    end
     sequence.display{i,3}=num2str(i);
     sequence.display{i,4}='';
     sequence.display{i,5}=true;
@@ -234,16 +240,27 @@ end
 sequence.tabletraj{1,1}=true;
 sequence.tabletraj{2,1}=true;
 sequence.tabletraj{3,1}=false;
+sequence.tabletraj{4,1}=true;
 
 sequence.tablecell{1,1}=num2str([1 2 3]);
-sequence.tablecell{1,2}=1;
+sequence.tablecell{1,2}='1 2';
 sequence.tablecell{1,3}='cells1';
 
+pix=[segList.selected]; pix=find(pix==1);
+
+sequence.tablecell{1,4}=num2str(pix*ones(1,3));
+
 sequence.tablefeature{1,1}='@(t) t.area';
-sequence.tablefeature{1,2}=num2str([0 1]);
+sequence.tablefeature{1,2}=num2str([500 2000]);
 sequence.tablefeature{1,3}=num2str([0 0 1]);
 sequence.tablefeature{1,4}=num2str([1 0 0]);
 sequence.tablefeature{1,5}='myfeature (A.U.)';
+
+sequence.tablefeature{2,1}='divisionTimes';
+sequence.tablefeature{2,2}=num2str([70 210]);
+sequence.tablefeature{2,3}=num2str([0 0 0]);
+sequence.tablefeature{2,4}=num2str([0 1 0]);
+sequence.tablefeature{2,5}='division times (min)';
 
 out=1;
 
@@ -462,11 +479,9 @@ for i=pix'
         if colo(1)==0 && colo(2)==0 && colo(3)==1 %rfp
             str(7)=num2str(cha(j));
         end
-        
     end
     
     channelGroup{cc}= str;
-    
     cc=cc+1;
 end
 
@@ -488,8 +503,7 @@ for i=1:size(sequence.contour,1)
         end
     end
     %   ok
-    
-    
+
     if numel(ok)~=0
         if cf==1
             cont=struct('channelGroup',ok,'object',sequence.contour{i,1},'color',str2num(sequence.contour{i,2}),'lineWidth',str2num(sequence.contour{i,3}),'link',double(sequence.contour{i,5}),'incells',str2num(sequence.contour{i,4}),'cycle',[]);
@@ -712,10 +726,21 @@ if isfield(sequence,'handles')
         if ishandle(sequence.handles.hf)
             
             [pth nme]=fileparts(sequence.project.seqname)
-            myExportFig([sequence.project.seqpath nme '.pdf'],sequence.handles.hf);
+            myExportFig([sequence.project.seqpath nme '-images.pdf'],sequence.handles.hf);
         end
     end
 end
+
+if isfield(sequence,'handles')
+    if isfield(sequence.handles,'hft')
+        if ishandle(sequence.handles.hft)
+            
+            [pth nme]=fileparts(sequence.project.seqname);
+            myExportFig([sequence.project.seqpath nme '-traj.pdf'],sequence.handles.hft);
+        end
+    end
+end
+
 
 
 % --- Executes when user attempts to close figure1.
@@ -738,7 +763,7 @@ function plotTraj_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global sequence segmentation
+global sequence segmentation segList;
 
 sequence.param=get(handles.tableparameter,'Data');
 sequence.display=get(handles.tabledisplay,'Data');
@@ -752,21 +777,21 @@ sequence.tablefeature=get(handles.tablefeature,'Data');
 % generate panel structure
 
 if sequence.tabletraj{1}==true % traj
-    
-else % graph
-    %if sequence.tabletraj{1}==true % cells in rows and feature in column
-    %    nlin=size(sequence.tablecell,1)-1;
-    %    ncol=size(sequence.tablefeature,1)-1;
-    %else % cells in columns and feature in row
+    % traj plot
+    % plot features for all traj on same plot
+    % plot groups of cells on different plot
     ncol=size(sequence.tablecell,1)-1;
     nlin=size(sequence.tablefeature,1)-1;
-    %end
+    
+else % graph
+    ncol=size(sequence.tablecell,1)-1;
+    nlin=size(sequence.tablefeature,1)-1;
 end
-
 
 % generate figure;
 
 a=str2num(sequence.param{1,1});
+
 
 sequence.handles.hft=figure('Color','w','Position',[50 50 a(1) a(2) ]);
 
@@ -775,156 +800,433 @@ sequence.handles.hft=figure('Color','w','Position',[50 50 a(1) a(2) ]);
 sequence.handles.hpt=panel();
 p=sequence.handles.hpt;
 p.de.margin=40;
-
-if sequence.tabletraj{2}==true
-    p.pack(ncol,nlin);
-else
-    p.pack(nlin,ncol);
-end
-
-p.fontsize=24;
-
 mar=10;
-cc=0;
-cd=0;
 
-
-% load images and contours
-
-for i=1:nlin % features
+if sequence.tabletraj{1}==false %  graph mode
+    if sequence.tabletraj{2}==true
+        p.pack(ncol,nlin);
+    else
+        p.pack(nlin,ncol);
+    end
     
-    % build cmap
+    p.fontsize=24;
     
     
+    cc=0;
+    cd=0;
     
-    for j=1:ncol % cells group
-        
-        
-        
-        
-        %a=sequence.tablecell{j,2},
-        %i
-        
-        ta=sequence.tablecell{j,2};
-        if ischar(ta)
-            ta=str2num(ta);
-        end
-        
-        if  numel(find(ta==i))~=0
+    
+    for i=1:nlin % features
+        for j=1:ncol % cells group
             
-            
-            if sequence.tabletraj{2}==true
-                ia=j;
-                ja=i;
-            else
-                ia=i;
-                ja=j;
+            ta=sequence.tablecell{j,2};
+            if ischar(ta)
+                ta=str2num(ta);
             end
             
-            p(ia,ja).marginleft=0;
-            p(ia,ja).marginright=mar;
-            p(ia,ja).marginbottom=mar;
-            p(ia,ja).margintop=mar;
-            
-            
-            p(ia,ja).select();
-            
-            
-            ft=str2func(sequence.tablefeature{i,1});
-            
-            obj=sequence.tablecell{j,3};
-            tcells=segmentation.(['t' obj]);
-            
-            ind=str2num(sequence.tablecell{j,1});
-            
-            % get cmap
-            
-            cmin=str2num(sequence.tablefeature{i,3});
-            cmax=str2num(sequence.tablefeature{i,4});
-            
-            cmap=zeros(3,length(ind));
-            cmap(1,:)=linspace(cmin(1),cmax(1),length(ind));
-            cmap(2,:)=linspace(cmin(2),cmax(2),length(ind));
-            cmap(3,:)=linspace(cmin(3),cmax(3),length(ind));
-            
-            cmap=cmap';
-            
-            mine=Inf; maxe=-Inf;
-            
+            if  numel(find(ta==i))~=0
+                if sequence.tabletraj{2}==true
+                    ia=j;
+                    ja=i;
+                else
+                    ia=i;
+                    ja=j;
+                end
+                
+                p(ia,ja).marginleft=0;
+                p(ia,ja).marginright=mar;
+                p(ia,ja).marginbottom=mar;
+                p(ia,ja).margintop=mar;
+                p(ia,ja).select();
+                ft=str2func(sequence.tablefeature{i,1});
+                
+                if numel(strfind(sequence.tablefeature{i,1},'@'))==0
+                   continue 
+                end
+                
+                obj=sequence.tablecell{j,3};
+                
+                
+                ind=str2num(sequence.tablecell{j,1});
+                
+                cmin=str2num(sequence.tablefeature{i,3});
+                cmax=str2num(sequence.tablefeature{i,4});
+                
+                cmap=zeros(3,length(ind));
+                cmap(1,:)=linspace(cmin(1),cmax(1),length(ind));
+                cmap(2,:)=linspace(cmin(2),cmax(2),length(ind));
+                cmap(3,:)=linspace(cmin(3),cmax(3),length(ind));
+                
+                cmap=cmap';
+                
+                mine=Inf; maxe=-Inf;
+                
+                cc=1;
+                for k=ind
+                    
+                    seg=eval(sequence.tablecell{j,4});
+                    seg=seg(cc);
+                    tcells=segList(seg).s.(['t' obj]);
+                
+                    tc=tcells(k);
+                    xtemp=str2num(sequence.param{10})*([tc.Obj.image]-1)/60;
+                    ytemp=arrayfun(ft,tc.Obj);
+                    
+                    sync=0;
+                    if sequence.tabletraj{4}==true
+                        sync=str2num(sequence.param{10})*(tc.detectionFrame-1)/60;
+                    end
+                    
+                    plot(xtemp-sync,ytemp,'LineWidth',2,'Color',cmap(cc,:)); hold on;
+                    
+                    mine=min(mine,min(ytemp));
+                    maxe=max(maxe,max(ytemp));
+                    cc=cc+1;
+                end
+                
+                yli=sequence.tablefeature{i,2};
+                
+                if ischar(yli)
+                    yli=str2num(yli);
+                end
+                
+                if numel(yli)==0 % find rang
+                    yli=[mine maxe];
+                    sequence.tablefeature{i,2}=num2str(round(yli));
+                end
+                
+                ylim([yli(1) yli(end)]);
+                
+                  if sequence.tabletraj{4}==false % specify xrange if no sync
+        xmine=str2num(sequence.param{4})*str2num(sequence.param{10})/60;
+        xmaxe=str2num(sequence.param{5})*str2num(sequence.param{10})/60;
+        xlim([xmine xmaxe]);
+                  end
+        
+                p(ia,ja).marginleft=mar;
+                p(ia,ja).marginright=mar;
+                p(ia,ja).marginbottom=mar;
+                p(ia,ja).margintop=mar;
+                
+                if sequence.tabletraj{2}==true
+                    p(ia).marginbottom=10;
+                    p(ia).margintop=10;
+                    p(ia,ja).marginleft=35;
+                    %p(ia,ja).marginright=mar;
+                    p(ia,ja).marginbottom=0;
+                    ylabel(sequence.tablefeature{i,5});
+                    
+                    if j==ncol
+                        xlabel('Time (min)');
+                    else
+                        set(gca,'XTickLabel',{});
+                    end
+                else
+                    p(ia).marginbottom=10;
+                    p(ia).margintop=10;
+                    p(ia,ja).marginleft=15;
+                    %p(ia,ja).marginright=mar;
+                    p(ia,ja).marginbottom=0;
+                    
+                    if j~=1
+                        set(gca,'YTickLabel',{});
+                    else
+                        ylabel(sequence.tablefeature{i,5});
+                    end
+                    
+                    if i==nlin
+                        xlabel('Time (min)');
+                    else
+                        set(gca,'XTickLabel',{});
+                    end
+                end
+                
+            end
+        end
+    end
+    
+else % traj mode
+    %ncol=size(sequence.tablecell,1)-1;
+    %nlin=size(sequence.tablefeature,1)-1;
+    p.pack('v',ncol);
+    p.fontsize=20;
+    
+    cellwidth=10;
+    
+    for j=1:ncol % loop on groups of cells
+        p(j).marginleft=35;
+        p(j).marginright=mar;
+        p(j).marginbottom=mar;
+        p(j).margintop=mar;
+        
+        cl=cell(1,nlin+1);
+        
+        for i=1:nlin
+            cl{i+1}=0.05;
+        end
+        
+        p(j).pack('h',cl);
+        
+        for i=2:nlin+1
+            p(j,i).marginleft=35;
+            p(j,i).marginright=35;
+            %p(j,i).marginleft=mar;
+            %p(j,i).marginright=mar;
+        end
+        
+        p(j,1).select();
+        
+        obj=sequence.tablecell{j,3};
+        
+       % seg=str2num(sequence.tablecell{j,4}); %find segList
+       % tcells=segList(seg).s.(['t' obj]);
+        
+        ind=str2num(sequence.tablecell{j,1});
+        
+        % sort objects by total duration
+        if sequence.tabletraj{2}==true
+            xtemp=[]; xind=[];
             cc=1;
             for k=ind
                 
+                seg=eval(sequence.tablecell{j,4});
+                seg=seg(cc);
+                tcells=segList(seg).s.(['t' obj]);
+                    
                 tc=tcells(k);
-                xtemp=[tc.Obj.image];
-                ytemp=arrayfun(ft,tc.Obj);
-                plot(xtemp,ytemp,'LineWidth',2,'Color',cmap(cc,:)); hold on;
-                
-                mine=min(mine,min(ytemp));
-                maxe=max(maxe,max(ytemp));
+                xtemp=[xtemp length([tc.Obj.image])];
+                xind=[xind k];
                 cc=cc+1;
             end
             
-            yli=sequence.tablefeature{i,2};
-            
-            if ischar(yli)
-                yli=str2num(yli);
-            end
-            
-            if numel(yli)==0 % find rang
-                yli=[mine maxe];
-                sequence.tablefeature{i,2}=num2str(round(yli));
-            end
-            
-            ylim(yli);
-            
-            
-            p(ia,ja).marginleft=mar;
-            p(ia,ja).marginright=mar;
-            p(ia,ja).marginbottom=mar;
-            p(ia,ja).margintop=mar;
-            
-               
-            if sequence.tabletraj{2}==true
-               p(ia).marginbottom=10;
-               p(ia).margintop=10;
-               p(ia,ja).marginleft=35;
-               %p(ia,ja).marginright=mar;
-               p(ia,ja).marginbottom=0;
-            %p(ia,ja).margintop=mar; 
-                
-               % if i==1
-                    ylabel(sequence.tablefeature{i,5});
-                %else
-                    %ylabel(sequence.tablefeature{i,5});
-               % end
-                
-                if j==ncol
-                    xlabel('Time (frames)');
-                else
-                    set(gca,'XTickLabel',{});
-                end
-            else
-               p(ia).marginbottom=10;
-               p(ia).margintop=10;
-               p(ia,ja).marginleft=15;
-               %p(ia,ja).marginright=mar;
-               p(ia,ja).marginbottom=0;
-               
-                if j~=1
-                    set(gca,'YTickLabel',{});
-                else
-                    ylabel(sequence.tablefeature{i,5});
-                end
-                
-                if i==nlin
-                    xlabel('Time (frames)');
-                else
-                    set(gca,'XTickLabel',{});
-                end
-            end
-            
+            [xtemp ix]=sort(xtemp,'descend');
+            ind=xind(ix);
         end
+        
+        % get min/max for each object
+        for i=1:nlin
+            if numel(sequence.tablefeature{i,2})==0
+                mine(i)=Inf; maxe(i)=-Inf;
+                cc=1;
+                for k=ind
+                    seg=eval(sequence.tablecell{j,4});
+                    seg=seg(cc);
+                    tcells=segList(seg).s.(['t' obj]);
+                    
+                    tc=tcells(k);
+                    xtemp=[tc.Obj.image];
+                    
+                    ytemp=arrayfun(ft,tc.Obj);
+                    
+                    mine(i)=min(mine(i),min(ytemp));
+                    maxe(i)=max(maxe(i),max(ytemp));
+                    cc=cc+1;
+                end
+                yli=[mine(i) maxe(i)];
+                sequence.tablefeature{i,2}=num2str(round(yli));
+            else
+                yli=str2num(sequence.tablefeature{i,2});
+                
+                mine(i)=yli(1);
+                maxe(i)=yli(end);
+                
+            end
+        end
+        
+        cc=1; startY=-1.2*cellwidth+1*length(ind); ci=1; maxex=-Inf;
+        for k=ind
+            for i=1:nlin
+                ta=sequence.tablecell{j,2};
+                if ischar(ta)
+                    ta=str2num(ta);
+                end
+                
+                if  numel(find(ta==i))~=0
+                    
+                    if strfind(sequence.tablefeature{i,1},'@')
+                    ft=str2func(sequence.tablefeature{i,1});
+                    else
+                    ft=sequence.tablefeature{i,1};
+                    end
+                    
+                    cmin=str2num(sequence.tablefeature{i,3});
+                    cmax=str2num(sequence.tablefeature{i,4});
+                    
+                    cmap=zeros(3,256);
+                    
+                    cmap(1,:)=linspace(cmin(1),cmax(1),256);
+                    cmap(2,:)=linspace(cmin(2),cmax(2),256);
+                    cmap(3,:)=linspace(cmin(3),cmax(3),256);
+                    
+                    ncolors=256;
+                    cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
+                    cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
+                    
+                    cmap=cmap';
+                    
+                    seg=eval(sequence.tablecell{j,4});
+                    seg=seg(cc);
+                    tcells=segList(seg).s.(['t' obj]);
+                    
+                    tc=tcells(k);
+                    
+                    
+                    if isa(ft,'function_handle')
+                    xtemp=[tc.Obj.image];
+                    ytemp=arrayfun(ft,tc.Obj);
+                    cindex=ones(1,length(tc.Obj));
+                    rec=zeros(length(tc.Obj),2);
+                    
+                    [xtemp ix]=sort(str2num(sequence.param{10})*([tc.Obj.image]-1)/60);
+                    ytemp=ytemp(ix);
+                    
+                    sync=0;
+                    if sequence.tabletraj{4}==true
+                        
+                        sync=str2num(sequence.param{10})*(tc.detectionFrame-1)/60;
+                    end
+                    
+                    %rec(:,1)=linspace(0,xtemp(end)-xtemp(1),length(xtemp))+sync;
+                    rec(:,1)=xtemp-sync;
+                    
+                    
+                    
+                    %rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
+                    rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
+                    else
+                    tim=tc.(ft);
+                    tim=[tc.detectionFrame tc.(ft) tc.lastFrame];
+                    tim=tim*str2num(sequence.param{10})/60;
+                    
+                    sync=0;
+                    if sequence.tabletraj{4}==true
+                        sync=tim(1);
+                    end
+                    
+                    xtemp=tim(1:end-1)-sync;
+                    ytemp=diff(tim)  ;
+                    cindex=ones(1,length(xtemp));
+                    rec=zeros(length(xtemp),2);
+                    %size(rec), size(xtemp)
+                    rec(:,1)=xtemp';
+                    rec(:,2)=[xtemp(2:end)' ; str2num(sequence.param{10})/60*(tc.lastFrame)-sync];
+                    end
+                    
+                    maxex=max(maxex,max(rec(:,2)));
+                    
+                    ccc=1;
+
+                    
+                    %  if logscale==1
+                    %      temp=log10(temp);
+                    %  end
+                    
+                    warning off all;
+                    t=real(uint8(round(255*(ytemp-mine(i))/(maxe(i)-mine(i)))));
+                    warning on all;
+     
+                    pix=find(t<1);
+                    cindex=t;
+                    cindex(pix)=1;
+                    
+                    startX=0;
+                    startY=startY+1.2*cellwidth;
+
+                    if cc~=1 && i==ta(1) % space between cells
+                        startY=startY+cellwidth/4;
+                    end
+                    
+                    if isa(ft,'function_handle') % fluo, do not plot sep
+                        sepwidth=0;
+                    else
+                        sepwidth=5; 
+                    end
+                    
+                   % rec,cindex
+                    Traj(rec,'Color',cmap,'colorindex',cindex,'tag',['Cell :' num2str(k) ' -mother :' num2str(tc.mother)],'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sepwidth,'sepColor',[0.7 0.7 0.7],'gradientwidth',0);
+
+                    ci=ci+1;
+                end
+            end
+            
+            cc=cc+1;
+        end
+        
+        set(gca,'YTick',[],'YTickLabel',{});
+        
+        if j~=ncol
+            set(gca,'XTickLabel',{});
+        end
+        
+        ylim([-cellwidth/2 startY+cellwidth/2]);
+        
+        if sequence.tabletraj{4}==false % specify xrange if no sync
+        xmine=str2num(sequence.param{4})*str2num(sequence.param{10})/60;
+        xmaxe=str2num(sequence.param{5})*str2num(sequence.param{10})/60;
+        xlim([xmine xmaxe]);
+        else %take the longest trace
+        xlim([0 maxex]);  
+        end
+        
+        ccc=2;
+        for i=2:nlin+1 % manage colorbars
+            ta=sequence.tablecell{j,2};
+            if ischar(ta)
+                ta=str2num(ta);
+            end
+            
+            if  numel(find(ta==i-1))~=0
+                p(j,ccc).select();
+                
+                ncolors=100;
+                rec=zeros(ncolors,2);
+                rec(:,1)=linspace(1,ncolors,ncolors)-1;
+                rec(:,2)=rec(:,1)+1;
+                
+                cmin=str2num(sequence.tablefeature{i-1,3});
+                cmax=str2num(sequence.tablefeature{i-1,4});
+                cmap=zeros(3,ncolors);
+                cmap(1,:)=linspace(cmin(1),cmax(1),ncolors);
+                cmap(2,:)=linspace(cmin(2),cmax(2),ncolors);
+                cmap(3,:)=linspace(cmin(3),cmax(3),ncolors);
+                
+                 cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
+                 cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
+                
+                cmap=cmap';
+                
+                cindex=1:ncolors;
+                
+                Traj(rec,'Color',cmap,'colorindex',cindex,'tag','Cell','width',cellwidth,'startX',0,'startY',cellwidth/2,'sepwidth',0,'sepColor',[0.9 0.9 0.9],'gradientwidth',0,'orientation','vertical');
+                
+                set(gca,'XTick',[],'XTickLabel',{});
+                
+                if ischar(sequence.tablefeature{i-1,2})
+                    fluo=str2num(sequence.tablefeature{i-1,2});
+                else
+                    fluo=sequence.tablefeature{i-1,2};
+                end
+                
+                yctick=(fluo-fluo(1))*(ncolors-1)./(fluo(end)-fluo(1))+1;
+                
+                ytlabel={};
+                for kl=1:length(yctick)
+                    ytlabel{kl}=num2str(fluo(kl));
+                end
+                
+                ytlabel{1}=['<' ytlabel{1}];
+                ytlabel{end}=['>' ytlabel{end}];
+                
+                set(gca,'YTick',yctick,'YTickLabel',ytlabel);
+                
+                ylabel(sequence.tablefeature{i-1,5})
+                ccc=ccc+1;
+            end
+        end
+        
     end
+    p(ncol,1).select();
+    xlabel('Time (min)');
 end
 
 p.marginleft=30;
@@ -989,5 +1291,3 @@ if isnan(eventdata.NewData)
     sequence.tablefeature{eventdata.Indices(1),eventdata.Indices(2)}=eventdata.EditData;
 end
 updateSequence(handles);
-
-
