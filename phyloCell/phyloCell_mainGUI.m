@@ -3711,7 +3711,6 @@ for i=segmentedFrames
 %                 cells1(i,j).fluoCytoVar(l)=cells1(i,j).fluoVar(l);
 %                 cells1(i,j).fluoCytoMin(l)=0;
 %                 cells1(i,j).fluoCytoMax(l)=0;
-              
                 
             end
         end

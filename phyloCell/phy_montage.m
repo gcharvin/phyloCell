@@ -248,22 +248,28 @@ sequence.tablecell{1,3}='cells1';
 
 pix=[segList.selected]; pix=find(pix==1);
 
-sequence.tablecell{1,4}=num2str(pix*ones(1,3));
+sequence.tablecell{1,4}=['[' num2str(pix*ones(1,3)) ']'];
+sequence.tablecell{1,5}=true;
 
 sequence.tablefeature{1,1}='@(t) t.area';
 sequence.tablefeature{1,2}=num2str([500 2000]);
 sequence.tablefeature{1,3}=num2str([0 0 1]);
 sequence.tablefeature{1,4}=num2str([1 0 0]);
 sequence.tablefeature{1,5}='myfeature (A.U.)';
+sequence.tablefeature{1,6}='';
+sequence.tablefeature{1,7}=false;
+sequence.tablefeature{1,8}=true;
 
 sequence.tablefeature{2,1}='divisionTimes';
 sequence.tablefeature{2,2}=num2str([70 210]);
 sequence.tablefeature{2,3}=num2str([0 0 0]);
 sequence.tablefeature{2,4}=num2str([0 1 0]);
 sequence.tablefeature{2,5}='division times (min)';
+sequence.tablefeature{2,6}='';
+sequence.tablefeature{2,7}=false;
+sequence.tablefeature{2,8}=true;
 
 out=1;
-
 
 function updateSequence(handles,option)
 global sequence segmentation
@@ -287,6 +293,7 @@ set(handles.tablecell,'Data',newtab);
 newtab=manageTable(sequence.tablefeature);
 set(handles.tablefeature,'Data',newtab);
 
+
 function newtab=manageTable(tab)
 
 newtab=tab;
@@ -301,6 +308,11 @@ if (numel(tab{r,1})==0 ) && r>1
     
 else
     newtab{end+1,1}='';
+    newtab{end,end}=true;
+    
+    if strcmp(class(newtab{end-1,end-1}),'logical')
+        newtab{end,end-1}=true;
+    end
 end
 
 
@@ -335,7 +347,7 @@ end
 sequence.project.seqpath=path;
 sequence.project.seqname=files;
 
-save([sequence.project.path sequence.project.seqname],'sequence');
+save([sequence.project.seqpath sequence.project.seqname],'sequence');
 
 
 updateSequence(handles)
@@ -346,7 +358,6 @@ function saveMontage_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global sequence
-
 save([sequence.project.seqpath sequence.project.seqname],'sequence');
 
 % --- Executes on button press in openMontage.
@@ -803,10 +814,16 @@ p.de.margin=40;
 mar=10;
 
 if sequence.tabletraj{1}==false %  graph mode
+    
+    % find actual number of lines and columns
+    
+    %nfeatdisp=sum([sequence.tablefeature{1:end-1,end}])
+    nfeatdisp=nlin;
     if sequence.tabletraj{2}==true
-        p.pack(ncol,nlin);
+        p.pack(ncol,nfeatdisp);
+     %   'ok'
     else
-        p.pack(nlin,ncol);
+        p.pack(nfeatdisp,ncol);
     end
     
     p.fontsize=24;
@@ -824,6 +841,10 @@ if sequence.tabletraj{1}==false %  graph mode
                 ta=str2num(ta);
             end
             
+           % if sequence.tablefeature{i,8}==false
+           %     continue
+           % end
+            
             if  numel(find(ta==i))~=0
                 if sequence.tabletraj{2}==true
                     ia=j;
@@ -837,7 +858,7 @@ if sequence.tabletraj{1}==false %  graph mode
                 p(ia,ja).marginright=mar;
                 p(ia,ja).marginbottom=mar;
                 p(ia,ja).margintop=mar;
-                p(ia,ja).select();
+                
                 ft=str2func(sequence.tablefeature{i,1});
                 
                 if numel(strfind(sequence.tablefeature{i,1},'@'))==0
@@ -862,6 +883,7 @@ if sequence.tabletraj{1}==false %  graph mode
                 mine=Inf; maxe=-Inf;
                 
                 cc=1;
+                h=figure;
                 for k=ind
                     
                     seg=eval(sequence.tablecell{j,4});
@@ -877,12 +899,20 @@ if sequence.tabletraj{1}==false %  graph mode
                         sync=str2num(sequence.param{10})*(tc.detectionFrame-1)/60;
                     end
                     
+                 if sequence.tablefeature{i,7}==true
+                    semilogy(xtemp-sync,ytemp,'LineWidth',2,'Color',cmap(cc,:)); hold on;
+                 else
                     plot(xtemp-sync,ytemp,'LineWidth',2,'Color',cmap(cc,:)); hold on;
+                 end
+                    
                     
                     mine=min(mine,min(ytemp));
                     maxe=max(maxe,max(ytemp));
                     cc=cc+1;
                 end
+                
+                p(ia,ja).select(gca);
+                close(h);
                 
                 yli=sequence.tablefeature{i,2};
                 
@@ -948,12 +978,17 @@ if sequence.tabletraj{1}==false %  graph mode
 else % traj mode
     %ncol=size(sequence.tablecell,1)-1;
     %nlin=size(sequence.tablefeature,1)-1;
+    
+   % ncoldisp=sum([sequence.tablecell{1:end-1,end}]);
+    
     p.pack('v',ncol);
     p.fontsize=20;
     
     cellwidth=10;
     
     for j=1:ncol % loop on groups of cells
+        
+        
         p(j).marginleft=35;
         p(j).marginright=mar;
         p(j).marginbottom=mar;
@@ -999,8 +1034,9 @@ else % traj mode
                 cc=cc+1;
             end
             
-            [xtemp ix]=sort(xtemp,'descend');
-            ind=xind(ix);
+            [xtemp isort]=sort(xtemp,'descend');
+            ind=xind(isort);
+            
         end
         
         % get min/max for each object
@@ -1008,13 +1044,26 @@ else % traj mode
             if numel(sequence.tablefeature{i,2})==0
                 mine(i)=Inf; maxe(i)=-Inf;
                 cc=1;
+                
                 for k=ind
                     seg=eval(sequence.tablecell{j,4});
-                    seg=seg(cc);
+                    
+                    if sequence.tabletraj{2}==true % cell sorting by duration 
+                    seg=seg(isort(cc)); 
+                    else
+                      seg=seg((cc));
+                    end
+                    
                     tcells=segList(seg).s.(['t' obj]);
                     
                     tc=tcells(k);
                     xtemp=[tc.Obj.image];
+                    
+                    if strfind(sequence.tablefeature{i,1},'@')
+                    ft=str2func(sequence.tablefeature{i,1});
+                    else
+                    ft=sequence.tablefeature{i,1};
+                    end
                     
                     ytemp=arrayfun(ft,tc.Obj);
                     
@@ -1022,6 +1071,16 @@ else % traj mode
                     maxe(i)=max(maxe(i),max(ytemp));
                     cc=cc+1;
                 end
+                
+                if sequence.tablefeature{i,7}==true % logscale
+                if mine<=0
+                    disp('Range is not possible in log scale <0!!');
+                    mine(i)=0.001*maxe(i);
+                end
+                mine(i)=log10(mine(i));
+                maxe(i)=log10(maxe(i));
+                end
+            
                 yli=[mine(i) maxe(i)];
                 sequence.tablefeature{i,2}=num2str(round(yli));
             else
@@ -1030,15 +1089,29 @@ else % traj mode
                 mine(i)=yli(1);
                 maxe(i)=yli(end);
                 
+                 if sequence.tablefeature{i,7}==true
+                if mine<=0
+                    disp('Range is not possible in log scale <0!!');
+                    mine(i)=0.001*maxe(i);
+                end
+                mine(i)=log10(mine(i));
+                maxe(i)=log10(maxe(i));
+                end
+                
             end
         end
         
         cc=1; startY=-1.2*cellwidth+1*length(ind); ci=1; maxex=-Inf;
-        for k=ind
-            for i=1:nlin
+        for k=ind % loop on cells
+           
+            for i=1:nlin % loop on features
                 ta=sequence.tablecell{j,2};
                 if ischar(ta)
                     ta=str2num(ta);
+                end
+                
+                if sequence.tablefeature{i,8}==false
+                   continue 
                 end
                 
                 if  numel(find(ta==i))~=0
@@ -1059,13 +1132,19 @@ else % traj mode
                     cmap(3,:)=linspace(cmin(3),cmax(3),256);
                     
                     ncolors=256;
-                    cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
-                    cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
+                   % cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
+                   % cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
                     
                     cmap=cmap';
                     
                     seg=eval(sequence.tablecell{j,4});
-                    seg=seg(cc);
+                    
+                    if sequence.tabletraj{2}==true % cell sorting by duration
+                    seg=seg(isort(cc)); 
+                    else
+                      seg=seg((cc));
+                    end
+                    
                     tcells=segList(seg).s.(['t' obj]);
                     
                     tc=tcells(k);
@@ -1073,6 +1152,12 @@ else % traj mode
                     
                     if isa(ft,'function_handle')
                     xtemp=[tc.Obj.image];
+                    %size(xtemp)
+                    %k,i,size([tc.Obj.fluoMean])
+                    %a=tc.Obj(1)
+                    %b=segmentation.tcells1(30048).Obj(1)
+                    %size([segmentation.tcells1(30048).Obj.fluoMean])
+                    
                     ytemp=arrayfun(ft,tc.Obj);
                     cindex=ones(1,length(tc.Obj));
                     rec=zeros(length(tc.Obj),2);
@@ -1088,9 +1173,7 @@ else % traj mode
                     
                     %rec(:,1)=linspace(0,xtemp(end)-xtemp(1),length(xtemp))+sync;
                     rec(:,1)=xtemp-sync;
-                    
-                    
-                    
+
                     %rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
                     rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
                     else
@@ -1120,6 +1203,13 @@ else % traj mode
                     %  if logscale==1
                     %      temp=log10(temp);
                     %  end
+                    
+                    %ytemp=log(ytemp);
+                     if sequence.tablefeature{i,7}==true
+                         ytemp=log10(ytemp);
+                
+                     end
+                
                     
                     warning off all;
                     t=real(uint8(round(255*(ytemp-mine(i))/(maxe(i)-mine(i)))));
@@ -1165,7 +1255,12 @@ else % traj mode
         xmaxe=str2num(sequence.param{5})*str2num(sequence.param{10})/60;
         xlim([xmine xmaxe]);
         else %take the longest trace
+            if sequence.tabletraj{3}==true
+                xmaxe=str2num(sequence.param{5})*str2num(sequence.param{10})/60;
+                xlim([0 xmaxe]); 
+            else
         xlim([0 maxex]);  
+            end
         end
         
         ccc=2;
@@ -1174,6 +1269,10 @@ else % traj mode
             if ischar(ta)
                 ta=str2num(ta);
             end
+            
+              if sequence.tablefeature{i-1,8}==false
+                   continue 
+                end
             
             if  numel(find(ta==i-1))~=0
                 p(j,ccc).select();
@@ -1190,8 +1289,8 @@ else % traj mode
                 cmap(2,:)=linspace(cmin(2),cmax(2),ncolors);
                 cmap(3,:)=linspace(cmin(3),cmax(3),ncolors);
                 
-                 cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
-                 cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
+                % cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
+                % cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
                 
                 cmap=cmap';
                 
@@ -1207,11 +1306,23 @@ else % traj mode
                     fluo=sequence.tablefeature{i-1,2};
                 end
                 
+                if sequence.tablefeature{i-1,7}==true % log scale
+                   fluo=log10(fluo);
+                 
+                end
+                
+              
+                
                 yctick=(fluo-fluo(1))*(ncolors-1)./(fluo(end)-fluo(1))+1;
                 
                 ytlabel={};
+                
                 for kl=1:length(yctick)
                     ytlabel{kl}=num2str(fluo(kl));
+                    
+                    if sequence.tablefeature{i-1,7}==true
+                        ytlabel{kl}=num2str(10.^fluo(kl));
+                    end
                 end
                 
                 ytlabel{1}=['<' ytlabel{1}];
@@ -1231,7 +1342,7 @@ end
 
 p.marginleft=30;
 p.marginbottom=30;
-
+p.margintop=30;
 updateSequence(handles);
 
 %handles.output(2)=sequence.handles.hf;
@@ -1266,6 +1377,7 @@ function tablecell_CellEditCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global sequence
 sequence.tablecell=get(hObject,'Data');
+
 if isnan(eventdata.NewData)
     sequence.tablecell{eventdata.Indices(1),eventdata.Indices(2)}=eventdata.EditData;
 end
@@ -1287,7 +1399,11 @@ global sequence
 
 sequence.tablefeature=get(hObject,'Data');
 
+
 if isnan(eventdata.NewData)
     sequence.tablefeature{eventdata.Indices(1),eventdata.Indices(2)}=eventdata.EditData;
 end
-updateSequence(handles);
+
+
+
+%updateSequence(handles);
