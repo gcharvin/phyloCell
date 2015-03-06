@@ -870,6 +870,7 @@ if sequence.tabletraj{1}==false %  graph mode
                 
                 ind=str2num(sequence.tablecell{j,1});
                 
+                
                 cmin=str2num(sequence.tablefeature{i,3});
                 cmax=str2num(sequence.tablefeature{i,4});
                 
@@ -1125,17 +1126,22 @@ else % traj mode
                     cmin=str2num(sequence.tablefeature{i,3});
                     cmax=str2num(sequence.tablefeature{i,4});
                     
-                    cmap=zeros(3,256);
-                    
-                    cmap(1,:)=linspace(cmin(1),cmax(1),256);
-                    cmap(2,:)=linspace(cmin(2),cmax(2),256);
-                    cmap(3,:)=linspace(cmin(3),cmax(3),256);
-                    
                     ncolors=256;
+                    
+                    if numel(sequence.tablefeature{i,6})==0
+                    cmap=zeros(3,ncolors);
+                    cmap(1,:)=linspace(cmin(1),cmax(1),ncolors);
+                    cmap(2,:)=linspace(cmin(2),cmax(2),ncolors);
+                    cmap(3,:)=linspace(cmin(3),cmax(3),ncolors);
+                    
                    % cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
                    % cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
                     
                     cmap=cmap';
+                    else
+                    fmap=str2func(sequence.tablefeature{i,6});
+                    cmap=colormap(fmap(ncolors));   
+                    end
                     
                     seg=eval(sequence.tablecell{j,4});
                     
@@ -1284,15 +1290,24 @@ else % traj mode
                 
                 cmin=str2num(sequence.tablefeature{i-1,3});
                 cmax=str2num(sequence.tablefeature{i-1,4});
-                cmap=zeros(3,ncolors);
-                cmap(1,:)=linspace(cmin(1),cmax(1),ncolors);
-                cmap(2,:)=linspace(cmin(2),cmax(2),ncolors);
-                cmap(3,:)=linspace(cmin(3),cmax(3),ncolors);
                 
-                % cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
-                % cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
                 
-                cmap=cmap';
+                 if numel(sequence.tablefeature{i-1,6})==0
+                    cmap=zeros(3,ncolors);
+                    cmap(1,:)=linspace(cmin(1),cmax(1),ncolors);
+                    cmap(2,:)=linspace(cmin(2),cmax(2),ncolors);
+                    cmap(3,:)=linspace(cmin(3),cmax(3),ncolors);
+                    
+                   % cmap(3,1:ncolors/2)=linspace(cmin(3),cmax(3),ncolors/2);
+                   % cmap(3,ncolors/2+1:ncolors)=linspace(cmax(3),cmin(3),ncolors/2);
+                    
+                    cmap=cmap';
+                    else
+                    fmap=str2func(sequence.tablefeature{i-1,6});
+                    cmap=colormap(fmap(ncolors));   
+                 end
+                    
+                
                 
                 cindex=1:ncolors;
                 

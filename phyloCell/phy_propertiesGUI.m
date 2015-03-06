@@ -195,7 +195,7 @@ grid.putClientProperty('terminateEditOnFocusLost',true);
 if nargin < 1 || isempty(hParent) || isequal(hParent,0)
     % Create a new figure window
     delete(findall(0, '-depth',1, 'Tag','fpropertiesGUI'));
-    hFig = figure('Number','off', 'Name',title, 'Units','pixel', 'Pos',[300,300,800,400], 'Menu','none', 'Toolbar','none', 'Tag','fpropertiesGUI', 'Visible','off');
+    hFig = figure('Name',title, 'Units','pixel', 'Pos',[300,300,800,400], 'Menu','none', 'Toolbar','none', 'Tag','fpropertiesGUI', 'Visible','off');
     hParent = hFig;
     setappdata(0,'isParamsGUIApproved',false)
     
