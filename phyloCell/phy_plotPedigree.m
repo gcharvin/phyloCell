@@ -246,6 +246,7 @@ switch mode % detect min max fluo levels
             end
             
             
+            
         end
 end
 

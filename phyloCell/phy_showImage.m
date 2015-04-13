@@ -89,10 +89,22 @@ for i=frames
         img=uint8(255*img);
         
         
-        imgRGBsum=imlincomb(1,imgRGBsum,1,img);
+       % if length(channels)>=2
+       % 
+       % if j==1
+       %   imgRGBsum=img;
+       % else
+       % imgRGBsum=uint8(double(imgRGBsum)./double(img));
+       % figure, imshow(img,[]);
+       % end
         
+       % else
+        imgRGBsum=imlincomb(1,imgRGBsum,1,img);   
+       %end
         
     end
+    
+    
     
     warning off all
     imshow(imgRGBsum);
@@ -195,6 +207,10 @@ for ik=1:length(contours)
         xc=cells.x;
         yc=cells.y;
         
+        if numel(xc)==0
+           continue 
+        end
+        
         if size(xc,1)==1
         xc=[xc xc(1)];
         yc=[yc yc(1)];
@@ -290,7 +306,13 @@ global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);
 %t = double((i) * timeLapse.interval);
-t = double((i) * timeLapse.interval/60);
+
+% time in min
+%t = double((i-360) * timeLapse.interval/60);
+
+%time in hoiurs
+t = double((i-1) * timeLapse.interval);
+
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);
 
@@ -302,9 +324,11 @@ else
     ypos=0.1*refheight;
 end
 
-%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+% time in h/min
+text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
 
-text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+% time in min
+%text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
 
 function drawScale(ROI,refwidth,refheight)
 global timeLapse

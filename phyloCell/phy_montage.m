@@ -241,6 +241,7 @@ sequence.tabletraj{1,1}=true;
 sequence.tabletraj{2,1}=true;
 sequence.tabletraj{3,1}=false;
 sequence.tabletraj{4,1}=true;
+sequence.tabletraj{5,1}=false;
 
 sequence.tablecell{1,1}=num2str([1 2 3]);
 sequence.tablecell{1,2}='1 2';
@@ -540,7 +541,9 @@ end
 
 frameIndices=str2num(sequence.param{4,1}):str2num(sequence.param{5,1});
 
-exportMontage('','', segmentation.position, channelGroup, frameIndices, 0, segmentation,'ROI',str2num(sequence.param{8}),'output',nme,'contours',cont,'cavity',cavity,'tracking',tracking)
+%div=@(a,b) a./b;
+
+exportMontage('','', segmentation.position, channelGroup, frameIndices, 0, segmentation,'ROI',str2num(sequence.param{8}),'output',nme,'contours',cont,'cavity',cavity,'tracking',tracking);%,'composition', div)
 
 
 % --- Executes when entered data in editable cell(s) in tableparameter.
@@ -1103,8 +1106,15 @@ else % traj mode
         end
         
         cc=1; startY=-1.2*cellwidth+1*length(ind); ci=1; maxex=-Inf;
+        
+        spaceY=1.2*cellwidth; 
+        
+        if sequence.tabletraj{5}==true %plot daughter cells
+            spaceY=3*spaceY;
+        end
+        
         for k=ind % loop on cells
-           
+            
             for i=1:nlin % loop on features
                 ta=sequence.tablecell{j,2};
                 if ischar(ta)
@@ -1150,97 +1160,45 @@ else % traj mode
                     else
                       seg=seg((cc));
                     end
-                    
-                    tcells=segList(seg).s.(['t' obj]);
-                    
-                    tc=tcells(k);
-                    
-                    
-                    if isa(ft,'function_handle')
-                    xtemp=[tc.Obj.image];
-                    %size(xtemp)
-                    %k,i,size([tc.Obj.fluoMean])
-                    %a=tc.Obj(1)
-                    %b=segmentation.tcells1(30048).Obj(1)
-                    %size([segmentation.tcells1(30048).Obj.fluoMean])
-                    
-                    ytemp=arrayfun(ft,tc.Obj);
-                    cindex=ones(1,length(tc.Obj));
-                    rec=zeros(length(tc.Obj),2);
-                    
-                    [xtemp ix]=sort(str2num(sequence.param{10})*([tc.Obj.image]-1)/60);
-                    ytemp=ytemp(ix);
-                    
-                    sync=0;
-                    if sequence.tabletraj{4}==true
-                        
-                        sync=str2num(sequence.param{10})*(tc.detectionFrame-1)/60;
+                 
+                    if cc~=1 && i==ta(1) % space between successive cells
+                        startY=startY+cellwidth/2;
                     end
                     
-                    %rec(:,1)=linspace(0,xtemp(end)-xtemp(1),length(xtemp))+sync;
-                    rec(:,1)=xtemp-sync;
+                    syncM=[];
+                    
+                    startY=startY+spaceY;
+                    
+                    [sync, startY, maxexcell]=plotCell(seg,k,ft,obj,syncM,startY,i,mine,maxe,cmap,cellwidth);
+                     
+                    maxex=max(maxex,maxexcell);
+                    
+                    if sequence.tabletraj{5}==true & strfind(sequence.tablefeature{i,1},'@')%plot daughter cells
+                       
+                         tcells=segList(seg).s.(['t' obj]);
+                       % k, 
+                       daughters=tcells(k).daughterList;
+                       
+                         for l=1:numel(daughters)
+                            aa= sign(0.5-mod(double(l),2));
 
-                    %rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
-                    rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
-                    else
-                    tim=tc.(ft);
-                    tim=[tc.detectionFrame tc.(ft) tc.lastFrame];
-                    tim=tim*str2num(sequence.param{10})/60;
-                    
-                    sync=0;
-                    if sequence.tabletraj{4}==true
-                        sync=tim(1);
+                          startYo=startY+aa*1.2*cellwidth;
+                           
+                          syncM=tcells(k).detectionFrame;
+                          syncM=str2num(sequence.param{10})*(syncM)/60;
+                          [sync, startYY, maxexcell]=plotCell(seg,daughters(l),ft,obj,syncM,startYo,i,mine,maxe,cmap,cellwidth);
+                          maxex=max(maxex,maxexcell);
+                          
+                          xlinepos=tcells(daughters(l)).detectionFrame-1;
+                          xlinepos=xlinepos*str2num(sequence.param{10})/60-syncM;
+                          
+                          line([xlinepos xlinepos],[startY+aa*cellwidth/2 startYo+aa*cellwidth/2],'Color',[0 0 0],'LineWidth',2);
+                         end
+                         
+                    %    plotCell()
                     end
                     
-                    xtemp=tim(1:end-1)-sync;
-                    ytemp=diff(tim)  ;
-                    cindex=ones(1,length(xtemp));
-                    rec=zeros(length(xtemp),2);
-                    %size(rec), size(xtemp)
-                    rec(:,1)=xtemp';
-                    rec(:,2)=[xtemp(2:end)' ; str2num(sequence.param{10})/60*(tc.lastFrame)-sync];
-                    end
                     
-                    maxex=max(maxex,max(rec(:,2)));
-                    
-                    ccc=1;
-
-                    
-                    %  if logscale==1
-                    %      temp=log10(temp);
-                    %  end
-                    
-                    %ytemp=log(ytemp);
-                     if sequence.tablefeature{i,7}==true
-                         ytemp=log10(ytemp);
-                
-                     end
-                
-                    
-                    warning off all;
-                    t=real(uint8(round(255*(ytemp-mine(i))/(maxe(i)-mine(i)))));
-                    warning on all;
-     
-                    pix=find(t<1);
-                    cindex=t;
-                    cindex(pix)=1;
-                    
-                    startX=0;
-                    startY=startY+1.2*cellwidth;
-
-                    if cc~=1 && i==ta(1) % space between cells
-                        startY=startY+cellwidth/4;
-                    end
-                    
-                    if isa(ft,'function_handle') % fluo, do not plot sep
-                        sepwidth=0;
-                    else
-                        sepwidth=5; 
-                    end
-                    
-                   % rec,cindex
-                    Traj(rec,'Color',cmap,'colorindex',cindex,'tag',['Cell :' num2str(k) ' -mother :' num2str(tc.mother)],'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sepwidth,'sepColor',[0.7 0.7 0.7],'gradientwidth',0);
-
                     ci=ci+1;
                 end
             end
@@ -1254,16 +1212,24 @@ else % traj mode
             set(gca,'XTickLabel',{});
         end
         
+        if sequence.tabletraj{5}==true & strfind(sequence.tablefeature{i,1},'@')
+        ylim([-cellwidth/2 startY+cellwidth/2+1.2*cellwidth]);    
+        else
         ylim([-cellwidth/2 startY+cellwidth/2]);
+        end
         
         if sequence.tabletraj{4}==false % specify xrange if no sync
         xmine=str2num(sequence.param{4})*str2num(sequence.param{10})/60;
         xmaxe=str2num(sequence.param{5})*str2num(sequence.param{10})/60;
         xlim([xmine xmaxe]);
+       
+             
         else %take the longest trace
             if sequence.tabletraj{3}==true
                 xmaxe=str2num(sequence.param{5})*str2num(sequence.param{10})/60;
                 xlim([0 xmaxe]); 
+                 set(gca,'XTick',60*[0 20 40 60 80 100],'XTickLabel',{'0' '20' '40' '60' '80' '100'});
+           
             else
         xlim([0 maxex]);  
             end
@@ -1306,9 +1272,7 @@ else % traj mode
                     fmap=str2func(sequence.tablefeature{i-1,6});
                     cmap=colormap(fmap(ncolors));   
                  end
-                    
-                
-                
+
                 cindex=1:ncolors;
                 
                 Traj(rec,'Color',cmap,'colorindex',cindex,'tag','Cell','width',cellwidth,'startX',0,'startY',cellwidth/2,'sepwidth',0,'sepColor',[0.9 0.9 0.9],'gradientwidth',0,'orientation','vertical');
@@ -1326,8 +1290,6 @@ else % traj mode
                  
                 end
                 
-              
-                
                 yctick=(fluo-fluo(1))*(ncolors-1)./(fluo(end)-fluo(1))+1;
                 
                 ytlabel={};
@@ -1344,7 +1306,7 @@ else % traj mode
                 ytlabel{end}=['>' ytlabel{end}];
                 
                 set(gca,'YTick',yctick,'YTickLabel',ytlabel);
-                
+                 
                 ylabel(sequence.tablefeature{i-1,5})
                 ccc=ccc+1;
             end
@@ -1353,6 +1315,8 @@ else % traj mode
     end
     p(ncol,1).select();
     xlabel('Time (min)');
+    
+    
 end
 
 p.marginleft=30;
@@ -1365,6 +1329,119 @@ updateSequence(handles);
 
 %p(1,1).marginleft=15;
 
+
+function [sync startY maxex]=plotCell(seg,k,ft,obj,syncM,startY,i,mine,maxe,cmap,cellwidth)
+global sequence segList
+
+ tcells=segList(seg).s.(['t' obj]);
+                    tc=tcells(k);
+
+                    if isa(ft,'function_handle')
+                    xtemp=[tc.Obj.image];
+                    %size(xtemp)
+                    %k,i,size([tc.Obj.fluoMean])
+                    %a=tc.Obj(1)
+                    %b=segmentation.tcells1(30048).Obj(1)
+                    %size([segmentation.tcells1(30048).Obj.fluoMean])
+                    
+                    ytemp=arrayfun(ft,tc.Obj);
+                    cindex=ones(1,length(tc.Obj));
+                    rec=zeros(length(tc.Obj),2);
+                    
+                    [xtemp ix]=sort(str2num(sequence.param{10})*([tc.Obj.image]-1)/60);
+                    
+                    ytemp=ytemp(ix);
+                    
+                    if numel(syncM)~=0
+                    sizem=min(10,length(xtemp));
+                    xtemp=xtemp(1:sizem);
+                    ytemp=ytemp(1:sizem);
+                    rec=rec(1:sizem,:);
+                    end
+                    
+                    
+                     sync=0;
+                    if sequence.tabletraj{4}==true
+                        sync=str2num(sequence.param{10})*(tc.detectionFrame-1)/60; 
+                    else
+                       syncM=0; 
+                    end
+                    
+                    %rec(:,1)=linspace(0,xtemp(end)-xtemp(1),length(xtemp))+sync;
+                    if numel(syncM)==0  
+                    rec(:,1)=xtemp-sync;
+                    else
+                        
+                    rec(:,1)=xtemp-syncM;    
+                    end
+
+                    %rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
+                    rec(:,2)=rec(:,1)+str2num(sequence.param{10})/60;
+                    else
+                    tim=tc.(ft);
+                    tim=[tc.detectionFrame tc.(ft) tc.lastFrame];
+                    tim=tim*str2num(sequence.param{10})/60;
+                    
+                    sync=0;
+                    if sequence.tabletraj{4}==true
+                        sync=tim(1);
+                    end
+                    
+                    if numel(syncM)~=0
+                    sync=syncM;    
+                    end
+                    
+                    xtemp=tim(1:end-1)-sync;
+                    ytemp=diff(tim)  ;
+                    cindex=ones(1,length(xtemp));
+                    rec=zeros(length(xtemp),2);
+                    %size(rec), size(xtemp)
+                    rec(:,1)=xtemp';
+                    rec(:,2)=[xtemp(2:end)' ; str2num(sequence.param{10})/60*(tc.lastFrame)-sync];
+                    end
+                    
+                    maxex=max(max(rec(:,2)));
+                    
+                    ccc=1;
+
+                    
+                    %  if logscale==1
+                    %      temp=log10(temp);
+                    %  end
+                    
+                    %ytemp=log(ytemp);
+                     if sequence.tablefeature{i,7}==true
+                         ytemp=log10(ytemp);
+                
+                     end
+                
+                    
+                    warning off all;
+                    t=real(uint8(round(255*(ytemp-mine(i))/(maxe(i)-mine(i)))));
+                    warning on all;
+     
+                    pix=find(t<1);
+                    cindex=t;
+                    cindex(pix)=1;
+                    
+                    startX=0;
+
+                    
+                    if isa(ft,'function_handle') % fluo, do not plot sep
+                        sepwidth=0;
+                    else
+                        sepwidth=10; 
+                        if cindex(end)<cindex(end-1)
+                        cindex(end)=cindex(end-1); % to ensure that last div does not appear green
+                        end
+                    end
+                        
+                    
+                   % rec,cindex
+                    Traj(rec,'Color',cmap,'colorindex',cindex,'tag',['Cell :' num2str(k) ' -mother :' num2str(tc.mother)],'width',cellwidth,'startX',startX,'startY',startY,'sepwidth',sepwidth,'sepColor',[0.1 0.1 0.1],'gradientwidth',0);
+
+                    
+                    
 % --- Executes when entered data in editable cell(s) in tabletraj.
 function tabletraj_CellEditCallback(hObject, eventdata, handles)
 % hObject    handle to tabletraj (see GCBO)

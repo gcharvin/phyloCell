@@ -252,8 +252,8 @@ end
         updateMontageFrame;
         
         jim = im2JavaBufferedImage(montageFrame);
-        %t = double((i -frameIndices(1) ) * secondsPerFrame);
-        t = double((i-1) * secondsPerFrame);
+        t = double((i -frameIndices(1) ) * secondsPerFrame);
+        %t = double((i-1) * secondsPerFrame);
         hours = floor(t / 3600);
         minutes = mod(floor(t / 60), 60);
 %         if i<42
