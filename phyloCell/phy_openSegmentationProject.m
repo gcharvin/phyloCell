@@ -1,3 +1,4 @@
+
 function out=phy_openSegmentationProject(position,varname,handles)
 global timeLapse segmentation
 
@@ -45,35 +46,64 @@ end
 if numel(varname)~=0
     filen=varname;
 else
-    
+    disp('Choose approriate segmentation variable (.mat file)');
     lifi=dir([timeLapse.realPath timeLapse.pathList.position{position}]);
     
-    count=1; cc={};
-    for i=1:numel(lifi)
-        [p,n,ext]=fileparts(lifi(i).name);
-        if strcmp(ext,'.mat')
-            cc{count}=lifi(i).name;
-            count=count+1;
-        end
+    fname=fieldnames(lifi);
+    fname=fname(1:3);
+    
+    lifiArr=struct2cell(lifi);
+    lifiArr=lifiArr';
+    lifiArr=lifiArr(3:end,:);
+    lifiFil=cell(1,size(lifiArr,2));
+    cc=1;
+    
+    for i=1:size(lifiArr,1)
+        
+        [p,n,ext]=fileparts(lifiArr{i,1});
+
+       if lifiArr{i,4}==0 & strcmp(ext,'.mat')
+           
+        lifiFil(cc,:)=lifiArr(i,:);
+        cc=cc+1;
+       end
     end
     
-    if numel(cc)~=0
-    [sel,ok] = listdlg('ListString',cc,'Name','Segmentation file','SelectionMode','single');
+    lifiFil=lifiFil(:,1:3);
     
-    if ok==0
-        return;
-    end
-    
-    filen=cc{sel};
+    if numel(lifiFil{1,1})==0
+        filen='segmentation.mat';
     else
-    filen='segmentation-batch.mat';    
+    h=figure; 
+    t=uitable('ColumnWidth',{250 120 100},'ColumnName',fname,'Units','normalized','Position',[0 0 1 1]);
+    set(t,'Data',lifiFil);
+    
+    myfunc=@(hObject,event,handles)set(hObject,'UserData',event);
+    
+    set(t,'CellSelectionCallback',myfunc);
+    
+    hui = uicontrol('Position',[20 20 300 50],'String','Select File and Click !',...
+              'Callback','uiresume(gcbf)');
+    uiwait(gcf);
+    a=get(t,'UserData');
+    close(gcf);
+    
+    if numel(a)~=0
+    filen= lifiFil{a.Indices(1),1};
+    else
+     return;   
     end
+    
+    end
+    
 end
 
 % check if data are already segmented
 
 %str=fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen)
 %exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
+
+%fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen)
 
 if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen),'file')
     % 'project already exist'
@@ -83,12 +113,14 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
         pause(0.2);
     end
     
+    disp('Loading saved segmentation file');
+    
     load(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen))
     
     
     if ~isfield(segmentation,'processing')
         % old project , need to generate new variable
-        segmentation=phy_createProcessingVariable(segmentation);
+        %segmentation=phy_createProcessingVariable(segmentation);
     end
     
     if ~isfield(segmentation,'foci')
@@ -103,9 +135,10 @@ if exist(fullfile(timeLapse.realPath,timeLapse.pathList.position{position},filen
         segmentation.discardImage=zeros(1,timeLapse.numberOfFrames);
     end
     
-    if nargin==3
-        status('Idle',handles);
-    end
+    
+   segmentation.showFieldsObj={'n','area','ox','oy','fluoMean','fluoVar','Nrpoints'};
+   segmentation.showFieldsTObj={'N','detectionFrame','lastFrame','mother','daughterList','divisionTimes','budTimes'};
+
     
 else
     %' creat new segmentation structure'
@@ -113,6 +146,8 @@ else
     if nargin==3
         status('creating the segmentation file',handles);
     end
+    
+    disp('Creating new segmentation file');
     
     nch=length(timeLapse.pathList.channels(1,:));
     %dialog box for entering the position

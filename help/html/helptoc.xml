@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding="utf-8"?>
+<toc version="2.0">
+    
+    <tocitem target="index.html">My Toolbox
+        <tocitem target="funclist.html" image="HelpIcon.FUNCTION">Functions
+            <tocitem target="firstfx.html">first</tocitem>
+            <tocitem target="secondfx.html">second</tocitem>
+            <tocitem target="thirdfx.html">third</tocitem>
+        </tocitem>
+        <tocitem target="myexample.html"
+            image="HelpIcon.EXAMPLES">My Example
+        </tocitem>
+    </tocitem>
+    
+</toc>

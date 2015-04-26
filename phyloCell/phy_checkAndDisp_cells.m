@@ -4,14 +4,7 @@ function phy_checkAndDisp_cells(varargin)
 
 global segmentation
 
-feat=segmentation.processing.selectedFeature;
-proc=segmentation.processing.selectedProcess(segmentation.processing.selectedFeature);
-
-featname=segmentation.processing.features{feat};
-
-parametres=segmentation.processing.parameters(feat,proc);
-parametres=parametres{1,1};
-
+featname='cells1';
 cSeg1=find(segmentation.cells1Segmented);
 
 [segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
@@ -23,7 +16,7 @@ for i=1:length(segmentation.(['t' featname]))
     if segmentation.(['t' featname])(i).N~=0
         len=segmentation.(['t' featname])(i).lastFrame-segmentation.(['t' featname])(i).detectionFrame+1;
         
-        if len < parametres{1,2}
+        if len < 2
             delcell=[delcell i];
             segmentation.(['t' featname])(i).deleteObject('all');
         end

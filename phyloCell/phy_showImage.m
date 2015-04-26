@@ -14,6 +14,7 @@ global segmentation timeLapse
 
 % 'ROI', [lef top width height]
 
+
 % 'contours',
 %contours is a struct with fields :
 % contours.object='nucleus'
@@ -25,6 +26,9 @@ global segmentation timeLapse
 
 % 'tracking', cellnumber : if tracking cell is requested
 
+% 'timestamp' : display timestap
+% 'scale' : display scalebar
+
 % outputs hf : handle of figure ; h : handle of axis
 
 
@@ -34,7 +38,7 @@ if numel(channels)==0
     channels=struct('number',1,'rgb',[1 1 1],'limits',[]);
 end
 timestamp=getMapValue(varargin, 'timestamp'); %if numel(timestamp)==0 timestamp=14; end
-
+scale=getMapValue(varargin, 'scale');
 ROI=getMapValue(varargin, 'ROI');
 tracking=getMapValue(varargin, 'tracking');
 contours=getMapValue(varargin, 'contours');
@@ -62,6 +66,8 @@ for i=frames
             imgRGBsum=uint8(zeros([refheight refwidth 3]));
             
             if numel(ROI)
+                
+                %size(imgRGBsum)
                 imgRGBsum=imgRGBsum(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1,:);
             else
                 ROI=[1 1 refheight refwidth];
@@ -83,11 +89,26 @@ for i=frames
         img=uint8(255*img);
         
         
-        imgRGBsum=imlincomb(1,imgRGBsum,1,img);
+       % if length(channels)>=2
+       % 
+       % if j==1
+       %   imgRGBsum=img;
+       % else
+       % imgRGBsum=uint8(double(imgRGBsum)./double(img));
+       % figure, imshow(img,[]);
+       % end
         
+       % else
+        imgRGBsum=imlincomb(1,imgRGBsum,1,img);   
+       %end
         
     end
+    
+    
+    
+    warning off all
     imshow(imgRGBsum);
+    warning on all
     
     if numel(contours)
         drawContours(contours,ROI,tracking,i,refheight,refwidth) ;
@@ -95,6 +116,10 @@ for i=frames
     
     if numel(timestamp)
         drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
+    end
+    
+    if scale==1
+        drawScale(ROI,refwidth,refheight)
     end
     
     h(cc)=gca;
@@ -140,14 +165,14 @@ if ROI(2)<1
     ROI(2)=1;
 end
 if ROI(2)+ROI(4)>refwidth
-    ROI(2)=refwidth-ROI(4);
+    ROI(2)=refwidth-ROI(4)+1;
 end
 if ROI(1)<1
     %delta=1-ROI(2);
     ROI(1)=1;
 end
 if ROI(1)+ROI(3)>refheight
-    ROI(1)=refheight-ROI(3);
+    ROI(1)=refheight-ROI(3)+1;
 end
 
 ROIout=ROI;
@@ -182,8 +207,20 @@ for ik=1:length(contours)
         xc=cells.x;
         yc=cells.y;
         
-        xc3=xc-ROI(1);
-        yc3=yc-ROI(2);
+        if numel(xc)==0
+           continue 
+        end
+        
+        if size(xc,1)==1
+        xc=[xc xc(1)];
+        yc=[yc yc(1)];
+        else
+        xc=[xc; xc(1)];
+        yc=[yc; yc(1)];    
+        end
+        
+        xc3=xc-ROI(1)+1;
+        yc3=yc-ROI(2)+1;
         
         %% remove points that not in the right frame
         %pix=find(xc2>= (contours(ik).channelGroup(lk)-1)*ROI(3) & xc2< (contours(ik).channelGroup(lk))*ROI(3));
@@ -205,7 +242,7 @@ for ik=1:length(contours)
             end
             
             if ok==1
-                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',2*contours(ik).lineWidth);
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth+1);
             else
                 line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             end
@@ -268,7 +305,58 @@ function drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
 global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);
-t = double((i) * timeLapse.interval);
+%t = double((i) * timeLapse.interval);
+
+% time in min
+%t = double((i-360) * timeLapse.interval/60);
+
+%time in hoiurs
+t = double((i-1) * timeLapse.interval);
+
+hours = floor(t / 3600);
+minutes = mod(floor(t / 60), 60);
+
+if numel(ROI)
+    xpos=0.1*ROI(3);
+    ypos=0.9*ROI(4);
+else
+    xpos=0.1*refwidth;
+    ypos=0.1*refheight;
+end
+
+% time in h/min
+text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+
+% time in min
+%text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+
+function drawScale(ROI,refwidth,refheight)
+global timeLapse
+% draw time stamp
+%t = double((i -frameIndices(1) ) * secondsPerFrame);
+%t = double((i) * timeLapse.interval);
+%t = double((i) * timeLapse.interval/60);
+%hours = floor(t / 3600);
+%minutes = mod(floor(t / 60), 60);
+
+if numel(ROI)
+    xpos=0.05*ROI(3);
+    ypos=0.05*ROI(4);
+%else
+%    xpos=0.1*refwidth;
+%    ypos=0.1*refheight;
+end
+
+%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+rectangle('Position',[xpos,ypos,50,5],'FaceColor','w');
+
+
+function drawScaleBar(ROI,refwidth,refheight,timestamp,i)
+global timeLapse
+% draw time stamp
+%t = double((i -frameIndices(1) ) * secondsPerFrame);
+%t = double((i) * timeLapse.interval);
+t = double((i) * timeLapse.interval/60);
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);
 
@@ -280,7 +368,10 @@ else
     ypos=0.1*refheight;
 end
 
-text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+
+text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+
 
 function value = getMapValue(map, key)
 value = [];

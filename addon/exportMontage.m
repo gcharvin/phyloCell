@@ -1,4 +1,8 @@
- % Argument: frameIndices
+
+% generate avi movie with ooverlay of channels, contours, and specific ROI
+% using Java javitools
+
+% Argument: frameIndices
 %   Example: [] for all frames
 %   Example: 10:20 for frames 10 to 20
 %   Example: 20:-2:10 for even frames in reverse order from 20 to 10
@@ -22,18 +26,20 @@
 % Optional argument : output movie name 'output', output
 % Example : 'output','toto'
 
+% Optional argument : cavity tracking 'cavity', cavity number
+% Example : 'cavity','number'
 
 % Optional argument : 'contours', contours
 % Example : 'contours',contours
 % contours is a struct with fields :
-% contours.object='nucleus'
-% contours.color=[1 0 0];
-% contours.lineWidth=2;
-% contours.link=1 % link between mother and daughter
-% contours.incells=[ 2 5 65 847] % cells to display. Leave blank if
-% contours.cycle=1 % plot cell cycle
-% contours.channelGroup=[1 2]; % specify to which channelGroup contours
-% contours.filename='segmentation-batch.mat')
+%contours.object='nucleus'
+%contours.color=[1 0 0];
+%contours.lineWidth=2;
+%contours.link=1 % link between mother and daughter
+%contours.incells=[ 2 5 65 847] % cells to display. Leave blank if
+%contours.cycle=1 % plot cell cycle
+%contours.channelGroup=[1 2]; % specify to which channelGroup contours
+%contours.filename='segmentation-batch.mat')
 % should apply
 % list of contour objects is permitted
 
@@ -42,8 +48,8 @@
 % structure.
 % Example : 'tracking', 698
 
-%% Optional argument : cell cycle phase 'cycle', cycle
-%% Example : 'cycle',cycle
+% Optional argument : cell cycle phase 'cycle', cycle
+% Example : 'cycle',cycle
 
 % exemple of function call:
 % exportMontage('', 'HTB2_GFP WT', 1:5, {'1 0 2 0'}, [], 0, [], 'contours',contours)
@@ -73,6 +79,7 @@ end
 
 
 
+
 secondsPerFrame = timeLapse.interval;
 tmpDirectory = 'tmp_single_frames_for_movie';
 compositionFunction = initializeCompositionFunction;
@@ -81,9 +88,11 @@ quality = initializeQuality;
 encoder = initializeEncoder;
 fps = initializeFPS;
 ROI = initializeROI;
+cavity = initializeCavity;
 pixelSize = initializePixel;
 output = initializeOutput;
 contours=initializeContours;
+
 tracking=initializeTracking;
 %cycle = initializeCycle;
 
@@ -98,7 +107,14 @@ for position = positions
     
     
     if noseg
+        mustopenseg=0;
         if numel(contours)
+            mustopenseg=1;
+        end
+           if numel(cavity)
+            mustopenseg=1;
+           end
+        if mustopenseg
             out=phy_openSegmentationProject(position,contours.filename);
         end
     end
@@ -122,6 +138,16 @@ for position = positions
         ROI=[1 1 scale*maxSize(1) scale*maxSize(2)];
     end
     
+    orient=1; % orientation for cavities
+    if numel(cavity)
+     ncav=[segmentation.ROI(frameIndices(1)).ROI.n];
+     pix=find(ncav==cavity);
+     ROI=segmentation.ROI(frameIndices(1)).ROI(pix).box;
+     h=ROI(4);
+     w=ROI(3);
+     orient=segmentation.ROI(frameIndices(1)).ROI(pix).orient;
+    end
+    
     montageFrame = zeros(h, w * groupCount, 3);
     montageWidth = size(montageFrame, 2);
     montageHeight = size(montageFrame, 1);
@@ -129,6 +155,11 @@ for position = positions
     positionIndex = positionIndex + 1;
     
     aviFileName = [output '-pos' num2str(position) '.avi'];
+    
+    if numel(cavity)
+        aviFileName = [output '-pos' num2str(position) '-cavity' num2str(cavity) '.avi'];
+    end
+    
     aviWriter = [];
     
     if strcmp(encoder, 'javitools')
@@ -209,14 +240,20 @@ for position = positions
                 
             end
         end
-        
-        
+
+
+        % cavity tracking
+if numel(cavity)
+    ncav=[segmentation.ROI(i).ROI.n];
+    pix=find(ncav==cavity);
+ROI=segmentation.ROI(i).ROI(pix).box;
+end
         
         updateMontageFrame;
         
         jim = im2JavaBufferedImage(montageFrame);
-        %t = double((i -frameIndices(1) ) * secondsPerFrame);
-        t = double((i-1) * secondsPerFrame);
+        t = double((i -frameIndices(1) ) * secondsPerFrame);
+        %t = double((i-1) * secondsPerFrame);
         hours = floor(t / 3600);
         minutes = mod(floor(t / 60), 60);
 %         if i<42
@@ -227,13 +264,14 @@ for position = positions
 %             col=java.awt.Color.RED;
 %         end
         timestamp = sprintf('%d h %02d min', hours, minutes);
-%         tempstamp = sprintf('T = %d °C', T);
+%         tempstamp = sprintf('T = %d Â°C', T);
         drawRectangleWithBorder(jim, 10 * scale, 10 * scale, round(5 / pixelSize)* scale, 20 * scale, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
-        taillemin=max(0.05*w,20);
-        ymin=max(20 * scale+30,0.2*h);
+        taillemin=min(max(0.05*w,20),40);
         
-        drawText(jim, timestamp, [0.05*w ymin] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
+        ymin=max(20 * scale+10,0.1*h);
+        
+        drawText(jim, timestamp, [10*scale 60] , taillemin, java.awt.Color.WHITE, java.awt.Color.BLACK);
 %         drawText(jim, tempstamp, [11*0.05*w ymin] , taillemin, col, java.awt.Color.BLACK);
         
         
@@ -241,6 +279,9 @@ for position = positions
         
         
         % plot object contours
+   %i
+   %figure, imshow(montageFrame,[]); hold on;
+   %pause;
         if numel(contours)
             for ik=1:length(contours)
                 for lk=1:length(contours(ik).channelGroup)
@@ -258,6 +299,7 @@ for position = positions
                         indc=find(nc>0);
                     end
                     
+                  
                     for kk=1:length(indc)
                         
                         cells=segmentation.(contours(ik).object)(i,indc(kk));
@@ -275,10 +317,19 @@ for position = positions
                         
                         width=contours(ik).lineWidth;
                         
+                        
+                        % rotate contours if cavity is upside down
+                        if orient==0
+                           xc3=ROI(3)-xc3+2*(contours(ik).channelGroup(lk)-1)*ROI(3);
+                           yc3=ROI(4)-yc3;
+                          
+                        end
+                        
                         %xc3,yc3,contours(ik)
                         
                         if numel(contours(ik).cycle)==0 % don't draw if cell cycle is on
                             drawContours(jim, xc3, yc3, java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                        %line(xc3, yc3,'Color','r');
                         end
                         
                         if isfield(contours(ik),'link') % plot mother bud link
@@ -313,6 +364,7 @@ for position = positions
                                         
                                         %[oxc3 mxc3], [oyc3 myc3]
                                         drawContours(jim, [oxc3 mxc3], [oyc3 myc3], java.awt.Color(contours(ik).color(1),contours(ik).color(2),contours(ik).color(3)), java.awt.BasicStroke(width));
+                                    
                                     end
                                 end
                             end
@@ -531,7 +583,7 @@ end
 %%
 
     function contours = initializeContours
-        
+
         contours = getMapValue(varargin, 'contours');
         
         if isempty(contours)
@@ -549,6 +601,15 @@ end
             tracking=[];
         end
     end
+
+function cavity = initializeCavity
+
+cavity = getMapValue(varargin, 'cavity');
+
+if isempty(cavity)
+cavity=[];
+end
+end
 
 %%
 
@@ -653,7 +714,7 @@ end
                     warning off all
                     image=imresize(image, maxSize);
                     
-                    %   ROI
+                    
                     if numel(ROI)
                         image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
                     end
@@ -661,10 +722,16 @@ end
                     
                     image = double(imadjust(image, [lowLevel highLevel] / grayBinCount, [])) / grayBinCount;
                     
+                    if orient==0 % rotate image so that cavity is upside down
+                       %image=fliplr(image);
+                       %image=flipud(image);
+                       image=rot90(image,2);
+                    end
                     
                     warning on all;
                     
                     if k == 1
+                       
                         montageFrame(:, columnIndices, :) = repmat(image,  [1, 1, colorCount]);
                         grayUsed = 1;
                     else
@@ -695,7 +762,7 @@ end
     function maxSize = computeMaxSize
         sizes = [];
         
-       
+
         for j = 1:channelCount
           
             sizes = [sizes; size(imread(char(imageNames(1, j))))];
@@ -728,10 +795,14 @@ end
         
         for channel = channels
             positionName = [project '-pos' num2str(position)];
-            channelName = [positionName '-ch' num2str(channel) '-' timeLapse.list(1,channel).ID];
+            channelName = strcat(positionName, '-ch', num2str(channel), '-' ,timeLapse.list(1,channel).ID);
+            if iscell(channelName)
+            channelName=channelName{1};
+            end
             files = dir(fullfile(base, positionName, channelName));
             channelImageFiles = files(arrayfun(@(file) ~isempty(strfind(file.name, '.jpg')), files));
             channelImageFiles = arrayfun(@(imageFile) fullfile(base, positionName, channelName, imageFile.name), channelImageFiles, 'UniformOutput', false);
+            size(channelImageFiles), size(imageNames) %pause
             imageNames = [imageNames channelImageFiles];
         end
     end
@@ -740,8 +811,10 @@ end
 
     function value = getMapValue(map, key)
         value = [];
-        
+       
+      % key %size(map),class(map)
         for i = 1:2:numel(map)
+          %  a=map{i},class(a)
             if strcmp(map{i}, key)
                 value = map{i + 1};
                 

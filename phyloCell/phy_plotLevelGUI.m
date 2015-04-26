@@ -352,10 +352,14 @@ for i=1:length(cells)
     for j=1:length(cells(i).Obj)
         
         for l=1:length(dat(:,1))
-           % l,cell2mat(dat(l,3)),cell2mat(dat(l,2)),cell2mat(dat(l,1))
+          
             if cell2mat(dat(l,3))~=0
-              % cell2mat(dat(l,1)),cell2mat(dat(l,2)),cell2mat(dat(l,3))
+               %cell2mat(dat(l,1)),cell2mat(dat(l,2)),cell2mat(dat(l,3))
+               if numel(cells(i).Obj(j).(cell2mat(dat(l,2))))>=cell2mat(dat(l,3))
                 X.(cell2mat(dat(l,1)))=cells(i).Obj(j).(cell2mat(dat(l,2)))(cell2mat(dat(l,3)));
+               else
+                X.(cell2mat(dat(l,1)))=0;   
+               end
             else
                 X.(cell2mat(dat(l,1)))=cells(i).Obj(j).(cell2mat(dat(l,2)));
             end
@@ -368,23 +372,23 @@ for i=1:length(cells)
     h(i)=plot(val2,val1,'color',couleurs(compt+1,:),'lineWidth',2); hold on;
     compt=compt+1;
     
-    % indicate position of bud times in case it's known
-    if numel(cells(i).budTimes)~=0
-    ar=cells(i).budTimes-cells(i).Obj(1).image+1;
-    val1b=val1(ar);
-    val2b=val2(ar);
-    
-    plot(val2b,val1b,'Color','k','LineStyle','.','Marker','o','lineWidth',2); hold on;
-    end
-    
-     % indicate position of division times in case it's known
-    if numel(cells(i).divisionTimes)~=0
-    ar=cells(i).divisionTimes-cells(i).Obj(1).image+1;
-    val1b=val1(ar);
-    val2b=val2(ar);
-    
-    plot(val2b,val1b,'Color','b','LineStyle','.','Marker','o','lineWidth',2); hold on;
-    end
+%     % indicate position of bud times in case it's known
+%     if numel(cells(i).budTimes)~=0
+%     ar=cells(i).budTimes-cells(i).Obj(1).image+1;
+%     val1b=val1(ar);
+%     val2b=val2(ar);
+%     
+%     plot(val2b,val1b,'Color','k','LineStyle','.','Marker','o','lineWidth',2); hold on;
+%     end
+%     
+%      % indicate position of division times in case it's known
+%     if numel(cells(i).divisionTimes)~=0
+%     ar=cells(i).divisionTimes-cells(i).Obj(1).image+1;
+%     val1b=val1(ar);
+%     val2b=val2(ar);
+%     
+%     plot(val2b,val1b,'Color','b','LineStyle','.','Marker','o','lineWidth',2); hold on;
+%     end
     
     % adjust number of character on the legend
     strncell=num2str(cells(i).N);
