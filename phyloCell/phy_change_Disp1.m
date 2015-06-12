@@ -233,6 +233,7 @@ if isfield(timeLapse,'numberOfFrames')
         
         imgRGBsum=uint16(zeros([sx sy 3]));
         imgRGBlist=uint16(zeros([sx sy 3 size(segmentation.channel,1)]));
+        %size(imgRGBsum)
         
         
         for i=1:nch
@@ -255,7 +256,10 @@ if isfield(timeLapse,'numberOfFrames')
                 warning off all
                 % segmentation.sizeImageMax=size(img);%%%
                 
+              %  size(img)
+              % a=segmentation.sizeImageMax
                 img=imresize(img,segmentation.sizeImageMax);
+               
                 warning on all
                 
                 segmentation.realImage(:,:,i)=img;

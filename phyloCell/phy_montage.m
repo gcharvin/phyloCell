@@ -508,7 +508,11 @@ for i=1:size(sequence.contour,1)
     
     ok=[];
     for j=pix'
+        if ischar(sequence.display{j,4})
         contfield=str2num(sequence.display{j,4});
+        else
+           contfield=(sequence.display{j,4});
+        end
         
         if numel(find(contfield==i))~=0
             ok=[ok j];

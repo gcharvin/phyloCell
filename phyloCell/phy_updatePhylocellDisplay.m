@@ -79,8 +79,10 @@ if isfield(segmentation,'ROItable')
     set(handles.roi_table,'Data',segmentation.ROItable);
 elseif isfield(segmentation,'sizeImageMax')
     %segmentation.ROItable=cell(4,3);
-    segmentation.ROItable={true, 'fullframe' ,num2str([1 1 segmentation.sizeImageMax(1) segmentation.sizeImageMax(2)])};
-    segmentation.ROItable(2,:)={false, 'crop' ,num2str([1 1 segmentation.sizeImageMax(1) segmentation.sizeImageMax(2)])};
+    
+
+    segmentation.ROItable={true, 'fullframe' ,num2str([1 1 segmentation.sizeImageMax(2) segmentation.sizeImageMax(1)])};
+    segmentation.ROItable(2,:)={false, 'crop' ,num2str([1 1 segmentation.sizeImageMax(2) segmentation.sizeImageMax(1)])};
     segmentation.ROItable(3,:)={false, 'cavity' ,num2str(1)};
     segmentation.ROItable(4,:)={false, 'cells1' ,num2str(1)};
     

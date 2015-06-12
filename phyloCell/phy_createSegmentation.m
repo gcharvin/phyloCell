@@ -63,16 +63,18 @@ end
 
 
 
-
+%size(img)
 segmentation.realImage=zeros([maxe maxe2 nch]);
 segmentation.segmentationImage=zeros([maxe maxe2 nch]);
 segmentation.sizeImageMax=[maxe maxe2];
-segmentation.v_axe1=[1 maxe 1 maxe2];
+segmentation.v_axe1=[1 maxe2 1 maxe];
 
 segmentation.colorData(:,6)=1;
 
-segmentation.v_axe1=[0    maxe   0    maxe2];
+%segmentation.v_axe1=[0    maxe   0    maxe2];
 
+
+    
 segmentation.myHandles.showBudnecks=[];
 segmentation.myHandles.showBudnecksText=[];
 segmentation.myHandles.showCells=[];

@@ -127,7 +127,7 @@ bw_bud=im2bw(I3,filterlevel);
 
 bw_bud = bwareaopen(bw_bud, param.minSize,4);
 
-%figure, imshow(bw_bud);
+figure, imshow(bw_bud);
 
 imdist=bwdist(~bw_bud);
 

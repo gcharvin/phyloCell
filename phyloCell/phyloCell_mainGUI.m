@@ -1232,6 +1232,9 @@ load(strcat(path,filen));
 timeLapse.realPath=path;
 
 phy_openSegmentationProject(1,[]);
+
+
+
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
 statusbar;
@@ -1273,6 +1276,7 @@ load(strcat(path,filen));
 timeLapse.realPath=path;
 
 phy_openSegmentationProject(1,[]);
+
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
 statusbar;

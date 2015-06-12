@@ -311,7 +311,8 @@ global timeLapse
 %t = double((i-360) * timeLapse.interval/60);
 
 %time in hoiurs
-t = double((i-1) * timeLapse.interval);
+%i
+t = double((i-74) * timeLapse.interval);
 
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);
@@ -356,7 +357,10 @@ global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);
 %t = double((i) * timeLapse.interval);
+
+
 t = double((i) * timeLapse.interval/60);
+
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);
 

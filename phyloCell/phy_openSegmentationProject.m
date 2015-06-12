@@ -154,6 +154,7 @@ else
     %------------------------------------
     
     segmentation=phy_createSegmentation(timeLapse,position);
+    
     segmentation.filename=filen;
     save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},filen),'segmentation');
     

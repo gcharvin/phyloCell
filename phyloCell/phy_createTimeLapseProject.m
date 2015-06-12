@@ -196,6 +196,7 @@ end
 timeLapse.realPath=timeLapse.path; % path that is updated everytime the project is loaded
 timeLapse.realName=timeLapse.filename;
 
+
 maxSize=0;
 for i=1:tempProject.channel
     timeLapse.list(i).ID=tempProject.channelName{i};
@@ -207,8 +208,8 @@ for i=1:tempProject.channel
     end
     
     info=imfinfo(sourcefile);
-    timeLapse.list(i).videoResolution(1)=info.Width;
-    timeLapse.list(i).videoResolution(2)=info.Height;
+    timeLapse.list(i).videoResolution(1)=info.Height;
+    timeLapse.list(i).videoResolution(2)=info.Width;
     
     
     maxSize=max(maxSize,timeLapse.list(i).videoResolution(1));
@@ -237,6 +238,8 @@ timeLapse.position=position;
 
 
 [timeLapse,position]=phy_createTimeLapseDirectory(timeLapse,position);
+
+
 
 phy_saveProject(timeLapse,'BK');
 phy_saveProject(timeLapse,timeLapse.filename);
