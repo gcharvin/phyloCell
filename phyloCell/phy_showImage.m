@@ -78,6 +78,9 @@ for i=frames
             ROI=initTracking(ROI,tracking,contours,i,refwidth,refheight);
         end
         
+       % ROI
+       % size(img)
+        
         if numel(ROI) img=img(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1); end
         
         if numel(channels(j).limits)
@@ -242,7 +245,7 @@ for ik=1:length(contours)
             end
             
             if ok==1
-                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth+1);
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             else
                 line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             end
@@ -312,7 +315,7 @@ global timeLapse
 
 %time in hoiurs
 %i
-t = double((i-74) * timeLapse.interval);
+t = double((i) * timeLapse.interval);
 
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);

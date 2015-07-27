@@ -1342,7 +1342,7 @@ timeLapsefile=[timeLapse.filename '-project.mat'];
 
 %strPath=strcat(timeLapse.realPath,timeLapse.filename,'-project.mat');
 
-a=segmentation.channel;
+%a=segmentation.channel;
 
 % update segList before deselecting
 for i=1:numel(segList)
@@ -1359,7 +1359,7 @@ if out==0
     return;
 end
 
-segmentation.channel=a;
+%segmentation.channel=a;
 % add the project in the segList variable
 
 phy_addProjectToSegList;
