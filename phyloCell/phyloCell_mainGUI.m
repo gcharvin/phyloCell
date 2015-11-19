@@ -4171,9 +4171,13 @@ phy_updatePhylocellDisplay(handles);
 function edit_find_Object_Callback(hObject, eventdata, handles)
 global segmentation
 
+try
 if ~isempty(segmentation.selectedTObj)  %if exist a selected tobject then delesect it
     segmentation.selectedTObj.deselect();
     segmentation.selectedTObj={};
+end
+catch
+    segmentation.selectedTObj=[];
 end
 if ~isempty(segmentation.selectedObj) %if exist a selected object then deselect it
     segmentation.selectedObj.selected=0;

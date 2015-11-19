@@ -135,8 +135,15 @@ function ROIout=initTracking(ROI,tracking,contours,i,refwidth,refheight)
 global segmentation
 
 scale=1;
+
+if numel(contours)
+    obj=contours(1).object;
+else
+  obj='cells1';  
+end
+
 %tcell=segmentation.(['t'  contours(1).object])(tracking);
-tcell=segmentation.tcells1(tracking);
+tcell=segmentation.(['t' obj])(tracking);
 ima=[tcell.Obj.image];
 imax=[tcell.Obj.ox]; % smooth trajectory of object
 imay=[tcell.Obj.oy];
@@ -311,11 +318,11 @@ global timeLapse
 %t = double((i) * timeLapse.interval);
 
 % time in min
-%t = double((i-360) * timeLapse.interval/60);
+t = double((i) * timeLapse.interval/60);
 
 %time in hoiurs
 %i
-t = double((i) * timeLapse.interval);
+%t = double((i) * timeLapse.interval);
 
 hours = floor(t / 3600);
 minutes = mod(floor(t / 60), 60);
@@ -329,10 +336,10 @@ else
 end
 
 % time in h/min
-text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
 
 % time in min
-%text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
 
 function drawScale(ROI,refwidth,refheight)
 global timeLapse

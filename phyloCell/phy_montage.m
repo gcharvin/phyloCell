@@ -130,7 +130,11 @@ if okload==0
 end
 
 %if out==1
+try
 updateSequence(handles)
+catch 
+    
+end
 
 guidata(hObject, handles);
 

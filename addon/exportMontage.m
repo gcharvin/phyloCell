@@ -125,6 +125,18 @@ for position = positions
     frameIndices = initializeFrameIndices;
     
     groupCount = size(channelGroups, 2);
+    
+    
+    % if figure is present, add figure to movie 
+    
+    figu=findobj('Tag','moviecurve');
+    
+    if numel(figu)
+        groupCount = groupCount+1;
+        
+        
+    end
+    
     %  imageNames
     maxSize = computeMaxSize;
     h = maxSize(1);
@@ -263,7 +275,9 @@ end
 %             T=38;
 %             col=java.awt.Color.RED;
 %         end
-        timestamp = sprintf('%d h %02d min', hours, minutes);
+        %timestamp = sprintf('%d h %02d min', hours, minutes);
+        timestamp= [ num2str((i -frameIndices(1))*timeLapse.interval/60) 'min'];
+        
 %         tempstamp = sprintf('T = %d °C', T);
         drawRectangleWithBorder(jim, 10 * scale, 10 * scale, round(5 / pixelSize)* scale, 20 * scale, java.awt.Color.WHITE, java.awt.Color.BLACK);
         
@@ -694,6 +708,8 @@ end
         grayBinCount = 65535;
         colorCount = 3;
         
+  
+       
         for group = channelGroups
             k = 1;
             groupElements = cell2mat(textscan(char(group), '%d'))';
@@ -714,6 +730,7 @@ end
                     warning off all
                     image=imresize(image, maxSize);
                     
+                  
                     
                     if numel(ROI)
                         image=image(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1);
@@ -722,6 +739,8 @@ end
                     
                     image = double(imadjust(image, [lowLevel highLevel] / grayBinCount, [])) / grayBinCount;
                     
+                      
+                      
                     if orient==0 % rotate image so that cavity is upside down
                        %image=fliplr(image);
                        %image=flipud(image);
@@ -754,6 +773,38 @@ end
             end
             
             groupIndex = groupIndex + 1;
+        end
+        
+        if numel(figu)
+            columnIndices = (groupIndex - 1) * w + 1:groupIndex * w;
+            
+            set(figu,'Color','w','Position',[100 100 size(montageFrame,1) length(columnIndices)]);
+            
+            ha=get(figu,'CurrentAxes');
+            xlim=get(ha,'XLim');
+            ylim=get(ha,'YLim');
+            
+           % rectangle()
+           
+            wid=max(0.01,(xlim(2)-xlim(1))*(max(frameIndices)-(i-1))/(max(frameIndices)));
+            
+            hei=0.99*max((ylim(2)-ylim(1)),0);
+            xpo=xlim(1)+0.005*(xlim(2)-xlim(1))+(xlim(2)-xlim(1))*(i-1)/max(frameIndices);
+            ypo=ylim(1)+0.005*max((ylim(2)-ylim(1)),0);
+             
+            
+            hrec=rectangle('Parent',ha,'Position',[xpo ypo wid hei],'FaceColor','w','EdgeColor','none');
+            
+            
+           % pause;
+            warning off all
+            ff=getframe(figu,[1 1 size(montageFrame,1) length(columnIndices)]);
+            warning on all
+           % [100 100 size(montageFrame,1) length(columnIndices)]
+            %figure, imshow(ff.cdata,[]);
+            dat=double(ff.cdata)./255;
+            montageFrame(:, columnIndices, 1:3)=dat; %double(ones(size(montageFrame,1),length(columnIndices),3));
+            delete(hrec);
         end
     end
 

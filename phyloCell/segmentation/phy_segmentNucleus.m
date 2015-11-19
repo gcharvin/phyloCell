@@ -24,6 +24,7 @@ function [phy_Objects OK]=phy_segmentNucleus(img,param)
 %           parameters
 
 OK=0;
+%phy_Objects=[];
 
 if nargin==0 % assigns default parameters and creat param struct
     
@@ -127,7 +128,7 @@ bw_bud=im2bw(I3,filterlevel);
 
 bw_bud = bwareaopen(bw_bud, param.minSize,4);
 
-figure, imshow(bw_bud);
+%figure, imshow(bw_bud);
 
 imdist=bwdist(~bw_bud);
 
