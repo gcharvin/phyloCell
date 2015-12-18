@@ -235,6 +235,7 @@ if isfield(timeLapse,'numberOfFrames')
         imgRGBlist=uint16(zeros([sx sy 3 size(segmentation.channel,1)]));
         %size(imgRGBsum)
         
+  
         
         for i=1:nch
             
@@ -318,11 +319,27 @@ if isfield(timeLapse,'numberOfFrames')
             
         end
         
+     %  imgRGBsum=double(imgRGBsum)/65535;
+       
+        %min(imgRGBsum(:)),max(imgRGBsum(:))
+        
+             % tic;
         if get(handles.splitChannels,'Value')==0
             % display channels as overlay
             imgRGBsum=imgRGBsum(1:size(imgRGBsum,1)-1,1:size(imgRGBsum,2)-1,:);
             
+           % tic
+           % cla reset
+            %size(imgRGBsum),class(imgRGBsum)
+            
+            tic
+            
+            cla(handles.axes1,'reset');
             segmentation.himg=imshow(imgRGBsum,'Parent',handles.axes1);
+            
+            toc
+            %segmentation.himg=imshow(imgRGBsum,'Parent',handles.axes1);
+           % toc;
         else
             % display channels as separated (montage)
             
@@ -333,6 +350,8 @@ if isfield(timeLapse,'numberOfFrames')
             end
         end
         
+           % b=toc
+        
         % manage zooming & display cells & display features
         
         set(segmentation.himg,'ButtonDownFcn',{@mouseAxesImage,handles});
@@ -340,6 +359,8 @@ if isfield(timeLapse,'numberOfFrames')
         
         hold(handles.axes1,'off');
         
+        
+              
         if get(handles.splitChannels,'Value')==0
             %a=segmentation.v_axe1
             axis(handles.axes1,segmentation.v_axe1);
@@ -352,11 +373,17 @@ if isfield(timeLapse,'numberOfFrames')
         end
         end
         
+    
+
+        
         showObject_Callback('cells1',handles);
         showObject_Callback('budnecks',handles);
         showObject_Callback('foci',handles);
         showObject_Callback('mito',handles);
         showObject_Callback('nucleus',handles);
+        
+        
+
         
         segmentation.selectedObj={};
         %segmentation.selectedTObj={};

@@ -1976,9 +1976,71 @@ function status(str,handles)
 %pause(0.01);
 
 
+function pushbutton_Increase_Contour_Callback(handles)
+
+global segmentation
+
+if numel(segmentation.selectedObj)==0
+    return;
+end
+
+set(segmentation.selectedObj.htext,'visible','off');
+set(segmentation.selectedObj.hcontour,'visible','off');
+
+axes(handles.axes1);
+
+x=segmentation.selectedObj.x;
+y=segmentation.selectedObj.y;
+
+x=mean(x)+1.05*(x-mean(x));
+y=mean(y)+1.05*(y-mean(y));
+
+segmentation.selectedObj.x=x;
+segmentation.selectedObj.y=y;
+segmentation.selectedObj.ox=mean(x);
+segmentation.selectedObj.oy=mean(y);
+segmentation.selectedObj.area=polyarea(x,y);
+set(segmentation.selectedObj.hcontour,'xData',x);
+set(segmentation.selectedObj.hcontour,'yData',y);
+set(segmentation.selectedObj.htext,'position',[mean(x),mean(y)]);
+set(segmentation.selectedObj.htext,'visible','on');
+set(segmentation.selectedObj.hcontour,'visible','on');
+segmentation.frameChanged(segmentation.frame1)=1;
+
+function pushbutton_Decrease_Contour_Callback(handles)
+
+global segmentation
+
+if numel(segmentation.selectedObj)==0
+    return;
+end
+
+set(segmentation.selectedObj.htext,'visible','off');
+set(segmentation.selectedObj.hcontour,'visible','off');
+
+axes(handles.axes1);
+
+x=segmentation.selectedObj.x;
+y=segmentation.selectedObj.y;
+
+x=mean(x)+0.95*(x-mean(x));
+y=mean(y)+0.95*(y-mean(y));
+
+segmentation.selectedObj.x=x;
+segmentation.selectedObj.y=y;
+segmentation.selectedObj.ox=mean(x);
+segmentation.selectedObj.oy=mean(y);
+segmentation.selectedObj.area=polyarea(x,y);
+set(segmentation.selectedObj.hcontour,'xData',x);
+set(segmentation.selectedObj.hcontour,'yData',y);
+set(segmentation.selectedObj.htext,'position',[mean(x),mean(y)]);
+set(segmentation.selectedObj.htext,'visible','on');
+set(segmentation.selectedObj.hcontour,'visible','on');
+segmentation.frameChanged(segmentation.frame1)=1;
+
 
 function pushbutton_Edit_Contour_Callback(handles)
-global segmentation
+
 
 set(segmentation.selectedObj.htext,'visible','off');
 set(segmentation.selectedObj.hcontour,'visible','off');
@@ -2078,6 +2140,18 @@ end
 
 if strcmp(eventdata.Key,'e')
     pushbutton_Edit_Contour_Callback(handles);
+end
+
+if strcmp(eventdata.Key,'i') % increas object size
+    
+    pushbutton_Increase_Contour_Callback(handles);
+     phy_change_Disp1(segmentation.frameToDisplay,handles);
+end
+
+if strcmp(eventdata.Key,'d') % increas object size
+    
+    pushbutton_Decrease_Contour_Callback(handles);
+    phy_change_Disp1(segmentation.frameToDisplay,handles);
 end
 
 % h & j are used
