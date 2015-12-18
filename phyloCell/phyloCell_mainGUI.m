@@ -4792,6 +4792,9 @@ shortcut.k='Scroll bud/division times of selected track >>';
 shortcut.l='Scroll bud/division times of selected track <<';
 shortcut.z='Set daughter for selected mother cell';
 
+shortcut.i='Increase the size of selected object by 5%';
+shortcut.d='Decrease the size of selected object by 5%';
+
 shortcut.RightCursor='Next frame';
 shortcut.LeftCursor='Previous frame';
 
@@ -4822,6 +4825,9 @@ description{end+1}='Find next bud of current track; highlighted in green on the 
 description{end+1}='';
 description{end+1}='';
 description{end+1}='First select a track and use shift+select to select bud; then click Z';
+
+description{end+1}='First select an object and press i';
+description{end+1}='First select an object and press d';
 
 description{end+1}='Go to next frame';
 description{end+1}='Go to previous frame';
