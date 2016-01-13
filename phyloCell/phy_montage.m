@@ -226,6 +226,7 @@ for i=1:numel(timeLapse.list)
     
     sequence.channel{i,5}=false;
     sequence.channel{i,6}=timeLapse.list(i).binning;
+    'ok'
 end
 
 sequence.contour=cell(1,5);

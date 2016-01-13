@@ -53,8 +53,13 @@ for i=frames
         
         img=phy_loadTimeLapseImage(segmentation.position,i,channels(j).number,'non retreat');
         
+        %a=channels(j).binning
+        
         if channels(j).binning~=1
+            %size(img)
+            %b=uint8(round(channels(j).binning))
             img=imresize(img, uint8(round(channels(j).binning)));
+            %size(img)
         end
         
         if j==1
@@ -67,7 +72,8 @@ for i=frames
             
             if numel(ROI)
                 
-                %size(imgRGBsum)
+               % size(imgRGBsum)
+               
                 imgRGBsum=imgRGBsum(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1,:);
             else
                 ROI=[1 1 refheight refwidth];

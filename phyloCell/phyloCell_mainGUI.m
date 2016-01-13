@@ -4858,6 +4858,7 @@ if numel(eventdata.Indices)==0
 end
 
 segmentation.contour=get(hObject,'Data');
+%a=segmentation.contour
 
 if eventdata.Indices(2)==4 % select segmentation method
     sel=eventdata.Indices(1);
@@ -4979,6 +4980,7 @@ if eventdata.Indices(2)==13 & eventdata.NewData==1 % clear current segmentation 
     end
     
 end
+
 
 phy_updatePhylocellDisplay(handles);
 

@@ -99,10 +99,30 @@ if isfield(timeLapse,'numberOfFrames')
             phy_updatePhylocellDisplay(handles);
             return;
         end
-        if segmentation.ROItable{4,1}==true
+        
+        if segmentation.ROItable{4,1}==true % cell tracking
             obj=segmentation.ROItable{4,2};
             cellsind=str2num(segmentation.ROItable{4,3});
         end
+        
+        
+        
+         if segmentation.ROItable{3,1}==true 
+             if isfield(segmentation,'ROI')
+             if  numel(segmentation.ROI)>=segmentation.frame1 %cavity tracking
+            cavind=str2num(segmentation.ROItable{3,3});
+            
+            ROIcav=segmentation.ROI(segmentation.frame1).ROI; 
+           
+            ncav=[ROIcav.n];
+            pixcav=find(ncav==cavind);
+            boxcav=ROIcav(pixcav).box;
+            segmentation.v_axe1=[boxcav(1) boxcav(1)+boxcav(3) boxcav(2) boxcav(2)+boxcav(4)];
+             end
+             end
+         end
+        
+         
         
         if nargin==3
             obj='cells1';
@@ -373,8 +393,7 @@ if isfield(timeLapse,'numberOfFrames')
         end
         end
         
-    
-
+   
         
         showObject_Callback('cells1',handles);
         showObject_Callback('budnecks',handles);
@@ -383,6 +402,29 @@ if isfield(timeLapse,'numberOfFrames')
         showObject_Callback('nucleus',handles);
         
         
+        % display cavities if tracked 
+
+        if segmentation.ROItable{1,1}==true 
+            if isfield(segmentation,'ROI')
+            if numel(segmentation.ROI)>=segmentation.frame1
+            
+            ROI=segmentation.ROI(segmentation.frame1).ROI; 
+            
+         %   figure;
+          axes(handles.axes1)
+            for rr=1:numel(ROI)
+               box=ROI(rr).box;
+               
+           
+               line([box(1) box(1) box(1)+box(3) box(1)+box(3) box(1)],[box(2) box(2)+box(4) box(2)+box(4) box(2) box(2)],'Color',[0 0 1]); 
+               text(box(1),box(2)+10,num2str(ROI(rr).n),'Color','b','Fontsize',20)
+            end
+            end
+            end 
+        end
+        
+       % return;
+        %
 
         
         segmentation.selectedObj={};
@@ -658,8 +700,9 @@ if size(segmentation.(objecttype),1)>=segmentation.frameToDisplay %check if the 
             
             n=[segmentation.(objecttype)(segmentation.frameToDisplay,:).n];
             [pix ia ib]=intersect(n,cellsind);
+            %ia=cellsind;
             
-            tempcells=segmentation.(objecttype)(segmentation.frameToDisplay,ia);
+            tempcells=segmentation.(objecttype)(segmentation.frameToDisplay,:); %ia
             
         else
             tempcells=segmentation.(objecttype)(segmentation.frameToDisplay,:);

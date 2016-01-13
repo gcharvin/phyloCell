@@ -7,17 +7,26 @@ function phy_updatePhylocellDisplay(handles,option)
 
 global segmentation timeLapse segList
 
+
 if numel(segList)==0
-    set( handles.seg_table,'Enable','off');
-    set( handles.channel_table,'Enable','off');
-    set( handles.roi_table,'Enable','off');
-    set( handles.contour_table,'Enable','off');
-else
-    set( handles.seg_table,'Enable','on');
-    set( handles.channel_table,'Enable','on');
-    set( handles.roi_table,'Enable','on');
-    set( handles.contour_table,'Enable','on');
+    
+    
+        segList.s=segmentation;
+        segList.t=timeLapse;
+        segList.selected=1;
+    
 end
+
+%     set( handles.seg_table,'Enable','off');
+%     set( handles.channel_table,'Enable','off');
+%     set( handles.roi_table,'Enable','off');
+%     set( handles.contour_table,'Enable','off');
+% else
+%     set( handles.seg_table,'Enable','on');
+%     set( handles.channel_table,'Enable','on');
+%     set( handles.roi_table,'Enable','on');
+%     set( handles.contour_table,'Enable','on');
+% end
 
 % updates segmentation table
 
@@ -248,6 +257,7 @@ else
 end
 
 
+
 % if loading an at_batch project, we need to display the segmentation
 % parameters
 
@@ -256,7 +266,7 @@ if isfield(segmentation.processing,'segCells')
         segmentation.processing.param.(segmentation.processing.segCellsMethod)=segmentation.processing.segCellsPar;
         segmentation.contour{1,4}=segmentation.processing.segCellsMethod;
         segmentation.contour{1,6}=true;
-        segmentation.contour{1,1}=true;
+       % segmentation.contour{1,1}=true;
     end
 end
 if isfield(segmentation.processing,'mapCells')
@@ -271,7 +281,7 @@ if isfield(segmentation.processing,'segNucleus')
         segmentation.processing.param.(segmentation.processing.segNucleusMethod)(5)=segmentation.processing.segNucleusPar;
         segmentation.contour{5,4}=segmentation.processing.segNucleusMethod;
         segmentation.contour{5,6}=true;
-        segmentation.contour{5,1}=true;
+      %  segmentation.contour{5,1}=true;
     end
 end
 if isfield(segmentation.processing,'mapNucleus')
@@ -286,7 +296,7 @@ if isfield(segmentation.processing,'segFoci')
         segmentation.processing.param.(segmentation.processing.segFociMethod)(3)=segmentation.processing.segFociPar;
         segmentation.contour{3,4}=segmentation.processing.segFociMethod;
         segmentation.contour{3,6}=true;
-        segmentation.contour{3,1}=true;
+     %   segmentation.contour{3,1}=true;
     end
 end
 if isfield(segmentation.processing,'mapFoci')
@@ -296,6 +306,7 @@ if isfield(segmentation.processing,'mapFoci')
         segmentation.contour{3,9}=true;
     end
 end
+
 
 set(handles.contour_table,'Data',segmentation.contour);
 
