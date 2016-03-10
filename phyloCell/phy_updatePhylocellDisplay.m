@@ -8,14 +8,14 @@ function phy_updatePhylocellDisplay(handles,option)
 global segmentation timeLapse segList
 
 
-if numel(segList)==0
-    
-    
-        segList.s=segmentation;
-        segList.t=timeLapse;
-        segList.selected=1;
-    
-end
+% if numel(segList)==0
+%     
+%     
+%         segList.s=segmentation;
+%         segList.t=timeLapse;
+%         segList.selected=1;
+%     
+% end
 
 %     set( handles.seg_table,'Enable','off');
 %     set( handles.channel_table,'Enable','off');
@@ -33,6 +33,7 @@ end
 set(handles.seg_table,'Data',{});
 segData={};
 
+%if numel(segList(1).s)~=0
 for i=1:numel(segList)
     if segList(i).selected==1
         segData{i,1}=true;
@@ -46,6 +47,7 @@ for i=1:numel(segList)
 end
 
 set(handles.seg_table,'Data',segData);
+%end
 
 % updates channel table
 

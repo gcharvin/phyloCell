@@ -69,6 +69,7 @@ end
 
  sca=1;
  
+ %img=imcomplement(img);
  
  
  imgstore=img;
@@ -76,7 +77,9 @@ end
  img=imresize(img,1/sca);
  end
 
-img=mat2gray(img);
+
+
+%img=-img+2;
 
 if param.display==1
 scr=get(0,'ScreenSize');   
