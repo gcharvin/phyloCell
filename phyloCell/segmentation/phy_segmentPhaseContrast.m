@@ -156,9 +156,10 @@ imshow((img),[]);
 % level=param.thresh;    
 % end
 
-level2=graythresh(img2);
+%class(img2)
+level2=graythresh(uint16(img2));
 
-BW2 = im2bw(img2,level2);
+BW2 = im2bw(uint16(img2),level2);
 
 
 if param.display==1
