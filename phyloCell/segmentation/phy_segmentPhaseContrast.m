@@ -71,6 +71,7 @@ end
  
  %img=imcomplement(img);
  
+ %class(img)
  
  imgstore=img;
  if sca~=1;
@@ -157,9 +158,13 @@ imshow((img),[]);
 % end
 
 %class(img2)
-level2=graythresh(uint16(img2));
+%level2=graythresh(uint16(img2))
 
-BW2 = im2bw(uint16(img2),level2);
+T = adaptthresh(uint16(img2),0.1);
+
+BW2=imbinarize(uint16(img2),T);
+
+%BW2 = im2bw(uint16(img2),level2);
 
 
 if param.display==1
@@ -191,8 +196,8 @@ imshow(BW,[]);
   
   
 %BW = im2bw(img,level);
-
 %BW = BW | BW2;
+BW2 = bwareaopen(BW2, 10);
 
 BW = bwareaopen(BW, 10);
 
@@ -220,8 +225,7 @@ end
 
 
 
-
-imdist=bwdist(BW);
+imdist=bwdist(BW2);
 imdist = imclose(imdist, strel('disk',2));
 imdist = imhmax(imdist,2);
 
@@ -232,13 +236,19 @@ p(ccc).marginright=0;
 imshow(imdist,[0 30]); colormap(jet)
   end
 
-sous=BW- imdist;
+sous=BW2- imdist;
 
 if ~ischar(param.mask)
    BW2=BW2 | param.mask; 
 end
 
-labels = double(watershed(sous,8)).* ~BW2; % .* param.mask; % watershed
+
+%BW=logical(zeros(size(BW)));
+%BW(imdist<60)=1;
+
+%figure, imshow(BW,[]);
+
+labels = double(watershed(sous,8)).* ~BW2;% .* BW % .* param.mask; % watershed
 warning off all
 tmp = imopen(labels > 0, strel('disk', 4));
 warning on all

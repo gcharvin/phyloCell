@@ -629,14 +629,14 @@ global segList segmentation timeLapse
 cur=find([segList.selected]==1);
 segList(cur).s=segmentation;
 segList(cur).t=timeLapse;
-statusbar;
+statusbar(handles);
 
 for i=1:numel(segList)
     
     %   if i>2
     %      break;
     %  end
-    statusbar(handles.figure1,['Saving project ' num2str(i) ' - Be patient !']);
+    statusbar(handles,['Saving project ' num2str(i) ' - Be patient !']);
     segmentation=segList(i).s;
     timeLapse=segList(i).t;
     
@@ -681,7 +681,7 @@ else
 end
 
 
-statusbar(handles.figure1,'Saving.... Be patient !');
+statusbar(handles,'Saving.... Be patient !');
 
 
 cur=find([segList.selected]==1);
@@ -717,7 +717,7 @@ else
     save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
 end
 
-statusbar;
+statusbar(handles);;
 
 
 % --------------------------------------------------------------------
@@ -730,7 +730,7 @@ function Save_current_analysis_Callback(hObject, eventdata, handles)
 global timeLapse;
 global segmentation segList
 
-statusbar(handles.figure1,'Saving.... Be patient !');
+statusbar(handles,'Saving.... Be patient !');
 
 
 cur=find([segList.selected]==1);
@@ -764,7 +764,7 @@ else
     save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
 end
 
-statusbar;
+statusbar(handles);;
 
 
 
@@ -1171,13 +1171,13 @@ function File_ND2_to_phyloCell_Callback(hObject, eventdata, handles)
 
 global timeLapse segList segmentation
 
-statusbar;
-statusbar(handles.figure1,'Converting nd2 file into PhyloCell project...');
+%statusbar(handles);;
+statusbar(handles,'Converting nd2 file into PhyloCell project...');
 
 [out path filen]=nd2ToPhyloCellProject;
 
 if out==0
-    statusbar;
+    statusbar(handles);;
     disp('Unsucessuful nd2 conversion !');
     return;
 end
@@ -1197,7 +1197,7 @@ timeLapse.realPath=path;
 phy_openSegmentationProject(1,[]);
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
-statusbar;
+statusbar(handles);;
 
 guidata(hObject, handles);
 
@@ -1208,13 +1208,13 @@ function File_New_Project_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global timeLapse segList segmentation
 
-statusbar;
-statusbar(handles.figure1,'Creating new PhyloCell project...');
+%statusbar(handles);;
+statusbar(handles,'Creating new PhyloCell project...');
 
 [out path filen]=phy_createTimeLapseProject('newproject');
 
 if out==0
-    statusbar;
+    statusbar(handles);;
     disp('Unsucessuful image loading !');
     return;
 end
@@ -1237,7 +1237,7 @@ phy_openSegmentationProject(1,[]);
 
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
-statusbar;
+statusbar(handles);;
 
 guidata(hObject, handles);
 
@@ -1252,12 +1252,12 @@ function File_loadImageList_Callback(hObject, eventdata, handles)
 % load images into a new segmentation project
 global timeLapse segList segmentation
 
-statusbar;
-statusbar(handles.figure1,'Loading Images into PhyloCell');
+%statusbar;
+statusbar(handles,'Loading Images into PhyloCell');
 [out path filen]=phy_createTimeLapseProject;
 
 if out==0
-    statusbar;
+    statusbar(handles);;
     disp('Unsucessuful image loading !');
     return;
 end
@@ -1279,7 +1279,7 @@ phy_openSegmentationProject(1,[]);
 
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
-statusbar;
+statusbar(handles);;
 
 guidata(hObject, handles);
 
@@ -1288,12 +1288,12 @@ guidata(hObject, handles);
 function OpenProject_ClickedCallback(hObject, eventdata, handles)
 global timeLapse segmentation segList
 
-statusbar;
-statusbar(handles.figure1,'loading timeLapse project');
+%statusbar;
+statusbar(handles,'loading timeLapse project');
 
 [timeLapsefile, timeLapsepath] = uigetfile({'*.mat';'*.*'},'Get timelapse project file');
 if timeLapsefile==0 %if the user not press cancel
-    statusbar
+    statusbar(handles);
     return
 end
 
@@ -1313,14 +1313,14 @@ out=phy_openSegmentationProject([],[]);
 
 if out==0
     errordlg('Could not open segmentation project');
-    statusbar
+    statusbar(handles);
     return;
 end
 % add the project in the segList variable
 
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
-statusbar;
+statusbar(handles);;
 
 
 % --------------------------------------------------------------------
@@ -1334,8 +1334,8 @@ if numel( segmentation)==0
     return;
 end
 
-statusbar;
-statusbar(handles.figure1,'Loading timeLapse project');
+%statusbar;
+statusbar(handles,'Loading timeLapse project');
 
 timeLapsepath=timeLapse.realPath;
 timeLapsefile=[timeLapse.filename '-project.mat'];
@@ -1355,7 +1355,7 @@ end
 
 out=phy_openSegmentationProject([],[]);
 if out==0
-    statusbar
+    statusbar(handles);
     return;
 end
 
@@ -1364,7 +1364,7 @@ end
 
 phy_addProjectToSegList;
 phy_updatePhylocellDisplay(handles,'ok');
-statusbar;
+statusbar(handles);;
 
 %============= SEGMENTATION ==============================================
 
@@ -1592,7 +1592,7 @@ segmentation.pedigree.firstCells=pedigree.firstCells;
 
 candarrstore=[];
 
-statusbar('Computing parentage ....');
+statusbar(handles,'Computing parentage ....');
 
 mothers=phy_setObjectLinks(segmentation.pedigree.object,segmentation.pedigree.channel,'ok');
 
@@ -1607,7 +1607,7 @@ pix=find(a);
 %phy_plotPedigree('index',pix,'mode',0,'vertical','Object',segmentation.pedigree.objects);
 
 phy_change_Disp1('refresh',handles);
-statusbar
+statusbar(handles);
 
 % --------------------------------------------------------------------
 function Pedigree_Plot_Callback(hObject, eventdata, handles)
@@ -1710,14 +1710,14 @@ varargin{end+1}=segmentation.pedigree.object;
 if segmentation.pedigree.log==1
  varargin{end+1}='log';
 end
-sb=statusbar(handles.figure1,'Displaying pedigree...');
+statusbar(handles,'Displaying pedigree...');
 
 [hf ha hc]=phy_plotPedigree(varargin{:});
 
 set(gca,'FontSize',12);
 ylabel('Cell #');
 
-statusbar(handles.figure1,'');
+statusbar(handles);
 
 
 % --------------------------------------------------------------------
@@ -1896,7 +1896,7 @@ function Change_Disp1(pos,handles,dispCells)
 
 try
     
-    sb=statusbar(handles.figure1,'Displaying...');
+statusbar(handles,'Displaying...');
 catch,end
 
 if nargin==2
@@ -1906,7 +1906,7 @@ else
 end
 
 try
-    statusbar
+    statusbar(handles)
 catch
 end
 
@@ -3037,7 +3037,7 @@ selObj=get(gco,'userdata');
 %segmentation.copyedType=segmentation.selectedType;
 
 
-statusbar(handles.figure1,'Merging objects...');
+statusbar(handles,'Merging objects...');
 
 if isempty(segmentation.swapObj)
     errordlg('First select all the cells to merge !');
@@ -3049,7 +3049,7 @@ if isempty(segmentation.selectedObj)
     return;
 end
 
-statusbar(handles.figure1,'Merging objects...');
+statusbar(handles,'Merging objects...');
 pause(0.1);
 
     
@@ -3124,7 +3124,7 @@ pause(0.1);
     segmentation.swapObj={};
     phy_change_Disp1('refresh',handles)
 
-statusbar;
+statusbar(handles);;
 
 
 % --------------------------------------------------------------------
@@ -3145,7 +3145,7 @@ if isempty(segmentation.selectedObj)
     return;
 end
 
-statusbar(handles.figure1,'Swapping...');
+statusbar(handles,'Swapping...');
 pause(0.1);
 
   
@@ -3224,7 +3224,7 @@ pause(0.1);
  
 phy_change_Disp1('refresh',handles)
 
-statusbar
+statusbar(handles);
 
 
 % --------------------------------------------------------------------
@@ -3246,7 +3246,7 @@ if isempty(segmentation.selectedTObj)
     return;
 end
 
-statusbar(handles.figure1,'Swapping Track...');
+statusbar(handles,'Swapping Track...');
 pause(0.1);
   
    
@@ -3355,7 +3355,7 @@ pause(0.1);
  
 phy_change_Disp1('refresh',handles)
 
-statusbar
+statusbar(handles);
 
 
 %===================== IMAGE CONTEXT MENU ==============================
@@ -3657,13 +3657,13 @@ cells1=segmentation.(object);
 c=0;
 
 
-sb = statusbar(handles.figure1,'Processing images...');
-    warning off all
-    set(sb.CornerGrip, 'visible','off');
-    set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
-    set(sb.ProgressBar, 'Visible','on');
-    set(sb, 'Background',java.awt.Color.white);
-    warning on all
+statusbar(handles,'Processing images...');
+%     warning off all
+%     set(sb.CornerGrip, 'visible','off');
+%     set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
+%     set(sb.ProgressBar, 'Visible','on');
+%     set(sb, 'Background',java.awt.Color.white);
+%     warning on all
     
 
 %for all segmented images do the analyse
@@ -3672,12 +3672,12 @@ for i=segmentedFrames
     % for i=117
     c=c+1;
        az=round(100*c/length(segmentedFrames));
-            warning off all
-            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
+ %           warning off all
+%            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
             
-            sb.setText(['Processing ' object ' for frame ' num2str(i) '...'])
-            warning on all
-            pause(0.05);
+ %           sb.setText(['Processing ' object ' for frame ' num2str(i) '...'])
+ %           warning on all
+ %           pause(0.05);
             
             
     for l=1:size(segmentation.channel,1)
@@ -3768,13 +3768,13 @@ for i=segmentedFrames
                 minpix=min(10,length(sorted));
                 maxpix=min(10,length(sorted));
                 %                 %length(sorted)
-                if numel(sorted)~=0
-                    cells1(i,j).fluoMin(l)=round(mean(sorted(end-minpix:end)));%-mean(valcyto);
-                    cells1(i,j).fluoMax(l)=round(mean(sorted(1:maxpix)));%-mean(valcyto);
-                else
+%                if numel(sorted)~=0
+ %                   cells1(i,j).fluoMin(l)=round(mean(sorted(end-minpix:end)));%-mean(valcyto);
+ %                   cells1(i,j).fluoMax(l)=round(mean(sorted(1:maxpix)));%-mean(valcyto);
+ %               else
                     cells1(i,j).fluoMin(l)=0;
                     cells1(i,j).fluoMax(l)=0;
-                end
+   %             end
                 %sorted
                 %return;
                 
@@ -3798,11 +3798,11 @@ end
 cur=find([segList.selected]==1);
 segList(cur).s=segmentation;
 
-warning off all
-set(sb.ProgressBar, 'Visible','off');
-warning on all
+%warning off all
+%set(sb.ProgressBar, 'Visible','off');
+%warning on all
 
-statusbar;
+statusbar(handles);
 
 
 % --------------------------------------------------------------------
@@ -4598,17 +4598,17 @@ if strcmp(get(hObject,'String'),'Process all !')
     cc=0;
     tot=length(framestot)*length(cont);
     
-    sb = statusbar(handles.figure1,'Processing ...');
-    warning off all
-    set(sb.CornerGrip, 'visible','off');
-    set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
-    set(sb.ProgressBar, 'Visible','on');
-    set(sb, 'Background',java.awt.Color.white);
-    warning on all
+statusbar(handles,'Processing ...');
+%     warning off all
+%     set(sb.CornerGrip, 'visible','off');
+%     set(sb.TextPanel, 'Foreground',[0,0,0], 'Background',[0.7 0.7 0.7], 'ToolTipText','')
+%     set(sb.ProgressBar, 'Visible','on');
+%     set(sb, 'Background',java.awt.Color.white);
+%     warning on all
     
     set(handles.contour_table,'Enable','off');
     
-    
+    %cont
     % segmentating objects
     if any([segmentation.contour{:,6}])
     for i=framestot
@@ -4629,10 +4629,10 @@ if strcmp(get(hObject,'String'),'Process all !')
             % update statusbar
             az=round(100*cc/tot);
             warning off all
-            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
+%            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
             featname=segmentation.contour{cont(j),2};
             
-            sb.setText(['Segmenting ' featname ' for frame ' num2str(i) '...'])
+    %        sb.setText(['Segmenting ' featname ' for frame ' num2str(i) '...'])
             warning on all
             pause(0.05);
  
@@ -4645,7 +4645,7 @@ if strcmp(get(hObject,'String'),'Process all !')
                     segmentation.play=false;
                     set(hObject,'String','Process all !');
                     set(handles.contour_table,'Enable','on');
-                    statusbar('Segmentation error!');
+                    statusbar(handles,'Segmentation error!');
                     return;
                 end
             
@@ -4678,7 +4678,7 @@ if strcmp(get(hObject,'String'),'Process all !')
          
          for j=1:numel(cont)
          if strcmp(segmentation.contour{j,7},'phy_mapObjectTraining')
-             sb.setText(['Initialize tracking engine for phy_mapObjectTraining']);
+           %  sb.setText(['Initialize tracking engine for phy_mapObjectTraining']);
              
              area=[segmentation.(segmentation.contour{cont(j),2}).area];
              area=mean(area(area~=0));
@@ -4701,12 +4701,12 @@ if strcmp(get(hObject,'String'),'Process all !')
             cc=cc+1;
             
             az=round(100*cc/tot);
-            warning off all
-            set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
+         %   warning off all
+         %   set(sb.ProgressBar, 'Visible','on', 'Minimum',0, 'Maximum',100, 'Value',az,'string','');
             featname=segmentation.contour{cont(j),2};
             
-            sb.setText(['Tracking ' featname ' for frame ' num2str(i) '...'])
-            warning on all
+          %  sb.setText(['Tracking ' featname ' for frame ' num2str(i) '...'])
+          %  warning on all
             pause(0.05);
             
             
@@ -4728,8 +4728,8 @@ if strcmp(get(hObject,'String'),'Process all !')
                     segmentation.play=false;
                     set(hObject,'String','Process all !');
                     set(handles.contour_table,'Enable','on');
-                    statusbar('Tracking error!');
-                    err,disp(err.stack(1))
+                    statusbar(handles,'Tracking error!');
+                   % err,disp(err.stack(1))
                     return;
                 end
         end
@@ -4740,22 +4740,22 @@ if strcmp(get(hObject,'String'),'Process all !')
     
     for j=1:numel(cont)
        featname=segmentation.contour{cont(j),2};
-       sb.setText(['Building tracks for ' featname '...']);
+     %  sb.setText(['Building tracks for ' featname '...']);
         
         [segmentation.(['t' featname]) fchange]=phy_makeTObject(segmentation.(featname),segmentation.(['t' featname]));
 
     end
     
-    warning off all
-    set(sb.ProgressBar, 'Visible','off');
-    warning on all
+  %  warning off all
+  %  set(sb.ProgressBar, 'Visible','off');
+  %  warning on all
 else
     segmentation.play=false; 
 end
 
 set(hObject,'String','Process all !');
 set(handles.contour_table,'Enable','on');
-statusbar;
+statusbar(handles);
 
 % --------------------------------------------------------------------
 function phylocell_help_Callback(hObject, eventdata, handles)
@@ -4921,7 +4921,7 @@ if eventdata.Indices(2)==11 & eventdata.NewData==1 % test segmentation method
     
     if ~strcmp(curseg,'') &&  ~strcmp(curseg,'New...')
         featname=segmentation.contour{sel,2};
-        statusbar(handles.figure1,['Test segmentation for ' featname ' at frame ' num2str(segmentation.frame1) '...']);
+        statusbar(handles,['Test segmentation for ' featname ' at frame ' num2str(segmentation.frame1) '...']);
 
     
     %try
@@ -4959,7 +4959,7 @@ if eventdata.Indices(2)==13 & eventdata.NewData==1 % clear current segmentation 
     lis={'Cells','Budnecks','Foci','Mito','Nucleus'};
     str=lis{sel};
     
-    statusbar(handles.figure1,['Clearing contours for ' featname]);
+    statusbar(handles,['Clearing contours for ' featname]);
     
     segFrames=find(segmentation.([featname 'Segmented']));
     def = {num2str(segFrames)};
@@ -5022,7 +5022,7 @@ if ~strcmp(curseg,'');
        for i=1:numel(err.stack)
           disp(err.stack(i)); 
        end
-       statusbar(handles.figure1,'Segmentation Test Error !');
+       statusbar(handles,'Segmentation Test Error !');
        pause(1);
     end
     
@@ -5124,7 +5124,7 @@ end
 function clearcontour(handles,featname,str,frame)
 global segmentation
 
-statusbar(handles.figure1,['Clearing contours for ' featname ' at frame ' num2str(frame) '...']);
+statusbar(handles,['Clearing contours for ' featname ' at frame ' num2str(frame) '...']);
 
 myObject=segmentation.(featname);
 
