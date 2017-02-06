@@ -325,8 +325,8 @@ else
 end
 
 try
-statusbar(handles.figure1, 'Updates display...');
+statusbar(handles, 'Updates display...');
 catch
 end
 phy_change_Disp1('refresh',handles);
-statusbar;
+statusbar(handles);
