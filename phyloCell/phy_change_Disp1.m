@@ -311,8 +311,7 @@ if isfield(timeLapse,'numberOfFrames')
                 segmentation.segmentationImage(:,:,i)=I2;
                 
                 %create rgb image
-                
-                
+
                 RGB=str2num(segmentation.channel{i,3});
                 rat=1;
                 warning off all;

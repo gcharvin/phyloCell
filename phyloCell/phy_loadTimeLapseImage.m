@@ -36,6 +36,9 @@ try
 image=imread(cell2mat(fullpath));
 catch
  image=[];
- errordlg(['Could not load image: '  fullpath]); 
+ %str='ok';
+ a=['Could not load image:'  fullpath];
+ disp(a)
+ fprintf('\n');
 end
 
