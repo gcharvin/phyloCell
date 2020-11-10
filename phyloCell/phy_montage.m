@@ -181,6 +181,8 @@ sequence.param={'1200 800', '1', '', '1', num2str(timeLapse.numberOfFrames'),'5'
 inte=str2num(sequence.param{5})-str2num(sequence.param{4})+1;
 inte=round(inte/str2num(sequence.param{6}));
 
+'ok' 
+
 sequence.param(end+1)={num2str(str2num(sequence.param{4}):inte:str2num(sequence.param{5}))};
 sequence.param(end+1)={num2str([1 1 timeLapse.list(1).videoResolution(1) timeLapse.list(1).videoResolution(2)])};
 sequence.param(end+1)={''};
