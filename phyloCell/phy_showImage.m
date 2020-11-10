@@ -1,4 +1,4 @@
-function [hf h]=phy_showImage(varargin)
+function [hf,h,imgout]=phy_showImage(varargin)
 global segmentation timeLapse
 
 % display an image from the timelapse project, add time stamps and cell
@@ -33,6 +33,14 @@ global segmentation timeLapse
 
 
 frames=getMapValue(varargin, 'frames'); if numel(frames)==0 frames=1; end
+
+% in this 
+
+figureoutput=getMapValue(varargin, 'plotfigure');
+if numel(figureoutput)==0
+   figureoutput=0; 
+end
+
 channels=getMapValue(varargin, 'channels');
 if numel(channels)==0
     channels=struct('number',1,'rgb',[1 1 1],'limits',[]);
@@ -47,7 +55,13 @@ cc=1;
 
 for i=frames
     
+    if figureoutput==1
     hf(cc)=figure;
+    else
+    hf=[];
+    h=[];
+    end
+    
     for j=1:length(channels)
         
         
@@ -70,34 +84,34 @@ for i=frames
             
             imgRGBsum=uint8(zeros([refheight refwidth 3]));
             
+            
+            
             if numel(ROI)
-                
                % size(imgRGBsum)
-               
                 imgRGBsum=imgRGBsum(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1,:);
             else
                 ROI=[1 1 refheight refwidth];
             end
+            
+            if cc==1
+               imgout=uint8(zeros([size(imgRGBsum,1) size(imgRGBsum,2) 3 length(frames)]));
+            end
+            
         end
         
         if tracking
             ROI=initTracking(ROI,tracking,contours,i,refwidth,refheight);
         end
         
-       % ROI
-       % size(img)
-        
         if numel(ROI) img=img(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1); end
         
         if numel(channels(j).limits)
-          
             img=imadjust(img,[channels(j).limits(1)/65535 channels(j).limits(2)/65535],[]);
         end
         
         img=double(img)/65536;
         img=cat(3,img*channels(j).rgb(1),img*channels(j).rgb(2),img*channels(j).rgb(3));
         img=uint8(255*img);
-        
         
        % if length(channels)>=2
        % 
@@ -111,28 +125,34 @@ for i=frames
        % else
         imgRGBsum=imlincomb(1,imgRGBsum,1,img);   
        %end
-        
+        imgout(:,:,:,cc)=imgRGBsum;
     end
     
-    
-    
+    if figureoutput==1
     warning off all
-    imshow(imgRGBsum);
+    figure(hf(cc)),imshow(imgout(:,:,:,cc));
     warning on all
+    end
     
     if numel(contours)
-        drawContours(contours,ROI,tracking,i,refheight,refwidth) ;
+       % imgtmp=imgout(:,:,:,cc);
+        imgout(:,:,:,cc)=drawContours(imgout(:,:,:,cc),contours,ROI,tracking,i,refheight,refwidth,figureoutput) ;
     end
     
     if numel(timestamp)
-        drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
+        imgout(:,:,:,cc)=drawTimeStamp(imgout(:,:,:,cc),ROI,refwidth,refheight,timestamp,i,figureoutput);
     end
     
     if scale==1
-        drawScale(ROI,refwidth,refheight)
+       % scale
+       imgout(:,:,:,cc)= drawScale(imgout(:,:,:,cc),ROI,refwidth,refheight,figureoutput);
     end
     
+      
+    if figureoutput==1 
     h(cc)=gca;
+    end
+    
     cc=cc+1;
     
 end
@@ -196,13 +216,15 @@ ROIout=ROI;
 
 
 
-function drawContours(contours,ROI,tracking,i,refheight,refwdith)
+function imgout=drawContours(imgin,contours,ROI,tracking,i,refheight,refwdith,figureoutput)
 global segmentation
 scale=1;
 
+imgout=imgin;
 
 % plot object contours
 for ik=1:length(contours)
+   
     
     if numel(segmentation.(contours(ik).object)(:,1))<i
         continue;
@@ -259,9 +281,25 @@ for ik=1:length(contours)
             end
             
             if ok==1
+                
+                if figureoutput==1
                 line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                else
+                polyg = [xc3; yc3];
+                polyg= reshape(polyg,1,2*length(xc3));
+                imgout = insertShape(imgout,'Polygon',polyg,'Color', 255*contours(ik).color,'Opacity',1,'LineWidth',contours(ik).lineWidth);
+                end
+                
             else
-                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                if figureoutput==1
+                line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);    
+                else
+                polyg = [xc3; yc3];
+                polyg= reshape(polyg,1,2*length(xc3));
+                imgout = insertShape(imgout,'Polygon',polyg,'Color', 255*contours(ik).color,'Opacity',1,'LineWidth',contours(ik).lineWidth);
+                end
+                
+               % line(xc3,yc3,'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
             end
         end
         
@@ -296,7 +334,18 @@ for ik=1:length(contours)
                         %myc3=myc2(pix);
                         
                         %[oxc3 mxc3], [oyc3 myc3]
-                        line([oxc3 mxc3],[oyc3 myc3],'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                      %  line([oxc3 mxc3],[oyc3 myc3],'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                        
+                        if figureoutput==1
+                line([oxc3 mxc3],[oyc3 myc3],'Color',contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                else
+                polyg = [oxc3 oyc3 mxc3 myc3];
+                %polyg= reshape(polyg,1,2*length(oxc3))
+                
+                imgout = insertShape(imgout,'Line',polyg,'Color',255*contours(ik).color,'LineWidth',contours(ik).lineWidth);
+                        end
+                
+                        
                     end
                 end
             end
@@ -318,37 +367,37 @@ for ik=1:length(contours)
 end
 
 
-function drawTimeStamp(ROI,refwidth,refheight,timestamp,i)
+function imgout=drawTimeStamp(imgin,ROI,refwidth,refheight,timestamp,i,figureoutput)
 global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);
 %t = double((i) * timeLapse.interval);
 
-% time in min
-t = double((i) * timeLapse.interval/60);
+imgout=imgin;
 
-%time in hoiurs
-%i
-%t = double((i) * timeLapse.interval);
-
-hours = floor(t / 3600);
-minutes = mod(floor(t / 60), 60);
 
 if numel(ROI)
-    xpos=0.1*ROI(3);
-    ypos=0.9*ROI(4);
+    xpos=80; %0.1*ROI(3);
+    ypos=20; %ROI(4)-30;
 else
-    xpos=0.1*refwidth;
-    ypos=0.1*refheight;
+    xpos=80;% 0.1*refwidth;
+    ypos=20; %refheight-30;
 end
 
 % time in h/min
 %text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
 
 % time in min
-text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
 
-function drawScale(ROI,refwidth,refheight)
+if figureoutput==1
+text(xpos,ypos,timestamp,'Color','w','FontSize',20); %'FontWeight','bold',
+else
+imgout=insertText(imgin,[xpos ypos],timestamp,'Font','Arial','FontSize',20,'BoxColor',...
+    [1 1 1],'BoxOpacity',0.0,'TextColor','white','AnchorPoint','leftcenter');
+end
+
+
+function imgout=drawScale(imgin,ROI,refwidth,refheight,figureoutput)
 global timeLapse
 % draw time stamp
 %t = double((i -frameIndices(1) ) * secondsPerFrame);
@@ -357,41 +406,49 @@ global timeLapse
 %hours = floor(t / 3600);
 %minutes = mod(floor(t / 60), 60);
 
+imgout=imgin;
+
 if numel(ROI)
-    xpos=0.05*ROI(3);
-    ypos=0.05*ROI(4);
-%else
+    xpos=20; %0.05*ROI(3);
+    ypos=20; %0.05*ROI(4);
+else
+    xpos=20; %0.05*ROI(3);
+    ypos=20;
 %    xpos=0.1*refwidth;
 %    ypos=0.1*refheight;
 end
 
+if figureoutput==1
 %text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
-rectangle('Position',[xpos,ypos,50,5],'FaceColor','w');
-
-
-function drawScaleBar(ROI,refwidth,refheight,timestamp,i)
-global timeLapse
-% draw time stamp
-%t = double((i -frameIndices(1) ) * secondsPerFrame);
-%t = double((i) * timeLapse.interval);
-
-
-t = double((i) * timeLapse.interval/60);
-
-hours = floor(t / 3600);
-minutes = mod(floor(t / 60), 60);
-
-if numel(ROI)
-    xpos=0.1*ROI(3);
-    ypos=0.1*ROI(4);
+rectangle('Position',[xpos,ypos,50,8],'FaceColor','w');
 else
-    xpos=0.1*refwidth;
-    ypos=0.1*refheight;
+  imgout = insertShape(imgin,'FilledRectangle',[xpos,ypos,50,8],'Color', 'w','Opacity',0.8);
 end
 
-%text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
-
-text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
+% 
+% function drawScaleBar(ROI,refwidth,refheight,timestamp,i)
+% global timeLapse
+% % draw time stamp
+% %t = double((i -frameIndices(1) ) * secondsPerFrame);
+% %t = double((i) * timeLapse.interval);
+% 
+% 
+% t = double((i) * timeLapse.interval/60);
+% 
+% hours = floor(t / 3600);
+% minutes = mod(floor(t / 60), 60);
+% 
+% if numel(ROI)
+%     xpos=0.1*ROI(3);
+%     ypos=0.1*ROI(4);
+% else
+%     xpos=0.1*refwidth;
+%     ypos=0.1*refheight;
+% end
+% 
+% %text(xpos,ypos,[num2str(hours) ' h ' num2str(minutes) ' min'],'FontSize',timestamp,'Color','w')
+% 
+% text(xpos,ypos,[num2str(t) ' min'],'FontSize',timestamp,'Color','w','FontWeight','bold')
 
 
 function value = getMapValue(map, key)

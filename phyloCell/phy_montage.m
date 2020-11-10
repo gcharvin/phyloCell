@@ -1,15 +1,15 @@
 function varargout = phy_montage(varargin)
-% AT_MONTAGE MATLAB code for phy_montage.fig
-%      AT_MONTAGE, by itself, creates a new AT_MONTAGE or raises the existing
+% PHY_MONTAGE MATLAB code for phy_montage.fig
+%      PHY_MONTAGE, by itself, creates a new PHY_MONTAGE or raises the existing
 %      singleton*.
 %
-%      H = AT_MONTAGE returns the handle to a new AT_MONTAGE or the handle to
+%      H = PHY_MONTAGE returns the handle to a new PHY_MONTAGE or the handle to
 %      the existing singleton*.
 %
-%      AT_MONTAGE('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in AT_MONTAGE.M with the given input arguments.
+%      PHY_MONTAGE('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in PHY_MONTAGE.M with the given input arguments.
 %
-%      AT_MONTAGE('Property','Value',...) creates a new AT_MONTAGE or raises the
+%      PHY_MONTAGE('Property','Value',...) creates a new PHY_MONTAGE or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before phy_montage_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
@@ -46,6 +46,8 @@ end
 
 % --- Executes just before phy_montage is made visible.
 function phy_montage_OpeningFcn(hObject, eventdata, handles, varargin)
+
+
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -59,7 +61,6 @@ handles.output = hObject;
 global sequence segmentation
 
 % Update handles structure
-
 
 okload=0; % external loading of sequence variable into gui
 %phylo=0; % loading from phylocell
@@ -164,6 +165,7 @@ end
 
 sequence=[];
 
+
 sequence.GUI=0;
 sequence.project.path=timeLapse.realPath;
 sequence.project.name=timeLapse.realName;
@@ -183,6 +185,8 @@ sequence.param(end+1)={num2str(str2num(sequence.param{4}):inte:str2num(sequence.
 sequence.param(end+1)={num2str([1 1 timeLapse.list(1).videoResolution(1) timeLapse.list(1).videoResolution(2)])};
 sequence.param(end+1)={''};
 sequence.param(end+1)={num2str(timeLapse.interval)};
+sequence.param(end+1)={'min'};
+sequence.param(end+1)={'10'};
 
 sequence.param=sequence.param';
 
@@ -226,7 +230,7 @@ for i=1:numel(timeLapse.list)
     
     sequence.channel{i,5}=false;
     sequence.channel{i,6}=timeLapse.list(i).binning;
-    'ok'
+  %  'ok'
 end
 
 sequence.contour=cell(1,5);
@@ -452,7 +456,6 @@ channelGroup={};
 framesIndices=str2num(sequence.param{4}):1:str2num(sequence.param{5});
 manualStart=0;
 
-
 [pth nme]=fileparts(sequence.project.seqname);
 
 if numel(sequence.param{3})~=0
@@ -471,36 +474,68 @@ end
 
 cavity=sequence.param{3,1};
 
+
+%
+% dich=str2num(sequence.display{j,3});
+%         dico=str2num(sequence.display{j,4});
+%         scale=double(sequence.display{j,5});
+%         tim=double(sequence.display{j,6});
+%         
+%         if tim>0
+%             tim=24;
+%         else
+%             tim=[];
+%         end
+%         
+%         [hf h]=phy_showImage('frames',nimages(i),'ROI',roi,'channels',ch(dich),'timestamp',tim,'contours',cont(dico),'tracking',track,'scale',scale);
+%         
+        
+        
+% get channels settings
+for i=1:size(sequence.channel,1)
+    
+    if ischar(sequence.channel{i,3})
+        mine=str2num(sequence.channel{i,3});
+        maxe=str2num(sequence.channel{i,4});
+    else
+        mine=(sequence.channel{i,3});
+        maxe=(sequence.channel{i,4});
+    end
+    
+    if i==1
+        ch=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[mine maxe]);
+    else
+        ch(i)=struct('number',i,'rgb',str2num(sequence.channel{i,2}),'binning',sequence.channel{i,6},'limits',[mine maxe]);
+    end
+end
+
+
 % generate panel structure
 
 pix=~cellfun(@isempty,sequence.display(:,1));
 pix=cellfun(@mean,sequence.display(pix,1));
 pix=find(pix==1);
 
+
 cc=1;
+
+channelGroup=[];
+
 for i=pix'
-    cha=str2num(sequence.display{i,3});
-    str='0 0 0 0';
-    for j=1:numel(cha)
-        colo=str2num(sequence.channel{cha(j),2});
-        
-        if colo(1)==1 && colo(2)==1 && colo(3)==1 %phase contrast
-            str(1)=num2str(cha(j));
-        end
-        if colo(1)==0 && colo(2)==1 && colo(3)==0 %gfp
-            str(5)=num2str(cha(j));
-        end
-        if colo(1)==1 && colo(2)==0 && colo(3)==0 %rfp
-            str(3)=num2str(cha(j));
-        end
-        if colo(1)==0 && colo(2)==0 && colo(3)==1 %rfp
-            str(7)=num2str(cha(j));
-        end
-    end
+        channelGroup(cc).channels=str2num(sequence.display{i,3});
+        channelGroup(cc).contours=str2num(sequence.display{i,4});
+        channelGroup(cc).scale=double(sequence.display{i,5});
+        channelGroup(cc).time=double(sequence.display{i,6});
+        channelGroup(cc).timeunit=sequence.param{11};
+        channelGroup(cc).interval=sequence.param{10};
     
-    channelGroup{cc}= str;
+   % channelGroup{cc}= cha;
     cc=cc+1;
 end
+
+
+
+
 
 cf=1;
 cont=[];
@@ -552,7 +587,7 @@ frameIndices=str2num(sequence.param{4,1}):str2num(sequence.param{5,1});
 
 %div=@(a,b) a./b;
 
-exportMontage('','', segmentation.position, channelGroup, frameIndices, 0, segmentation,'ROI',str2num(sequence.param{8}),'output',nme,'contours',cont,'cavity',cavity,'tracking',tracking);%,'composition', div)
+exportMontage2('','', segmentation.position, channelGroup, frameIndices, 0, segmentation,'ROI',str2num(sequence.param{8}),'output',nme,'contours',cont,'cavity',cavity,'tracking',tracking,'channels',ch,'fps',str2num(sequence.param{12}));%,'composition', div)
 
 
 % --- Executes when entered data in editable cell(s) in tableparameter.
@@ -698,15 +733,33 @@ for i=1:nframes
         dich=str2num(sequence.display{j,3});
         dico=str2num(sequence.display{j,4});
         scale=double(sequence.display{j,5});
+        
+        
         tim=double(sequence.display{j,6});
         
-        if tim>0
-            tim=24;
-        else
-            tim=[];
+        uni= sequence.param{11};
+        
+        realtime=nimages(i)*str2num(sequence.param{10});
+        
+        if strcmp(uni,'min')
+            realtime=floor(realtime/60);
+        end
+        if strcmp(uni,'h')
+            realtime=floor(realtime/3600);
         end
         
-        [hf h]=phy_showImage('frames',nimages(i),'ROI',roi,'channels',ch(dich),'timestamp',tim,'contours',cont(dico),'tracking',track,'scale',scale);
+        if tim>0
+            tim= [ num2str(realtime) ' ' uni];
+        else
+           tim=[]; 
+        end
+%         if tim>0
+%             tim=24;
+%         else
+%             tim=[];
+%         end
+        
+        [hf h imgout]=phy_showImage('frames',nimages(i),'ROI',roi,'channels',ch(dich),'timestamp',tim,'contours',cont(dico),'tracking',track,'scale',scale,'plotfigure',1);
         
         p(j+cc).marginleft=0;
         p(j+cc).marginright=mar;
