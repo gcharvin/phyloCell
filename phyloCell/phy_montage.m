@@ -189,6 +189,8 @@ sequence.param(end+1)={''};
 sequence.param(end+1)={num2str(timeLapse.interval)};
 sequence.param(end+1)={'min'};
 sequence.param(end+1)={'10'};
+sequence.param(end+1)={'10 20 30'};
+sequence.param(end+1)={''};
 
 sequence.param=sequence.param';
 
@@ -525,12 +527,14 @@ channelGroup=[];
 
 for i=pix'
         channelGroup(cc).channels=str2num(sequence.display{i,3});
+        channelGroup(cc).label=str2num(sequence.display{i,2});
         channelGroup(cc).contours=str2num(sequence.display{i,4});
         channelGroup(cc).scale=double(sequence.display{i,5});
         channelGroup(cc).time=double(sequence.display{i,6});
         channelGroup(cc).timeunit=sequence.param{11};
         channelGroup(cc).interval=sequence.param{10};
-    
+        channelGroup(cc).sequence=sequence.param{13};
+        channelGroup(cc).sequencestr=sequence.param{14};
    % channelGroup{cc}= cha;
     cc=cc+1;
 end
