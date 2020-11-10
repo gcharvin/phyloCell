@@ -7,7 +7,7 @@ function phy_mouseSelectObject(hObject, eventdata, handles)
 global segmentation
 
 try
-sb=statusbar(handles.figure1,'Selecting object/track...');
+%sb=statusbar(handles.figure1,'Selecting object/track...');
 catch
 end
 
@@ -52,7 +52,7 @@ if strcmp(butonType,'alt')
      set(segmentation.myHandles.(['show' str])(:),'UIContextMenu',handles.Context_Tracks);
     end
     
-    statusbar;
+%    statusbar;
     return;
 end
 %get the tipe of click

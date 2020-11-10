@@ -6,7 +6,8 @@ global timeLapse;
 framestr=num2str(frame);
 
     nzer=max(3,length(num2str(timeLapse.numberOfFrames)));
-        
+   % nzer=3;
+    
         for jk=1:nzer
             if (numel(framestr)<nzer)
                 framestr=strcat('0',framestr);
@@ -30,7 +31,7 @@ fullpath=strcat(timeLapse.realPath,timeLapse.pathList.channels(pos,ch),timeLapse
  
 %image=uint16(imread(cell2mat(fullpath)));
 
-%b=cell2mat(fullpath)
+b=cell2mat(fullpath);
 
 try
 image=imread(cell2mat(fullpath));

@@ -15,9 +15,9 @@ localpath=localpath(1:end-1);
 end
 
 
-if isunix
-save([localpath '/timeLapse.mat'],'timeLapse');
-eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[filename '-project.mat'])]);
-else
+%if isunix
+%save([localpath '/timeLapse.mat'],'timeLapse');
+%eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[filename '-project.mat'])]);
+%else
 save(fullfile(timeLapse.realPath,[timeLapse.filename '-project.mat']),'timeLapse'); 
-end
+%end

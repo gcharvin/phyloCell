@@ -43,6 +43,7 @@ end
 % variable
 
 
+
 if numel(varname)~=0
     filen=varname;
 else
@@ -62,7 +63,7 @@ else
         
         [p,n,ext]=fileparts(lifiArr{i,1});
 
-       if lifiArr{i,4}==0 & strcmp(ext,'.mat')
+       if lifiArr{i,4}~=0 & strcmp(ext,'.mat')
            
         lifiFil(cc,:)=lifiArr(i,:);
         cc=cc+1;

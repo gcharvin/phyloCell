@@ -90,6 +90,7 @@ for i=frames
         if numel(ROI) img=img(ROI(2):ROI(2)+ROI(4)-1,ROI(1):ROI(1)+ROI(3)-1); end
         
         if numel(channels(j).limits)
+          
             img=imadjust(img,[channels(j).limits(1)/65535 channels(j).limits(2)/65535],[]);
         end
         

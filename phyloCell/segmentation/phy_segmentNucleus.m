@@ -65,7 +65,12 @@ if nargin==1 % call GUI to assign parameter values
    return;
 end
 
+
+
 im=img;
+
+%class(im)
+
 imgstore=im;
 img = medfilt2(im,[4 4]);% filtre median
 
@@ -100,15 +105,19 @@ I2 = imsubtract(img,background);
 Imeas=I2;
 
 %figure,imshow(I2,[]); colormap(jet)
+%class(I2)
 
 cells_mean=mean2(I2);
 cells_stdv=std2(I2);
 cells_max=max(I2(:));
 
+%param.thr
+
 filterlevel=param.thr/double(cells_max);
 
 if filterlevel>=1
-objects = phy_Object();
+phy_Objects = phy_Object();
+
 return;
 end
 

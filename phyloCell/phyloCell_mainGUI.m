@@ -730,7 +730,7 @@ function Save_current_analysis_Callback(hObject, eventdata, handles)
 global timeLapse;
 global segmentation segList
 
-statusbar(handles,'Saving.... Be patient !');
+%statusbar(handles,'Saving.... Be patient !');
 
 
 cur=find([segList.selected]==1);
@@ -741,7 +741,7 @@ segList(cur).t=timeLapse;
 
 
 localpath=userpath;
-localpath=localpath(1:end-1);
+%localpath=localpath(1:end-1)
 
 %save([localpath '/segmentation-autotrack.mat'],'segmentation');
 %copyfile([localpath '/segmentation-autotrack.mat'],fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename));
@@ -751,18 +751,18 @@ localpath=localpath(1:end-1);
 %save([localpath '/timeLapse.mat'],'timeLapse');
 %copyfile([localpath '/timeLapse.mat'],fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']));
 
-if isunix
-    save([localpath '/segmentation-autotrack.mat'],'segmentation');
-    eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename)]);
-    %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
-    
-    save([localpath '/timeLapse.mat'],'timeLapse');
-    eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[timeLapse.filename '-project.mat'])]);
-    
-else
+% if isunix
+%     save([localpath '/segmentation-autotrack.mat'],'segmentation');
+%     eval(['!mv ' [localpath '/segmentation-autotrack.mat'] ' ' fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename)]);
+%     %save(fullfile(timeLapse.realPath,timeLapse.pathList.position{pos},'segmentation-autotrack.mat'),'segmentation');
+%     
+%     save([localpath '/timeLapse.mat'],'timeLapse');
+%     eval(['!mv ' [localpath '/timeLapse.mat'] ' ' fullfile(timeLapse.realPath,[timeLapse.filename '-project.mat'])]);
+%     
+% else
     save(fullfile(timeLapse.realPath,timeLapse.pathList.position{segmentation.position},segmentation.filename),'segmentation');
     save(fullfile(timeLapse.realPath,[timeLapse.filename,'-project.mat']),'timeLapse');
-end
+%end
 
 statusbar(handles);;
 
@@ -2040,7 +2040,7 @@ segmentation.frameChanged(segmentation.frame1)=1;
 
 
 function pushbutton_Edit_Contour_Callback(handles)
-
+global segmentation
 
 set(segmentation.selectedObj.htext,'visible','off');
 set(segmentation.selectedObj.hcontour,'visible','off');
@@ -3691,7 +3691,7 @@ for i=segmentedFrames
             segmentation.frameToDisplay=max(find(temp==0));
         end
        
-        
+       % i, a=segmentation.frameToDisplay
         img=phy_loadTimeLapseImage(segmentation.position,segmentation.frameToDisplay,l,'non retreat');
         warning off all;
         img=imresize(img,segmentation.sizeImageMax);
@@ -5014,11 +5014,15 @@ if ~strcmp(curseg,'');
     %curparam.channel
     %figure, imshow(im,[]);
     try
+       % curseg
+       % figure, imshow(im,[])
+       % curparam
         [tmp OK]=feval(curseg,im,curparam);
+      %  tmp,OK
     catch err
        tmp=[];
 
-       
+      % 'pasok'
        for i=1:numel(err.stack)
           disp(err.stack(i)); 
        end

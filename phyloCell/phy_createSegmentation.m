@@ -53,6 +53,7 @@ maxe2=0;
 for i=1:nch
     
     img=phy_loadTimeLapseImage(segmentation.position,1,i,'non retreat');
+   % numel(img)
     lohi = stretchlim(img, [0.001 0.99]);
     segmentation.colorData(i,4)=lohi(1);
     segmentation.colorData(i,5)=lohi(2);
