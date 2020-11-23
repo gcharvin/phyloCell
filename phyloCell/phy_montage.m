@@ -181,8 +181,6 @@ sequence.param={'1200 800', '1', '', '1', num2str(timeLapse.numberOfFrames'),'5'
 inte=str2num(sequence.param{5})-str2num(sequence.param{4})+1;
 inte=round(inte/str2num(sequence.param{6}));
 
-'ok' 
-
 sequence.param(end+1)={num2str(str2num(sequence.param{4}):inte:str2num(sequence.param{5}))};
 sequence.param(end+1)={num2str([1 1 timeLapse.list(1).videoResolution(1) timeLapse.list(1).videoResolution(2)])};
 sequence.param(end+1)={''};
@@ -452,6 +450,9 @@ function makeMovie_Callback(hObject, eventdata, handles)
 global sequence segmentation timeLapse
 
 sequence.param=get(handles.tableparameter,'Data');
+
+
+
 sequence.display=get(handles.tabledisplay,'Data');
 sequence.channel=get(handles.tablechannel,'Data');
 sequence.contour=get(handles.tablecontour,'Data');
@@ -525,6 +526,32 @@ cc=1;
 
 channelGroup=[];
 
+
+% compute actual time of frame acquisition
+
+% inte=[];
+% tabinte=str2num(sequence.param{10});
+% for k=1:2:length(tabinte)
+%    inte= [inte tabinte(k)*ones(1,tabinte(k+1))];
+% end
+% inte=cumsum(inte);
+
+
+% compute actual time of frame acquisition
+
+inte=[];
+tabinte=str2num(sequence.param{10});
+if length(tabinte)>1
+for k=1:2:length(tabinte)
+   inte= [inte tabinte(k)*ones(1,tabinte(k+1))];
+end
+inte=cumsum(inte)-inte(1);
+else
+inte=0:1:size(segmentation.cells1Segmented,2);
+inte=inte*str2num(sequence.param{10});
+end
+
+
 for i=pix'
         channelGroup(cc).channels=str2num(sequence.display{i,3});
         channelGroup(cc).label=str2num(sequence.display{i,2});
@@ -532,7 +559,13 @@ for i=pix'
         channelGroup(cc).scale=double(sequence.display{i,5});
         channelGroup(cc).time=double(sequence.display{i,6});
         channelGroup(cc).timeunit=sequence.param{11};
-        channelGroup(cc).interval=sequence.param{10};
+        channelGroup(cc).interval=inte;
+        
+        if numel(sequence.param)<13
+            sequence.param{13}=[];
+            sequence.param{14}=[];
+        end
+        
         channelGroup(cc).sequence=sequence.param{13};
         channelGroup(cc).sequencestr=sequence.param{14};
    % channelGroup{cc}= cha;
@@ -648,7 +681,7 @@ function plot_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global sequence
+global sequence segmentation
 
 sequence.param=get(handles.tableparameter,'Data');
 sequence.display=get(handles.tabledisplay,'Data');
@@ -724,6 +757,23 @@ end
 
 % load images and contours
 
+% compute actual time of frame acquisition
+
+
+inte=[];
+tabinte=str2num(sequence.param{10});
+if length(tabinte)>1
+for k=1:2:length(tabinte)
+   inte= [inte tabinte(k)*ones(1,tabinte(k+1))];
+end
+inte=cumsum(inte)-inte(1);
+else
+inte=0:1:size(segmentation.cells1Segmented,2);
+inte=inte*str2num(sequence.param{10});
+end
+
+
+
 for i=1:nframes
     
     if cd>=ncol
@@ -745,7 +795,9 @@ for i=1:nframes
         
         uni= sequence.param{11};
         
-        realtime=nimages(i)*str2num(sequence.param{10});
+
+        %realtime=nimages(i)*str2num(sequence.param{10});
+        realtime=inte(nimages(i));
         
         if strcmp(uni,'min')
             realtime=floor(realtime/60);

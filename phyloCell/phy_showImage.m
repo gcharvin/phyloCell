@@ -148,10 +148,8 @@ for i=frames
        % scale
        imgout(:,:,:,cc)= drawScale(imgout(:,:,:,cc),ROI,refwidth,refheight,figureoutput);
     end
-    
-
-    
-    if numel(sequence)
+   
+    if numel(sequence) & numel(sequence.frames)>0
        imgout(:,:,:,cc)=drawSequence(imgout(:,:,:,cc),ROI,refwidth,refheight,sequence,i,figureoutput); 
     end
     
@@ -457,6 +455,8 @@ xstart=xstart*(ROI(3)-20);
 
 imgout = insertShape(imgout,'Line',[10+xstart ROI(4)-20 10+xstart ROI(4)-10],'Color', 'w','Opacity',1,'LineWidth',2);   
 end
+
+
 
 imgout = insertShape(imgout,'FilledRectangle',[10 ROI(4)-20 prog*(ROI(3)-20) 10],'Color', 'w','Opacity',0.5,'LineWidth',2);
 

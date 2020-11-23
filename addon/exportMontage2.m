@@ -154,6 +154,8 @@ for position = positions % loop on all poisitions requested
         frameIndices=1:1:timeLapse.currentFrame;
     end
     
+
+    
     
     %frameIndices
     cc=1;
@@ -162,14 +164,18 @@ for position = positions % loop on all poisitions requested
         for k=1:numel(channelGroups)
             dich=channelGroups(k).channels;
             
-      
             tim=[];
             
             if channelGroups(k).time==1
                 
                  uni=channelGroups(k).timeunit;
                  
-                 realtime=i*str2num(channelGroups(k).interval);
+                     % determine timestamp
+    
+                 inte=channelGroups(k).interval;
+                 
+                 %realtime=i*str2num(channelGroups(k).interval);
+                 realtime=inte(i);
                  
                 if strcmp(uni,'min')
                     realtime=floor(realtime/60);
@@ -191,6 +197,7 @@ for position = positions % loop on all poisitions requested
                 seuqence=[];
                 sequence.frames=channelGroups(k).sequence;
                 sequence.str=channelGroups(k).sequencestr;
+                
             end
             
             [hf,h,img]=phy_showImage('frames',i,'ROI',ROI,'channels',channels(dich),'timestamp',tim,'contours',cont,'tracking',tracking,'scale',scale,'sequence',sequence);
