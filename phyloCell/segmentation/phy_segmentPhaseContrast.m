@@ -160,7 +160,7 @@ imshow((img),[]);
 %class(img2)
 %level2=graythresh(uint16(img2))
 
-T = adaptthresh(uint16(img2),0.1);
+T = adaptthresh(uint16(img2),0.05);
 
 BW2=imbinarize(uint16(img2),T);
 
