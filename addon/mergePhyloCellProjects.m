@@ -136,14 +136,18 @@ for i=1:numel(filenames)
                 path2=strcat(timeLapse.path,dirpos,'/');
                 fullpath=strcat(path2,chpos,'/');
                 
-                framenumber=num2str(j);
-                nzer=3;
-                
-                for jk=1:nzer
-                    if (numel(framenumber)<nzer)
-                        framenumber=strcat('0',framenumber);
-                    end
+                if timeLapse.numberOfFrames>999
+                    framenumber=sprintf('%04i',j);
+                else
+                    framenumber=sprintf('%03i',j);
                 end
+%                 nzer=3;
+                
+%                 for jk=1:nzer
+%                     if (numel(framenumber)<nzer)
+%                         framenumber=strcat('0',framenumber);
+%                     end
+%                 end
                 
                 source=strcat(fullpath,timeLapse.filename,'-pos',int2str(k),'-ch',int2str(l),'-',timeLapse.list(l).ID,'-',framenumber,'.jpg');
                 
